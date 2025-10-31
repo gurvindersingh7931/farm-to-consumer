@@ -95,6 +95,19 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  updateProfile(profileData: { firstName?: string; lastName?: string; email?: string }): Observable<AuthResponse> {
+    return this.http.put<AuthResponse>(`${this.API_URL}/auth/profile`, profileData, {
+      headers: {
+        'Authorization': `Bearer ${this.getToken()}`
+      }
+    }).pipe(
+      tap(response => {
+        localStorage.setItem('user', JSON.stringify(response.user));
+        this.currentUserSubject.next(response.user);
+      })
+    );
+  }
+
   isFarmer(): boolean {
     const user = this.getCurrentUser();
     return user?.role === 'farmer';

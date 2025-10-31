@@ -48,11 +48,12 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       return;
     }
 
+    // Validate JWT_SECRET is configured - CRITICAL: Never use fallback secrets in production
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      console.error('JWT_SECRET not configured');
+      console.error('JWT_SECRET not configured - authentication disabled for security');
       res.status(500).json({ 
-        message: 'Server configuration error',
+        message: 'Server configuration error: JWT secret not configured',
         code: 'CONFIG_ERROR',
         timestamp: new Date().toISOString()
       });
@@ -84,7 +85,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
     }
 
     const user = await User.findByPk(decoded.userId, {
-      attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'isActive', 'isPremium', 'lastLoginAt']
+      attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'isActive', 'isPremium']
     });
     
     if (!user) {

@@ -434,3 +434,67 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     });
   }
 };
+
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      res.status(401).json({ 
+        message: 'Unauthorized',
+        code: 'UNAUTHORIZED',
+        timestamp: new Date().toISOString()
+      });
+      return;
+    }
+
+    const { firstName, lastName, email } = req.body;
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      res.status(404).json({ 
+        message: 'User not found',
+        code: 'USER_NOT_FOUND',
+        timestamp: new Date().toISOString()
+      });
+      return;
+    }
+
+    // Check if email is being changed and if it's already taken
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ where: { email: email.toLowerCase() } });
+      if (existingUser) {
+        res.status(400).json({ 
+          message: 'Email already in use',
+          code: 'EMAIL_EXISTS',
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+    }
+
+    // Update user fields
+    await user.update({
+      firstName: firstName || user.firstName,
+      lastName: lastName || user.lastName,
+      email: email ? email.toLowerCase() : user.email
+    });
+
+    // Fetch updated user without password
+    const updatedUser = await User.findByPk(userId, {
+      attributes: ['id', 'email', 'firstName', 'lastName', 'role', 'isPremium']
+    });
+
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: updatedUser,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ 
+      message: 'Internal server error',
+      code: 'UPDATE_PROFILE_ERROR',
+      timestamp: new Date().toISOString()
+    });
+  }
+};

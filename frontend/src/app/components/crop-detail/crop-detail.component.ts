@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { Subject, takeUntil } from 'rxjs';
 import { CropBrowseService, CropListing } from '../../services/crop-browse.service';
 import { AuthService } from '../../services/auth.service';
@@ -13,7 +14,7 @@ import { OrderPlacementComponent, CropForOrder } from '../order-placement/order-
 @Component({
   selector: 'app-crop-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, OrderPlacementComponent],
+  imports: [CommonModule, RouterModule, MatIconModule, OrderPlacementComponent],
   templateUrl: './crop-detail.component.html',
   styleUrls: ['./crop-detail.component.scss']
 })
@@ -57,12 +58,25 @@ export class CropDetailComponent implements OnInit, OnDestroy {
 
     this.cropBrowseService.getCropById(parseInt(cropId)).subscribe({
       next: (response) => {
-        this.crop = response.crop;
-        this.currentRating = this.crop.averageRating || 0;
+        this.crop = response.crop as any;
+        // Normalize backend shape → UI expectations
+        if (this.crop && (this.crop as any).quantity !== undefined && (this.crop as any).availableQuantity === undefined) {
+          (this.crop as any).availableQuantity = (this.crop as any).quantity;
+        }
+        if (this.crop && (this.crop as any).isOrganic === undefined && (this.crop as any).organic !== undefined) {
+          (this.crop as any).isOrganic = (this.crop as any).organic;
+        }
+        this.currentRating = (this.crop as any)?.farmer?.rating || 0;
         this.isLoading = false;
+        
+        // Load user's existing rating if logged in
+        if (this.authService.isAuthenticated() && this.crop?.farmer?.id) {
+          this.loadUserRating((this.crop as any).farmer.id);
+        }
+        
         // Initialize map if coordinates available
-        const lat = this.crop?.farmer?.farmerProfile?.latitude;
-        const lng = this.crop?.farmer?.farmerProfile?.longitude;
+        const lat = (this.crop as any)?.farmer?.farmerProfile?.latitude;
+        const lng = (this.crop as any)?.farmer?.farmerProfile?.longitude;
         if (lat && lng) {
           this.maps.load().then(() => {
             const el = document.getElementById('cropMap');
@@ -134,7 +148,7 @@ export class CropDetailComponent implements OnInit, OnDestroy {
 
   getFreshnessBadge(harvestDate?: string): { text: string; class: string } {
     if (!harvestDate) {
-      return { text: 'Unknown', class: 'badge-unknown' };
+      return { text: 'Good', class: 'badge-good' };
     }
 
     const harvest = new Date(harvestDate);
@@ -162,6 +176,22 @@ export class CropDetailComponent implements OnInit, OnDestroy {
     return { full, half, empty };
   }
 
+  loadUserRating(farmerUserId: number): void {
+    if (!this.authService.isAuthenticated()) return;
+    
+    this.cropBrowseService.getUserRating(farmerUserId).subscribe({
+      next: (response) => {
+        if (response.rating !== null) {
+          this.userRating = response.rating;
+        }
+      },
+      error: (error) => {
+        // Silent fail - user may not have rated yet
+        console.log('No existing rating found');
+      }
+    });
+  }
+
   onStarClick(rating: number): void {
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login']);
@@ -176,20 +206,28 @@ export class CropDetailComponent implements OnInit, OnDestroy {
     if (!this.crop || this.isSubmittingRating) return;
     
     this.isSubmittingRating = true;
-    
-    // TODO: Implement rating submission API
-    setTimeout(() => {
-      this.currentRating = (this.currentRating + rating) / 2; // Simple average for demo
-      this.isSubmittingRating = false;
-    }, 1000);
+
+    const farmerUserId = (this.crop as any)?.farmer?.id;
+    this.cropBrowseService.rateFarmer(farmerUserId, rating).subscribe({
+      next: ({ rating: newAvg, totalRatings }) => {
+        const farmer = (this.crop as any).farmer || {};
+        (this.crop as any).farmer = { ...farmer, rating: newAvg, totalRatings };
+        this.currentRating = newAvg;
+        this.isSubmittingRating = false;
+      },
+      error: (error) => {
+        console.error('Failed to rate farmer:', error);
+        this.isSubmittingRating = false;
+      }
+    });
   }
 
-  contactFarmer(): void {
-    if (!this.crop?.farmer) return;
+  // contactFarmer(): void {
+  //   if (!this.crop?.farmer) return;
     
-    // TODO: Implement contact farmer functionality
-    alert(`Contacting ${this.getFarmerName()}...`);
-  }
+  //   // TODO: Implement contact farmer functionality
+  //   alert(`Contacting ${this.getFarmerName()}...`);
+  // }
 
   goBack(): void {
     this.router.navigate(['/browse-crops']);

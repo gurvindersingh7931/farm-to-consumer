@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, logout, refreshToken, getProfile } from '../controllers/authController';
+import { register, login, logout, refreshToken, getProfile, updateProfile } from '../controllers/authController';
 import { authenticateToken, authRateLimit, validateTokenFormat } from '../middleware/auth';
 import { commonValidations, validateRequest } from '../middleware/validation';
 
@@ -39,6 +39,12 @@ router.get('/profile',
   validateTokenFormat,
   authenticateToken, 
   getProfile
+);
+
+router.put('/profile',
+  validateTokenFormat,
+  authenticateToken,
+  updateProfile
 );
 
 export default router;

@@ -9,7 +9,9 @@ import {
   updatePremiumStatus,
   searchFarmers,
   uploadProfilePhoto,
-  browseFarmers
+  browseFarmers,
+  rateFarmer,
+  getUserRating
 } from '../controllers/farmerController';
 import { authenticateToken, requireRole } from '../middleware/auth';
 
@@ -23,6 +25,11 @@ router.get('/farmers/:id', getFarmerById);
 
 // Protected routes (authentication required)
 router.use(authenticateToken);
+
+// Get user's rating for a farmer
+router.get('/farmers/:id/my-rating', getUserRating);
+// Allow anyone logged in to rate a farmer by user id
+router.post('/farmers/:id/rate', rateFarmer);
 
 // Farmer profile management routes
 router.post('/profile', uploadProfilePhoto, createFarmerProfile);

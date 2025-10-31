@@ -18,190 +18,149 @@
   
   <!-- Header -->
   <div class="crop-header">
-    <button class="back-btn" (click)="goBack()">
-      <span>←</span> Back to Browse
-    </button>
+    <a (click)="goBack()" class="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
+      <mat-icon fontIcon="arrow_back" class="!text-sm !leading-none"></mat-icon>
+      <span>Back</span>
+    </a>
     
-    <div class="crop-title">
-      <h1>{{ crop.name }}</h1>
-      <span class="category-badge">{{ crop.category }}</span>
-      <div class="freshness-badge" [ngClass]="getFreshnessBadge(crop.harvestDate).class">
-        {{ getFreshnessBadge(crop.harvestDate).text }}
+    <div class="crop-title flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <h1 class="text-2xl md:text-3xl font-extrabold leading-tight truncate bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+          {{ crop.name }}
+        </h1>
+        <div class="mt-1 flex flex-wrap items-center gap-2">
+          <span class="category-badge inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 px-3 py-1 text-xs font-semibold ring-1 ring-inset ring-blue-200">
+            <mat-icon fontIcon="label" class="!text-blue-600"></mat-icon>{{ crop.category }}
+          </span>
+          <div class="freshness-badge inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-green-50 text-green-700 ring-1 ring-inset ring-green-200"
+               [ngClass]="getFreshnessBadge(crop.harvestDate).class">
+            <mat-icon fontIcon="eco" class="!text-green-600"></mat-icon>{{ getFreshnessBadge(crop.harvestDate).text }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Main Content -->
   <div class="crop-content">
-    <div class="crop-gallery">
-      <img 
-        [src]="getCropImageUrl(crop.imageUrl)"
-        (error)="onImageError($event, cropService.getFallbackImage(crop.category))" 
-        [alt]="crop.name"
-        class="crop-image">
-      
-      <!-- Image placeholder if no image -->
-      <div *ngIf="!crop.imageUrl" class="image-placeholder">
-        <span class="placeholder-icon">🌾</span>
-        <p>No image available</p>
+    <div class="crop-gallery mb-4">
+      <div class="w-full overflow-hidden rounded-2xl ring-1 p-4 ring-gray-200 bg-white shadow-sm">
+        <img 
+          [src]="getCropImageUrl(crop.imageUrl)"
+          (error)="onImageError($event, cropService.getFallbackImage(crop.category))" 
+          [alt]="crop.name"
+          class="w-full h-64 md:h-80 block rounded-xl">
       </div>
     </div>
 
     <div class="crop-info">
       <!-- Price and Quantity -->
-      <div class="price-section">
-        <div class="price-container">
-          <span class="price">{{ crop.pricePerKg | currency:'INR':'symbol-narrow':'1.0-0':'en-IN' }}</span>
-          <span class="price-unit">per {{ crop.unit }}</span>
+      <div class="price-section grid grid-cols-2 gap-3 mb-4">
+        <div class="flex items-center justify-between rounded-xl bg-blue-50 text-blue-800 px-4 py-3 ring-1 ring-inset ring-blue-200">
+          <div class="flex items-center gap-2 min-w-0">
+            <mat-icon fontIcon="sell" class="!text-blue-600"></mat-icon>
+            <span class="font-semibold truncate">Price</span>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-bold">{{ crop.pricePerKg | currency:'INR':'symbol-narrow':'1.0-0':'en-IN' }}</div>
+            <div class="text-xs opacity-80">per {{ crop.unit }}</div>
+          </div>
         </div>
-        
-        <div class="quantity-container">
-          <span class="quantity-label">Available:</span>
-          <span class="quantity">{{ crop.availableQuantity }} {{ crop.unit }}</span>
+        <div class="flex items-center justify-between rounded-xl bg-green-50 text-green-800 px-4 py-3 ring-1 ring-inset ring-green-200">
+          <div class="flex items-center gap-2 min-w-0">
+            <mat-icon fontIcon="inventory_2" class="!text-green-600"></mat-icon>
+            <span class="font-semibold truncate">Available</span>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-bold">{{ crop.availableQuantity }}</div>
+            <div class="text-xs opacity-80">{{ crop.unit }}</div>
+          </div>
         </div>
       </div>
 
       <!-- Order Button -->
       <div class="order-section">
         <button 
-          class="order-btn" 
+          class="order-btn inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-5 py-3 shadow-sm transition"
           (click)="openOrderModal()"
           [disabled]="crop.availableQuantity <= 0">
+          <mat-icon fontIcon="shopping_cart"></mat-icon>
           {{ crop.availableQuantity <= 0 ? 'Out of Stock' : 'Place Order' }}
         </button>
       </div>
 
       <!-- Description -->
-      <div class="description-section" *ngIf="crop.description">
-        <h3>Description</h3>
-        <p>{{ crop.description }}</p>
+      <div class="description-section mt-6" *ngIf="crop.description">
+        <h3 class="text-base font-semibold text-gray-900 mb-2">Description</h3>
+        <p class="text-gray-700 leading-relaxed">{{ crop.description }}</p>
       </div>
 
       <!-- Additional Info -->
-      <div class="details-section">
-        <h3>Details</h3>
-        <div class="detail-grid">
-          <div class="detail-item" *ngIf="crop.harvestDate">
-            <span class="detail-label">Harvest Date:</span>
-            <span class="detail-value">{{ crop.harvestDate | date:'mediumDate' }}</span>
+      <div class="details-section mt-6">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">Details</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="flex items-center gap-2 rounded-xl bg-gray-50 px-4 py-3 ring-1 ring-inset ring-gray-200" *ngIf="crop.harvestDate">
+            <mat-icon fontIcon="event" class="!text-blue-600"></mat-icon>
+            <div>
+              <div class="text-xs text-gray-500">Harvest Date</div>
+              <div class="text-sm font-medium text-gray-900">{{ crop.harvestDate | date:'mediumDate' }}</div>
+            </div>
           </div>
-          <div class="detail-item" *ngIf="crop.expiryDate">
-            <span class="detail-label">Expiry Date:</span>
-            <span class="detail-value">{{ crop.expiryDate | date:'mediumDate' }}</span>
+          <div class="flex items-center gap-2 rounded-xl bg-gray-50 px-4 py-3 ring-1 ring-inset ring-gray-200" *ngIf="crop.expiryDate">
+            <mat-icon fontIcon="hourglass_bottom" class="!text-blue-600"></mat-icon>
+            <div>
+              <div class="text-xs text-gray-500">Expiry Date</div>
+              <div class="text-sm font-medium text-gray-900">{{ crop.expiryDate | date:'mediumDate' }}</div>
+            </div>
           </div>
-          <div class="detail-item">
-            <span class="detail-label">Organic:</span>
-            <span class="detail-value">{{ crop.isOrganic ? 'Yes' : 'No' }}</span>
+          <div class="flex items-center gap-2 rounded-xl bg-gray-50 px-4 py-3 ring-1 ring-inset ring-gray-200">
+            <mat-icon [fontIcon]="crop.isOrganic ? 'eco' : 'close'" class="!text-green-600"></mat-icon>
+            <div>
+              <div class="text-xs text-gray-500">Organic</div>
+              <div class="text-sm font-medium text-gray-900">{{ crop.isOrganic ? 'Yes' : 'No' }}</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Rating Section -->
-      <div class="rating-section">
-        <h3>Rating</h3>
-        <div class="rating-display">
-          <div class="stars">
-            <ng-container *ngIf="getRatingStars(crop.averageRating || 0) as rs">
-              <span *ngFor="let _ of [].constructor(rs.full)">★</span>
-              <span *ngIf="rs.half">☆</span>
-              <span *ngFor="let _ of [].constructor(rs.empty)">☆</span>
-            </ng-container>
-          </div>
-          <span class="rating-value">{{ (crop.averageRating || 0).toFixed(1) }}/5</span>
-          <span class="rating-count">({{ crop.totalRatings || 0 }} reviews)</span>
-        </div>
-        
-        <!-- User Rating Interface -->
-        <div class="user-rating" *ngIf="isLoggedIn()">
-          <p>Rate this crop:</p>
-          <div class="rating-input">
-            <span 
-              *ngFor="let star of [1,2,3,4,5]" 
-              class="star-input"
-              [class.active]="star <= userRating"
-              (click)="onStarClick(star)">
-              ★
-            </span>
+      <!-- Farmer Information -->
+      <div class="mt-6" *ngIf="crop?.farmer">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">Farmer</h3>
+        <div class="flex items-center gap-2 rounded-xl bg-gray-50 px-4 py-3 ring-1 ring-inset ring-gray-200">
+          <img 
+            [src]="getFarmerImageUrl(crop.farmer?.farmerProfile?.profilePhoto)"
+            (error)="onImageError($event, '/assets/default-farmer.png')" 
+            [alt]="getFarmerName()"
+            class="w-10 h-10 rounded-full object-cover ring-1 ring-gray-300 flex-shrink-0">
+            <div class="flex-1 min-w-0">
+            <div class="text-xs text-gray-500 mb-1">Farmer</div>
+            <div class="text-sm font-medium text-gray-900">
+              <a 
+                *ngIf="crop.farmer?.id"
+                [routerLink]="['/farmer-detail', crop.farmer?.id]"
+                class="text-gray-900 hover:text-gray-700 hover:underline transition-colors inline-flex items-center gap-1">
+                {{ getFarmerName() }}
+                <mat-icon fontIcon="open_in_new" class="!text-xs !text-gray-600"></mat-icon>
+              </a>
+              <span *ngIf="!crop.farmer?.id">{{ getFarmerName() }}</span>
+            </div>
+            <div class="text-xs text-gray-500 mt-1 flex items-center gap-1" *ngIf="getFarmerLocation()">
+              <mat-icon fontIcon="place" class="!text-xs"></mat-icon>
+              {{ getFarmerLocation() }}
+            </div>
           </div>
         </div>
       </div>
+
     </div>
-  </div>
-
-  <!-- Farmer Information -->
-  <div class="farmer-section">
-    <h2>Farmer Information</h2>
-    
-    <div class="farmer-card">
-      <div class="farmer-header">
-        <img 
-          [src]="getFarmerImageUrl(crop.farmer?.farmerProfile?.profilePhoto)"
-          (error)="onImageError($event, '/assets/default-farmer.png')" 
-          [alt]="getFarmerName()"
-          class="farmer-avatar">
-        
-        <div class="farmer-info">
-          <h3>{{ getFarmerName() }}</h3>
-          <p class="farmer-location">{{ getFarmerLocation() }}</p>
-          
-          <!-- Premium Badges -->
-          <div class="farmer-badges" *ngIf="getPremiumBadges().length > 0">
-            <span 
-              *ngFor="let badge of getPremiumBadges()" 
-              class="badge"
-              [ngClass]="getBadgeClass(badge)">
-              {{ badge }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div class="farmer-description" *ngIf="crop.farmer?.farmerProfile?.farmDescription">
-        <p>{{ crop.farmer?.farmerProfile?.farmDescription }}</p>
-      </div>
-
-      <div class="contact-info">
-        <p *ngIf="crop.farmer?.farmerProfile?.phone" class="contact-item">
-          <span class="contact-icon">📞</span>
-          {{ crop.farmer?.farmerProfile?.phone }}
-        </p>
-        <p *ngIf="crop.farmer?.farmerProfile?.website" class="contact-item">
-          <span class="contact-icon">🌐</span>
-          <a [href]="crop.farmer?.farmerProfile?.website" target="_blank" class="website-link">
-            Visit Website
-          </a>
-        </p>
-      </div>
-    </div>
-
-    <!-- Farm Location on Map -->
-    <section class="map-section" *ngIf="crop.farmer?.farmerProfile?.latitude && crop.farmer?.farmerProfile?.longitude">
-      <h3>Farm Location</h3>
-      <div class="map-container">
-        <div id="cropMap" style="width: 100%; height: 260px; border-radius: 12px; overflow: hidden; background: #eef2f3"></div>
-        <p class="map-address">{{ getFullAddress() }}</p>
-        <p class="map-coordinates" *ngIf="crop.farmer?.farmerProfile?.latitude && crop.farmer?.farmerProfile?.longitude">
-          {{ crop.farmer?.farmerProfile?.latitude }}, {{ crop.farmer?.farmerProfile?.longitude }}
-        </p>
-      </div>
-    </section>
-
-    <!-- Location info when no map available -->
-    <section class="location-info" *ngIf="!crop.farmer?.farmerProfile?.latitude || !crop.farmer?.farmerProfile?.longitude">
-      <h3>Farm Location</h3>
-      <div class="location-text">
-        <p class="farm-address">{{ getFullAddress() }}</p>
-        <p class="location-note">📍 Location coordinates not available</p>
-      </div>
-    </section>
   </div>
 
   <!-- Actions -->
-  <div class="actions-section">
+  <!-- <div class="actions-section">
     <button class="contact-btn" (click)="contactFarmer()">
       <span>💬</span> Contact Farmer
     </button>
-  </div>
+  </div> -->
 </div>
 
 <!-- Order Modal -->

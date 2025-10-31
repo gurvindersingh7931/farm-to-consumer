@@ -35,7 +35,8 @@
     "razorpay": "^2.9.6",
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.3",
-    "xss-clean": "^0.1.4"
+    "xss-clean": "^0.1.4",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -51,7 +52,9 @@
     "@types/pg": "^8.15.5",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "swagger-jsdoc": "^6.2.8",
+    "@types/swagger-ui-express": "^4.1.6"
   },
   "description": ""
 }

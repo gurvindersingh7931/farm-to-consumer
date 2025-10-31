@@ -4,7 +4,9 @@
     <div class="w-full">
       <div class="flex items-center justify-between py-3 px-0">
         <div class="flex items-center gap-3">
-          <button class="btn btn-secondary btn-sm focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none" type="button" aria-label="Toggle sidebar" (click)="toggleSidebar()">☰</button>
+          <button class="btn btn-secondary btn-sm focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none flex items-center gap-1" type="button" aria-label="Toggle sidebar" (click)="toggleSidebar()">
+            <mat-icon fontIcon="menu"></mat-icon>
+          </button>
           <a routerLink="/" class="navbar-brand">Farm-to-Consumer</a>
         </div>
         <div class="flex items-center gap-4">
@@ -20,7 +22,7 @@
     <aside class="w-64 bg-white border-r border-gray-100 min-h-[calc(100vh-64px)]" [ngClass]="sidebarOpen ? 'block md:block' : 'hidden md:hidden'">
       <nav class="p-4 space-y-1">
         <a *ngFor="let item of menuItems" [routerLink]="item.path" routerLinkActive="!bg-blue-50 !text-blue-700" (click)="onNavClick()" class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors">
-          <span>{{ item.icon }}</span>
+          <mat-icon [fontIcon]="item.icon" class="!text-base"></mat-icon>
           <span>{{ item.label }}</span>
         </a>
       </nav>

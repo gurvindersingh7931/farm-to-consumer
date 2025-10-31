@@ -30,6 +30,7 @@ export interface CropListing {
     state?: string;
     distance?: number;
     rating?: number;
+    totalRatings?: number;
     isPremium?: boolean;
     hasVerifiedBadge?: boolean;
     isBoosted?: boolean;
@@ -181,6 +182,19 @@ export class CropBrowseService {
   // Get crop by ID
   getCropById(id: number): Observable<{ crop: CropListing }> {
     return this.http.get<{ crop: CropListing }>(`${this.API_URL}/crop/${id}`);
+  }
+
+  // Rate a farmer by farmer's user id
+  rateFarmer(farmerUserId: number, rating: number): Observable<{ message: string; rating: number; totalRatings: number }> {
+    return this.http.post<{ message: string; rating: number; totalRatings: number }>(
+      `${this.API_URL}/farmer/farmers/${farmerUserId}/rate`,
+      { rating }
+    );
+  }
+
+  // Get user's rating for a farmer
+  getUserRating(farmerUserId: number): Observable<{ rating: number | null }> {
+    return this.http.get<{ rating: number | null }>(`${this.API_URL}/farmer/farmers/${farmerUserId}/my-rating`);
   }
 
   // Get farmer's crops

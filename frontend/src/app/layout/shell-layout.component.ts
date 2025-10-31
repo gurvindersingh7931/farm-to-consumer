@@ -1,14 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../services/auth.service';
 
-type MenuItem = { label: string; path: string; icon?: string };
+type MenuItem = { label: string; path: string; icon: string };
 
 @Component({
   selector: 'app-shell-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, MatIconModule],
   templateUrl: './shell-layout.component.html'
 })
 export class ShellLayoutComponent implements OnInit {
@@ -31,35 +32,36 @@ export class ShellLayoutComponent implements OnInit {
   private buildMenu(role?: 'admin' | 'farmer' | 'consumer'): MenuItem[] {
     if (role === 'admin') {
       return [
-        { label: 'Dashboard', path: '/admin-dashboard', icon: '📊' },
-        { label: 'Farmers', path: '/admin-dashboard', icon: '🚜' },
-        { label: 'Consumers', path: '/admin-dashboard', icon: '🛒' },
-        { label: 'Listings', path: '/admin-dashboard', icon: '🧺' },
-        { label: 'Verification', path: '/admin-dashboard', icon: '✅' }
+        { label: 'Dashboard', path: '/admin-dashboard', icon: 'dashboard' },
+        { label: 'Farmers', path: '/admin-dashboard', icon: 'agriculture' },
+        { label: 'Consumers', path: '/admin-dashboard', icon: 'people' },
+        { label: 'Listings', path: '/admin-dashboard', icon: 'inventory_2' },
+        { label: 'Verification', path: '/admin-dashboard', icon: 'verified' }
       ];
     }
     if (role === 'farmer') {
       return [
-        { label: 'Dashboard', path: '/farmer-dashboard', icon: '📊' },
-        { label: 'Profile', path: '/farmer-profile', icon: '👤' },
-        { label: 'My Crops', path: '/crop-management', icon: '🌾' },
-        { label: 'Orders', path: '/order-management', icon: '📋' },
-        { label: 'Browse Crops', path: '/browse-crops', icon: '🧺' }
+        { label: 'Dashboard', path: '/farmer-dashboard', icon: 'dashboard' },
+        { label: 'Profile', path: '/farmer-profile', icon: 'person' },
+        { label: 'My Crops', path: '/crop-management', icon: 'yard' },
+        { label: 'Orders', path: '/order-management', icon: 'receipt_long' },
+        { label: 'Browse Crops', path: '/browse-crops', icon: 'shopping_basket' }
       ];
     }
     if (role === 'consumer') {
       return [
-        { label: 'Dashboard', path: '/consumer-dashboard', icon: '📊' },
-        { label: 'Browse Crops', path: '/browse-crops', icon: '🧺' },
-        { label: 'Find Farmers', path: '/farmers', icon: '📍' }
+        { label: 'Dashboard', path: '/consumer-dashboard', icon: 'dashboard' },
+        { label: 'Profile', path: '/consumer-profile', icon: 'person' },
+        { label: 'Browse Crops', path: '/browse-crops', icon: 'shopping_basket' },
+        { label: 'Find Farmers', path: '/farmers', icon: 'location_on' }
       ];
     }
     // Public default menu
     return [
-      { label: 'Browse Crops', path: '/browse-crops', icon: '🧺' },
-      { label: 'Find Farmers', path: '/farmers', icon: '📍' },
-      { label: 'Login', path: '/login', icon: '🔐' },
-      { label: 'Sign Up', path: '/signup', icon: '✍️' }
+      { label: 'Browse Crops', path: '/browse-crops', icon: 'shopping_basket' },
+      { label: 'Find Farmers', path: '/farmers', icon: 'location_on' },
+      { label: 'Login', path: '/login', icon: 'login' },
+      { label: 'Sign Up', path: '/signup', icon: 'how_to_reg' }
     ];
   }
 

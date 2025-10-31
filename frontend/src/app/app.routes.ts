@@ -40,6 +40,12 @@ export const routes: Routes = [
         canActivate: [AuthGuard, RoleGuard],
         data: { roles: ['consumer'] }
       },
+      {
+        path: 'consumer-profile',
+        loadComponent: () => import('./components/consumer-profile/consumer-profile.component').then(m => m.ConsumerProfileComponent),
+        canActivate: [AuthGuard, RoleGuard],
+        data: { roles: ['consumer'] }
+      },
       { 
         path: 'admin-dashboard', 
         loadComponent: () => import('./components/dashboard/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
@@ -62,6 +68,10 @@ export const routes: Routes = [
       {
         path: 'crop-detail/:id',
         loadComponent: () => import('./components/crop-detail/crop-detail.component').then(m => m.CropDetailComponent)
+      },
+      {
+        path: 'farmer-detail/:id',
+        loadComponent: () => import('./components/farmer-detail/farmer-detail.component').then(m => m.FarmerDetailComponent)
       }
     ]
   },

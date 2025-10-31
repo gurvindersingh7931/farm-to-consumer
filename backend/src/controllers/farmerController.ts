@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Op, Sequelize } from 'sequelize';
+import FarmerRating from '../models/FarmerRating';
 import Farmer from '../models/Farmer';
 import User from '../models/User';
 import multer from 'multer';
@@ -363,7 +364,8 @@ export const getFarmerById = async (req: Request, res: Response): Promise<void> 
   try {
     const { id } = req.params;
 
-    const farmer = await Farmer.findByPk(id, {
+    // Try to find by Farmer ID first
+    let farmer = await Farmer.findByPk(id, {
       include: [{
         model: User,
         as: 'user',
@@ -371,14 +373,39 @@ export const getFarmerById = async (req: Request, res: Response): Promise<void> 
       }]
     });
 
+    // If not found, try to find by User ID
+    if (!farmer) {
+      farmer = await Farmer.findOne({
+        where: { userId: parseInt(id) },
+        include: [{
+          model: User,
+          as: 'user',
+          attributes: { exclude: ['password'] }
+        }]
+      });
+    }
+
     if (!farmer) {
       res.status(404).json({ message: 'Farmer not found' });
       return;
     }
 
+    // Aggregate rating
+    const ratingAgg = await FarmerRating.findAll({
+      where: { farmerId: (farmer as any).userId },
+      attributes: [
+        [Sequelize.fn('AVG', Sequelize.col('rating')), 'avg'],
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+      ],
+      raw: true
+    });
+    const [row] = (ratingAgg as unknown as Array<{ avg: number | string | null; count: number | string | null }>);
+    const avg = row && row.avg != null ? parseFloat(String(row.avg)) : 0;
+    const count = row && row.count != null ? parseInt(String(row.count)) : 0;
+
     res.json({
       message: 'Farmer retrieved successfully',
-      farmer
+      farmer: { ...(farmer as any).toJSON(), rating: avg, totalRatings: count }
     });
   } catch (error) {
     console.error('Get farmer by ID error:', error);
@@ -771,6 +798,82 @@ export const browseFarmers = async (req: Request, res: Response): Promise<void> 
   } catch (error) {
     console.error('Error browsing farmers:', error);
     const errMsg = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ message: 'Internal server error', error: errMsg });
+  }
+};
+
+// Get user's rating for a farmer
+export const getUserRating = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const farmerUserId = parseInt(req.params.id);
+    const raterUserId = req.user?.id;
+
+    if (!raterUserId) {
+      res.status(401).json({ message: 'Authentication required' });
+      return;
+    }
+
+    const rating = await FarmerRating.findOne({
+      where: { farmerId: farmerUserId, userId: raterUserId }
+    });
+
+    res.json({ rating: rating?.rating || null });
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Get user rating error:', error);
+    res.status(500).json({ message: 'Internal server error', error: errMsg });
+  }
+};
+
+// Rate a farmer (by userId of the farmer)
+export const rateFarmer = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    console.log('Rate farmer endpoint hit', { user: req.user, params: req.params, body: req.body });
+    const farmerUserId = parseInt(req.params.id);
+    const raterUserId = req.user?.id;
+
+    if (!raterUserId) {
+      console.log('No user found in request');
+      res.status(401).json({ message: 'Authentication required' });
+      return;
+    }
+
+    const { rating } = req.body || {};
+    const parsed = Number(rating);
+    if (!parsed || parsed < 1 || parsed > 5) {
+      res.status(400).json({ message: 'Rating must be between 1 and 5' });
+      return;
+    }
+    if (raterUserId === farmerUserId) {
+      res.status(400).json({ message: 'You cannot rate yourself' });
+      return;
+    }
+
+    // Upsert: unique (farmerId, userId)
+    const existing = await FarmerRating.findOne({ where: { farmerId: farmerUserId, userId: raterUserId } });
+    if (existing) {
+      await existing.update({ rating: parsed });
+    } else {
+      await FarmerRating.create({ farmerId: farmerUserId, userId: raterUserId, rating: parsed } as any);
+    }
+
+    // Recompute average and count
+    const agg = await FarmerRating.findAll({
+      where: { farmerId: farmerUserId },
+      attributes: [
+        [Sequelize.fn('AVG', Sequelize.col('rating')), 'avg'],
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+      ],
+      raw: true
+    });
+    const [aggRow] = (agg as unknown as Array<{ avg: number | string | null; count: number | string | null }>);
+    const avg = aggRow && aggRow.avg != null ? parseFloat(String(aggRow.avg)) : 0;
+    const count = aggRow && aggRow.count != null ? parseInt(String(aggRow.count)) : 0;
+
+    res.json({ message: 'Rating saved', rating: avg, totalRatings: count });
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Rate farmer error:', error);
     res.status(500).json({ message: 'Internal server error', error: errMsg });
   }
 };

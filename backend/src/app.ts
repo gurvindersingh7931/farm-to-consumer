@@ -11,6 +11,7 @@ import slowDown from 'express-slow-down';
 import hpp from 'hpp';
 import compression from 'compression';
 import routes from './routes';
+import { registerSwagger } from './config/swagger';
 
 // Load environment variables
 dotenv.config();
@@ -179,6 +180,9 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api', routes);
+
+// API Docs
+registerSwagger(app);
 
 // Security headers middleware for all responses
 app.use((req, res, next) => {

@@ -61,4 +61,14 @@ backend/public/uploads/
 backend/ssl/*
 !backend/ssl/README.md
 
+# Swagger/OpenAPI generated artifacts (keep source in src/config)
+backend/swagger.json
+backend/swagger.yaml
+backend/openapi.json
+backend/openapi.yaml
+backend/api-docs/
+backend/docs/
+backend/public/api-docs/
+backend/src/config/swagger.generated.*
+
 

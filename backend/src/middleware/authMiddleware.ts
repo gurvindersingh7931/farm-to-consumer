@@ -16,7 +16,14 @@ export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, 
   }
 
   try {
-    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-for-development';
+    // Validate JWT_SECRET is configured - CRITICAL: Never use fallback secrets in production
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET not configured - authentication disabled for security');
+      res.status(500).json({ message: 'Server configuration error: JWT secret not configured' });
+      return;
+    }
+    
     const decoded = jwt.verify(token, jwtSecret) as any;
     const user = await User.findByPk(decoded.userId);
     

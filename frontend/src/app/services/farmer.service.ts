@@ -23,6 +23,8 @@ export interface FarmerProfile {
   isVerified?: boolean;
   hasVerifiedBadge?: boolean;
   isBoosted?: boolean;
+  rating?: number;
+  totalRatings?: number;
   createdAt?: string;
   updatedAt?: string;
   user?: any;

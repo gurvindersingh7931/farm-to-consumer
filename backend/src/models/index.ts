@@ -4,6 +4,7 @@ import Crop from './Crop';
 import Subscription from './Subscription';
 import Order from './Order';
 import Feedback from './Feedback';
+import FarmerRating from './FarmerRating';
 
 // Define associations
 User.hasOne(Farmer, { foreignKey: 'userId', as: 'farmerProfile' });
@@ -28,4 +29,8 @@ Order.belongsTo(Crop, { foreignKey: 'cropId', as: 'crop' });
 User.hasMany(Feedback, { foreignKey: 'userId', as: 'feedbacks' });
 Feedback.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-export { User, Farmer, Crop, Subscription, Order, Feedback };
+// Farmer ratings (register model; associations optional for now)
+// A farmer is a User with role 'farmer'; ratings reference farmer's userId
+// We don't define Sequelize associations here to avoid confusion; queries use where clauses
+
+export { User, Farmer, Crop, Subscription, Order, Feedback, FarmerRating };

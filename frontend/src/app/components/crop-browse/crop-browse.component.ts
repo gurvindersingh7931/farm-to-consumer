@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { CropBrowseService, CropListing, CropFilters, CropSortOptions, CropCategory } from '../../services/crop-browse.service';
@@ -11,7 +12,7 @@ import { MapsService } from '../../services/maps.service';
 @Component({
   selector: 'app-crop-browse',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, MatIconModule],
   templateUrl: './crop-browse.component.html',
   styleUrls: ['./crop-browse.component.scss']
 })

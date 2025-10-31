@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Crop, User, Farmer } from '../models';
+import FarmerRating from '../models/FarmerRating';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
@@ -755,11 +756,29 @@ export const getCropById = async (req: Request, res: Response): Promise<void> =>
     const averageRating = 4.5; // This would come from a ratings table
     const totalRatings = 23; // This would come from a ratings table
 
+    // Attach farmer rating aggregate
+    const ratingAgg = await FarmerRating.findAll({
+      where: { farmerId: (crop as any).farmer?.id },
+      attributes: [
+        [Sequelize.fn('AVG', Sequelize.col('rating')), 'avg'],
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+      ],
+      raw: true
+    });
+    const [row] = (ratingAgg as unknown as Array<{ avg: number | string | null; count: number | string | null }>);
+    const farmerAvg = row && row.avg != null ? parseFloat(String(row.avg)) : 0;
+    const farmerCount = row && row.count != null ? parseInt(String(row.count)) : 0;
+
     const cropData = {
       ...crop.toJSON(),
       averageRating,
-      totalRatings
-    };
+      totalRatings,
+      farmer: {
+        ...(crop as any).farmer?.toJSON?.() ?? (crop as any).farmer,
+        rating: farmerAvg,
+        totalRatings: farmerCount
+      }
+    } as any;
 
     res.status(200).json({
       message: 'Crop details retrieved successfully',

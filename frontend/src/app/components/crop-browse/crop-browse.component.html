@@ -238,11 +238,13 @@
 
           <div class="space-y-2 mb-4">
             <div class="text-sm font-medium text-gray-900">{{ getFarmerName(crop.farmer) }}</div>
-            <div class="text-sm text-gray-600" *ngIf="getFarmerLocation(crop.farmer)">
-              📍 {{ getFarmerLocation(crop.farmer) }}
+            <div class="text-sm text-gray-600 flex items-center gap-1" *ngIf="getFarmerLocation(crop.farmer)">
+              <mat-icon fontIcon="place" class="!text-base"></mat-icon>
+              {{ getFarmerLocation(crop.farmer) }}
             </div>
-            <div class="text-sm text-blue-600" *ngIf="isLocationEnabled && calculateDistance(crop) !== null">
-              📍 {{ formatDistanceNative(calculateDistance(crop)!) }} away
+            <div class="text-sm text-blue-600 flex items-center gap-1" *ngIf="isLocationEnabled && calculateDistance(crop) !== null">
+              <mat-icon fontIcon="place" class="!text-base"></mat-icon>
+              {{ formatDistanceNative(calculateDistance(crop)!) }} away
             </div>
           </div>
 
@@ -264,8 +266,11 @@
           </div>
 
           <div class="flex gap-2">
-            <button class="btn btn-primary flex-1">View Details</button>
-            <button class="btn btn-secondary flex-1">Contact</button>
+            <a class="btn btn-primary flex-1" [routerLink]="['/crop-detail', crop.id]">View Details</a>
+            <a 
+              *ngIf="crop.farmer?.id"
+              class="btn btn-secondary flex-1" 
+              [routerLink]="['/farmer-detail', crop.farmer?.id]">Contact</a>
           </div>
         </div>
       </div>

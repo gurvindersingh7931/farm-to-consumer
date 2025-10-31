@@ -25,7 +25,7 @@ router.get('/farmer/:farmerId', getFarmerCropsPublic);
 // Farmer routes (requires authentication and farmer role)
 router.post('/', authenticateJWT, authorizeRoles('farmer'), createCrop);
 router.get('/', authenticateJWT, authorizeRoles('farmer'), getFarmerCrops);
-router.get('/:id', authenticateJWT, authorizeRoles('farmer'), getCropById);
+router.get('/:id', getCropById);
 router.put('/:id', authenticateJWT, authorizeRoles('farmer'), updateCrop);
 router.patch('/:id/toggle-availability', authenticateJWT, authorizeRoles('farmer'), toggleCropAvailability);
 router.delete('/:id', authenticateJWT, authorizeRoles('farmer'), deleteCrop);
