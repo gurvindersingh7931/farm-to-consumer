@@ -1,0 +1,289 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <h1 class="text-2xl font-bold text-gray-900">🚜 Farmer Profile</h1>
+        <div class="flex items-center gap-4">
+          <button 
+            *ngIf="!isEditMode" 
+            class="btn btn-primary" 
+            (click)="toggleEditMode()"
+            [disabled]="isLoading">
+            Edit Profile
+          </button>
+          <button 
+            *ngIf="isEditMode" 
+            class="btn btn-secondary" 
+            (click)="toggleEditMode()"
+            [disabled]="isLoading">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-8">
+    <!-- Loading State -->
+    <div class="text-center py-12" *ngIf="isLoading">
+      <div class="spinner mx-auto mb-4"></div>
+      <p class="text-gray-600">Loading profile...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="alert alert-danger" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Success Message -->
+    <div class="alert alert-success" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+    <!-- Profile Form -->
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" *ngIf="isEditMode" class="space-y-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Profile Photo Section -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900">Profile Photo</h3>
+          </div>
+          <div class="card-body text-center">
+            <div class="mb-6">
+              <img 
+                [src]="profilePhotoPreview || '/assets/images/default-farmer-avatar.png'" 
+                alt="Profile Photo"
+                class="w-32 h-32 rounded-full object-cover mx-auto border-4 border-gray-200">
+            </div>
+            <input 
+              type="file" 
+              id="profilePhoto" 
+              accept="image/*" 
+              (change)="onFileSelected($event)"
+              class="hidden">
+            <label for="profilePhoto" class="btn btn-secondary cursor-pointer">
+              Choose Photo
+            </label>
+          </div>
+        </div>
+
+        <!-- Basic Information -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900">Basic Information</h3>
+          </div>
+          <div class="card-body space-y-6">
+            <div class="form-group">
+              <label for="farmName" class="form-label">Farm Name *</label>
+              <input 
+                type="text" 
+                id="farmName" 
+                formControlName="farmName"
+                class="form-input"
+                [class.border-red-300]="farmName?.invalid && farmName?.touched">
+              <div class="form-error" *ngIf="farmName?.invalid && farmName?.touched">
+                <span *ngIf="farmName?.errors?.['required']">Farm name is required</span>
+                <span *ngIf="farmName?.errors?.['minlength']">Farm name must be at least 2 characters</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="phone" class="form-label">Phone Number</label>
+              <input 
+                type="tel" 
+                id="phone" 
+                formControlName="phone"
+                class="form-input"
+                placeholder="(123) 456-7890"
+                [class.border-red-300]="phone?.invalid && phone?.touched">
+              <div class="form-error" *ngIf="phone?.invalid && phone?.touched">
+                <span *ngIf="phone?.errors?.['pattern']">Please enter a valid phone number</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="website" class="form-label">Website</label>
+              <input 
+                type="url" 
+                id="website" 
+                formControlName="website"
+                class="form-input"
+                placeholder="https://yourfarm.com"
+                [class.border-red-300]="website?.invalid && website?.touched">
+              <div class="form-error" *ngIf="website?.invalid && website?.touched">
+                <span *ngIf="website?.errors?.['invalidWebsite']">Please enter a valid website URL</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="farmDescription" class="form-label">Farm Description</label>
+              <textarea 
+                id="farmDescription" 
+                formControlName="farmDescription"
+                class="form-textarea"
+                rows="4"
+                placeholder="Tell us about your farm..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location Information -->
+        <div class="card lg:col-span-2">
+          <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900">Farm Location</h3>
+          </div>
+          <div class="card-body space-y-6">
+            <div class="form-group">
+              <label for="search-box" class="form-label">Search Location</label>
+              <input 
+                type="text" 
+                id="search-box" 
+                class="form-input"
+                placeholder="Search for your farm location...">
+            </div>
+
+            <div class="map-container h-64 rounded-xl overflow-hidden border border-gray-200" *ngIf="isMapLoaded">
+              <div #mapContainer class="map h-full"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="address" class="form-label">Address</label>
+              <input 
+                type="text" 
+                id="address" 
+                formControlName="address"
+                class="form-input"
+                placeholder="Enter farm address">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="form-group">
+                <label for="city" class="form-label">City</label>
+                <input 
+                  type="text" 
+                  id="city" 
+                  formControlName="city"
+                  class="form-input"
+                  placeholder="City">
+              </div>
+
+              <div class="form-group">
+                <label for="state" class="form-label">State</label>
+                <input 
+                  type="text" 
+                  id="state" 
+                  formControlName="state"
+                  class="form-input"
+                  placeholder="State/Province">
+              </div>
+
+              <div class="form-group">
+                <label for="zipCode" class="form-label">ZIP Code</label>
+                <input 
+                  type="text" 
+                  id="zipCode" 
+                  formControlName="zipCode"
+                  class="form-input"
+                  placeholder="Postal/ZIP code">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="country" class="form-label">Country</label>
+              <input 
+                type="text" 
+                id="country" 
+                formControlName="country"
+                class="form-input"
+                placeholder="Country">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end gap-4">
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="profileForm.invalid || isLoading">
+          <span *ngIf="isLoading" class="spinner mr-2"></span>
+          {{ farmerProfile ? 'Update Profile' : 'Create Profile' }}
+        </button>
+        
+        <button 
+          *ngIf="farmerProfile" 
+          type="button" 
+          class="btn btn-danger"
+          (click)="deleteProfile()"
+          [disabled]="isLoading">
+          Delete Profile
+        </button>
+      </div>
+    </form>
+
+    <!-- Profile Display -->
+    <div *ngIf="!isEditMode && farmerProfile" class="max-w-4xl mx-auto">
+      <div class="card">
+        <div class="card-body">
+          <div class="flex flex-col md:flex-row gap-8">
+            <div class="text-center md:text-left">
+              <img 
+                [src]="farmerService.getProfilePhotoUrl(farmerProfile.profilePhoto)" 
+                alt="Profile Photo"
+                class="w-32 h-32 rounded-full object-cover mx-auto md:mx-0 border-4 border-gray-200 mb-4">
+              <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ farmerProfile.farmName }}</h2>
+              <p class="text-gray-600 mb-4">{{ farmerProfile.farmLocation }}</p>
+              <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+                <span 
+                  *ngFor="let badge of farmerService.getPremiumBadges(farmerProfile)" 
+                  class="crop-badge"
+                  [ngClass]="farmerService.getPremiumBadgeClass(badge)">
+                  {{ badge }}
+                </span>
+              </div>
+            </div>
+
+            <div class="flex-1 space-y-6">
+              <div *ngIf="farmerProfile.farmDescription">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">About</h3>
+                <p class="text-gray-600">{{ farmerProfile.farmDescription }}</p>
+              </div>
+
+              <div *ngIf="farmerProfile.phone || farmerProfile.website">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Contact Information</h3>
+                <div class="space-y-2">
+                  <p *ngIf="farmerProfile.phone" class="text-gray-600">
+                    <strong>Phone:</strong> {{ farmerProfile.phone }}
+                  </p>
+                  <p *ngIf="farmerProfile.website" class="text-gray-600">
+                    <strong>Website:</strong> 
+                    <a [href]="farmerProfile.website" target="_blank" class="text-blue-600 hover:text-blue-700">{{ farmerProfile.website }}</a>
+                  </p>
+                </div>
+              </div>
+
+              <div *ngIf="farmerProfile.address">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Address</h3>
+                <address class="text-gray-600 not-italic">
+                  {{ farmerProfile.address }}<br>
+                  {{ farmerProfile.city }}, {{ farmerProfile.state }} {{ farmerProfile.zipCode }}<br>
+                  {{ farmerProfile.country }}
+                </address>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Profile Message -->
+    <div *ngIf="!isEditMode && !farmerProfile" class="text-center py-12">
+      <div class="text-6xl mb-4">🚜</div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">No Profile Found</h2>
+      <p class="text-gray-600 mb-6 max-w-md mx-auto">You haven't created a farmer profile yet. Create one to showcase your farm and connect with consumers.</p>
+      <button class="btn btn-primary" (click)="toggleEditMode()">Create Profile</button>
+    </div>
+  </main>
+</div>

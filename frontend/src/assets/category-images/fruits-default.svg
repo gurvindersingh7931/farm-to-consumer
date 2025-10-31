@@ -1,0 +1,26 @@
+<svg width="200" height="150" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fruits-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff3e0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffe0b2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="150" fill="url(#fruits-gradient)" stroke="#ff9800" stroke-width="2"/>
+  
+  <!-- Fruit Icons -->
+  <circle cx="60" cy="60" r="22" fill="#ff9800" opacity="0.3"/>
+  <text x="60" y="68" text-anchor="middle" font-size="26" fill="#f57c00">🍎</text>
+  
+  <circle cx="140" cy="60" r="20" fill="#ff9800" opacity="0.2"/>
+  <text x="140" y="68" text-anchor="middle" font-size="22" fill="#f57c00">🍊</text>
+  
+  <circle cx="100" cy="105" r="18" fill="#ff9800" opacity="0.25"/>
+  <text x="100" y="113" text-anchor="middle" font-size="20" fill="#f57c00">🍌</text>
+  
+  <!-- Text -->
+  <text x="100" y="135" text-anchor="middle" font-family="Inclusive Sans, Arial, sans-serif" font-size="16" fill="#f57c00" font-weight="600">
+    Juicy Fruits
+  </text>
+</svg>

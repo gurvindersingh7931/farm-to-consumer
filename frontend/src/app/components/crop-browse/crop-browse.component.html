@@ -1,0 +1,310 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <h1 class="text-2xl font-bold text-gray-900">🌾 Browse Fresh Crops</h1>
+        <div></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-8">
+    <!-- Search and Controls -->
+    <div class="card mb-8">
+      <div class="card-body">
+        <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+          <!-- Search Bar -->
+          <div class="flex-1 max-w-md">
+            <div class="relative">
+              <input
+                type="text"
+                [(ngModel)]="searchTerm"
+                (input)="onSearchChange()"
+                placeholder="Search for crops..."
+                class="form-input pl-10">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-400">🔍</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Controls -->
+          <div class="flex items-center gap-3">
+            <button
+              class="btn btn-secondary"
+              [class.bg-blue-50]="showFilters"
+              [class.text-blue-600]="showFilters"
+              (click)="toggleFilters()">
+              Filters
+            </button>
+            <button
+              class="btn btn-secondary"
+              [class.bg-blue-50]="showSortOptions"
+              [class.text-blue-600]="showSortOptions"
+              (click)="toggleSortOptions()">
+              Sort: {{ getSortDisplayName(selectedSort) }}
+            </button>
+            <div class="flex border border-gray-300 rounded-xl overflow-hidden">
+              <button
+                class="px-3 py-2 text-sm font-medium transition-colors"
+                [class.bg-blue-600]="viewMode === 'grid'"
+                [class.text-white]="viewMode === 'grid'"
+                [class.bg-white]="viewMode !== 'grid'"
+                [class.text-gray-700]="viewMode !== 'grid'"
+                (click)="viewMode = 'grid'">
+                ⊞
+              </button>
+              <button
+                class="px-3 py-2 text-sm font-medium transition-colors"
+                [class.bg-blue-600]="viewMode === 'list'"
+                [class.text-white]="viewMode === 'list'"
+                [class.bg-white]="viewMode !== 'list'"
+                [class.text-gray-700]="viewMode !== 'list'"
+                (click)="viewMode = 'list'">
+                ☰
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="card mb-8" *ngIf="showFilters">
+      <div class="card-body">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select [(ngModel)]="filters.category" (change)="onFilterChange()" class="form-select">
+              <option value="">All Categories</option>
+              <option *ngFor="let category of categories" [value]="category.name">
+                {{ category.name }} ({{ category.count }})
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Price Range: ₹{{ minPrice }} - ₹{{ maxPrice }}</label>
+            <div class="space-y-2">
+              <input
+                type="range"
+                [(ngModel)]="minPrice"
+                [min]="priceRange.min"
+                [max]="priceRange.max"
+                (input)="onPriceRangeChange()"
+                class="w-full">
+              <input
+                type="range"
+                [(ngModel)]="maxPrice"
+                [min]="priceRange.min"
+                [max]="priceRange.max"
+                (input)="onPriceRangeChange()"
+                class="w-full">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="flex items-center">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="isLocationEnabled"
+                (change)="toggleLocationFilter()"
+                class="mr-2">
+              Filter by Distance
+            </label>
+            
+            <div class="mt-2" *ngIf="isLocationEnabled">
+              <select 
+                [(ngModel)]="selectedRadius"
+                (change)="onRadiusChange()"
+                class="form-select">
+                <option *ngFor="let radius of radiusOptions" [value]="radius">
+                  Within {{ radius }}km
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Min Rating: {{ minRating }}+ ⭐</label>
+            <input
+              type="range"
+              [(ngModel)]="minRating"
+              min="0"
+              max="5"
+              step="0.5"
+              (input)="onRatingChange()"
+              class="w-full">
+          </div>
+
+          <div class="form-group">
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                [(ngModel)]="filters.isOrganic"
+                (change)="onFilterChange()"
+                class="mr-2">
+              Organic Only
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                [(ngModel)]="filters.farmerPremium"
+                (change)="onFilterChange()"
+                class="mr-2">
+              Premium Farmers Only
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="flex items-center">
+              <input
+                type="checkbox"
+                [(ngModel)]="filters.isAvailable"
+                (change)="onFilterChange()"
+                class="mr-2">
+              Available Only
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button class="btn btn-secondary" (click)="clearFilters()">
+            Clear All Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sort Options Panel -->
+    <div class="card mb-8" *ngIf="showSortOptions">
+      <div class="card-body">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <button
+            *ngFor="let sort of sortOptions"
+            class="btn btn-secondary text-sm"
+            [class.bg-blue-600]="selectedSort.field === sort.field && selectedSort.direction === sort.direction"
+            [class.text-white]="selectedSort.field === sort.field && selectedSort.direction === sort.direction"
+            (click)="selectedSort = sort; onSortChange(); showSortOptions = false">
+            {{ getSortDisplayName(sort) }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="flex items-center justify-between mb-6">
+      <p class="text-gray-600">{{ totalCrops }} crops found</p>
+      <p class="text-gray-600" *ngIf="totalPages > 1">Page {{ currentPage }} of {{ totalPages }}</p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="text-center py-12" *ngIf="isLoading">
+      <div class="spinner mx-auto mb-4"></div>
+      <p class="text-gray-600">Loading crops...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="alert alert-danger" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Crops Grid/List -->
+    <div class="grid-crops" *ngIf="!isLoading && crops.length > 0">
+      <div *ngFor="let crop of crops" class="crop-card">
+        <div class="crop-image">
+          <img [src]="getCropImageUrl(crop)" [alt]="crop.name" class="crop-img"
+               (error)="onImageError($event, cropService.getFallbackImage(crop.category))">
+          <div class="absolute top-4 left-4 flex flex-col gap-2">
+            <span *ngIf="crop.isOrganic" class="crop-badge organic">Organic</span>
+            <span [ngClass]="'crop-badge ' + getFreshnessBadge(crop.harvestDate).class">
+              {{ getFreshnessBadge(crop.harvestDate).text }}
+            </span>
+          </div>
+        </div>
+
+        <div class="crop-content">
+          <h3 class="crop-title">{{ crop.name }}</h3>
+          <p class="text-gray-600 text-sm mb-4" *ngIf="crop.description">{{ crop.description }}</p>
+          
+          <div class="flex items-center justify-between mb-4">
+            <div class="crop-price">{{ formatPrice(crop.pricePerKg) }}</div>
+            <div class="crop-quantity">{{ crop.availableQuantity }} {{ crop.unit }} available</div>
+          </div>
+
+          <div class="space-y-2 mb-4">
+            <div class="text-sm font-medium text-gray-900">{{ getFarmerName(crop.farmer) }}</div>
+            <div class="text-sm text-gray-600" *ngIf="getFarmerLocation(crop.farmer)">
+              📍 {{ getFarmerLocation(crop.farmer) }}
+            </div>
+            <div class="text-sm text-blue-600" *ngIf="isLocationEnabled && calculateDistance(crop) !== null">
+              📍 {{ formatDistanceNative(calculateDistance(crop)!) }} away
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-4" *ngIf="getPremiumBadges(crop.farmer).length > 0">
+            <span
+              *ngFor="let badge of getPremiumBadges(crop.farmer)"
+              [ngClass]="'crop-badge ' + getBadgeClass(badge)">
+              {{ badge }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between mb-4" *ngIf="crop.farmer?.rating">
+            <div class="flex items-center text-yellow-500">
+              <span *ngFor="let star of [].constructor(getRatingStars(crop.farmer?.rating).full)" class="text-sm">⭐</span>
+              <span *ngIf="getRatingStars(crop.farmer?.rating).half" class="text-sm">⭐</span>
+              <span *ngFor="let star of [].constructor(getRatingStars(crop.farmer?.rating).empty)" class="text-gray-300 text-sm">⭐</span>
+            </div>
+            <span class="text-sm text-gray-600">{{ crop.farmer?.rating?.toFixed(1) }}</span>
+          </div>
+
+          <div class="flex gap-2">
+            <button class="btn btn-primary flex-1">View Details</button>
+            <button class="btn btn-secondary flex-1">Contact</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div class="text-center py-12" *ngIf="!isLoading && crops.length === 0">
+      <div class="text-6xl mb-4">🌾</div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">No crops found</h3>
+      <p class="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
+      <button class="btn btn-primary" (click)="clearFilters()">Clear Filters</button>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-center gap-2 mt-8" *ngIf="totalPages > 1">
+      <button
+        class="btn btn-secondary"
+        [disabled]="currentPage === 1"
+        (click)="onPageChange(currentPage - 1)">
+        Previous
+      </button>
+      
+      <span
+        *ngFor="let page of getPageNumbers()"
+        class="px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors"
+        [class.bg-blue-600]="page === currentPage"
+        [class.text-white]="page === currentPage"
+        [class.text-gray-700]="page !== currentPage"
+        [class.hover:bg-gray-100]="page !== currentPage"
+        (click)="onPageChange(page)">
+        {{ page }}
+      </span>
+      
+      <button
+        class="btn btn-secondary"
+        [disabled]="currentPage === totalPages"
+        (click)="onPageChange(currentPage + 1)">
+        Next
+      </button>
+    </div>
+  </main>
+</div>

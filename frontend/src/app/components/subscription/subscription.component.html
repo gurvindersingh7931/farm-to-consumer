@@ -1,0 +1,178 @@
+<div class="subscription-container">
+  <header class="subscription-header">
+    <div class="header-content">
+      <h1>🚀 Premium Subscription</h1>
+      <p>Unlock unlimited features and grow your farm business</p>
+      <button class="back-to-dashboard-btn" routerLink="/farmer-dashboard">Back to Dashboard</button>
+    </div>
+  </header>
+
+  <main class="subscription-main">
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-message" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+    <!-- Current Subscription Status -->
+    <div class="current-status" *ngIf="subscriptionStatus">
+      <div class="status-card" [ngClass]="isPremiumActive() ? 'premium-active' : 'premium-inactive'">
+        <div class="status-icon">
+          {{ isPremiumActive() ? '👑' : '📋' }}
+        </div>
+        <div class="status-info">
+          <h3>{{ isPremiumActive() ? 'Premium Active' : 'Free Plan' }}</h3>
+          <p *ngIf="isPremiumActive()">
+            Expires on {{ formatDate(subscriptionStatus.premiumExpiresAt!) }}
+            ({{ getDaysRemaining() }} days remaining)
+          </p>
+          <p *ngIf="!isPremiumActive()">
+            Upgrade to premium for unlimited features
+          </p>
+        </div>
+        <div class="status-actions" *ngIf="isPremiumActive()">
+          <button class="cancel-btn" (click)="cancelSubscription()">Cancel Subscription</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Loading subscription plans...</p>
+    </div>
+
+    <!-- Subscription Plans -->
+    <div class="plans-section" *ngIf="!isLoading && plans.length > 0">
+      <h2>Choose Your Plan</h2>
+      <div class="plans-grid">
+        <div class="plan-card" 
+             *ngFor="let plan of plans" 
+             [ngClass]="{ 'selected': isPlanSelected(plan.id as 'monthly' | 'yearly'), 'popular': plan.id === 'yearly' }"
+             (click)="selectPlan(plan.id as 'monthly' | 'yearly')">
+          
+          <div class="plan-header">
+            <div class="plan-badge" *ngIf="plan.id === 'yearly'">Most Popular</div>
+            <h3>{{ plan.name }}</h3>
+            <div class="plan-price">
+              <span class="currency">₹</span>
+              <span class="amount">{{ plan.amount }}</span>
+              <span class="period">/{{ plan.id === 'monthly' ? 'month' : 'year' }}</span>
+            </div>
+            <div class="plan-savings" *ngIf="plan.id === 'yearly'">
+              Save ₹{{ getYearlySavings() }} compared to monthly
+            </div>
+          </div>
+
+          <div class="plan-features">
+            <h4>What's included:</h4>
+            <ul>
+              <li *ngFor="let feature of getPlanFeatures()">
+                <span class="feature-icon">✅</span>
+                {{ feature }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="plan-action">
+            <button class="select-plan-btn" 
+                    [disabled]="isProcessingPayment || isPremiumActive()"
+                    (click)="selectPlan(plan.id as 'monthly' | 'yearly')">
+              {{ isPremiumActive() ? 'Current Plan' : 'Select Plan' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Purchase Button -->
+    <div class="purchase-section" *ngIf="selectedPlan && !isPremiumActive()">
+      <div class="purchase-summary">
+        <h3>Order Summary</h3>
+        <div class="summary-item">
+          <span>Plan:</span>
+          <span>{{ getPlanDisplayName(selectedPlan) }}</span>
+        </div>
+        <div class="summary-item">
+          <span>Amount:</span>
+          <span>{{ formatCurrency(plans.find(p => p.id === selectedPlan)?.amount || 0) }}</span>
+        </div>
+        <div class="summary-total">
+          <span>Total:</span>
+          <span>{{ formatCurrency(plans.find(p => p.id === selectedPlan)?.amount || 0) }}</span>
+        </div>
+      </div>
+
+      <button class="purchase-btn" 
+              [disabled]="isProcessingPayment"
+              (click)="purchaseSubscription()">
+        <span *ngIf="isProcessingPayment" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        {{ isProcessingPayment ? 'Processing...' : 'Purchase Premium' }}
+      </button>
+    </div>
+
+    <!-- Subscription History -->
+    <div class="subscription-history" *ngIf="subscriptionStatus?.subscriptions && subscriptionStatus.subscriptions.length > 0">
+      <h3>Subscription History</h3>
+      <div class="history-list">
+        <div class="history-item" *ngFor="let subscription of subscriptionStatus.subscriptions">
+          <div class="history-info">
+            <h4>{{ getPlanDisplayName(subscription.planType) }}</h4>
+            <p>{{ formatCurrency(subscription.amount) }} • {{ formatDate(subscription.createdAt) }}</p>
+          </div>
+          <div class="history-status">
+            <span class="status-badge" [ngClass]="'status-' + subscription.status">
+              {{ subscription.status | titlecase }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features Comparison -->
+    <div class="features-comparison">
+      <h3>Free vs Premium Features</h3>
+      <div class="comparison-table">
+        <div class="comparison-header">
+          <div class="feature-column">Feature</div>
+          <div class="free-column">Free</div>
+          <div class="premium-column">Premium</div>
+        </div>
+        <div class="comparison-row">
+          <div class="feature-column">Crop Listings</div>
+          <div class="free-column">3 active</div>
+          <div class="premium-column">Unlimited</div>
+        </div>
+        <div class="comparison-row">
+          <div class="feature-column">Customer Support</div>
+          <div class="free-column">Basic</div>
+          <div class="premium-column">Priority</div>
+        </div>
+        <div class="comparison-row">
+          <div class="feature-column">Analytics</div>
+          <div class="free-column">Basic</div>
+          <div class="premium-column">Advanced</div>
+        </div>
+        <div class="comparison-row">
+          <div class="feature-column">Listing Placement</div>
+          <div class="free-column">Standard</div>
+          <div class="premium-column">Featured</div>
+        </div>
+        <div class="comparison-row">
+          <div class="feature-column">Messaging</div>
+          <div class="free-column">Limited</div>
+          <div class="premium-column">Unlimited</div>
+        </div>
+        <div class="comparison-row">
+          <div class="feature-column">Recommendations</div>
+          <div class="free-column">Basic</div>
+          <div class="premium-column">AI-Powered</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

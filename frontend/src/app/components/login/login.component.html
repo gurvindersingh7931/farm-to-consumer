@@ -1,0 +1,68 @@
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <!-- Header -->
+    <div class="text-center">
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+      <p class="text-lg text-gray-600">Sign in to your account to continue</p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="card">
+      <div class="card-body">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-input"
+              [class.border-red-300]="email?.invalid && email?.touched"
+              placeholder="Enter your email"
+            />
+            <div class="form-error" *ngIf="email?.invalid && email?.touched">
+              <span *ngIf="email?.errors?.['required']">Email is required</span>
+              <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              id="password"
+              formControlName="password"
+              class="form-input"
+              [class.border-red-300]="password?.invalid && password?.touched"
+              placeholder="Enter your password"
+            />
+            <div class="form-error" *ngIf="password?.invalid && password?.touched">
+              <span *ngIf="password?.errors?.['required']">Password is required</span>
+              <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
+            </div>
+          </div>
+
+          <div class="alert alert-danger" *ngIf="errorMessage">
+            {{ errorMessage }}
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary w-full"
+            [disabled]="isLoading || loginForm.invalid"
+          >
+            <span *ngIf="isLoading" class="spinner mr-2"></span>
+            {{ isLoading ? 'Signing In...' : 'Sign In' }}
+          </button>
+        </form>
+
+        <div class="mt-6 text-center">
+          <p class="text-gray-600">
+            Don't have an account? 
+            <a routerLink="/signup" class="text-blue-600 hover:text-blue-700 font-medium">Sign up here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

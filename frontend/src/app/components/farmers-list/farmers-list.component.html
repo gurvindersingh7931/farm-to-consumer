@@ -1,0 +1,184 @@
+<div class="farmers-list-container">
+  <header class="list-header">
+    <div class="header-content">
+      <h1>🌾 Find Local Farmers</h1>
+      <p>Discover premium farmers in your area with verified badges and boosted visibility</p>
+    </div>
+  </header>
+
+  <main class="list-main">
+    <!-- Search and Filters -->
+    <div class="search-filters">
+      <div class="search-bar">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery"
+          placeholder="Search farmers, farms, or products..."
+          class="search-input">
+        <button (click)="onSearch()" class="search-btn">Search</button>
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <input 
+            type="text" 
+            [(ngModel)]="locationQuery"
+            placeholder="Location (city, state)"
+            class="filter-input">
+        </div>
+
+        <div class="filter-group">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="premiumFilter"
+              (change)="onFilterChange()">
+            <span class="checkmark"></span>
+            Premium Farmers Only
+          </label>
+        </div>
+
+        <div class="filter-group location-filter">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="isLocationEnabled"
+              (change)="toggleLocationFilter()">
+            <span class="checkmark"></span>
+            Filter by Distance
+          </label>
+          
+          <div class="radius-selector" *ngIf="isLocationEnabled">
+            <label for="radius-select">Within:</label>
+            <select 
+              id="radius-select"
+              [(ngModel)]="selectedRadius"
+              (change)="onRadiusChange()"
+              class="radius-select">
+              <option *ngFor="let radius of radiusOptions" [value]="radius">
+                {{ radius }}km
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <button (click)="clearFilters()" class="clear-btn">Clear Filters</button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Loading farmers...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Results Summary -->
+    <div class="results-summary" *ngIf="!isLoading && !errorMessage">
+      <p>{{ totalItems }} farmers found</p>
+      <div class="sort-info">
+        <span class="sort-badge">Premium farmers appear first</span>
+      </div>
+    </div>
+
+    <!-- Farmers Grid -->
+    <div class="farmers-grid" *ngIf="!isLoading && !errorMessage && farmers.length > 0">
+      <div 
+        *ngFor="let farmer of farmers" 
+        class="farmer-card"
+        [class.premium-card]="isPremiumFarmer(farmer)"
+        [class.boosted-card]="isBoosted(farmer)">
+        
+        <div class="card-header">
+          <img 
+            [src]="getProfilePhotoUrl(farmer.profilePhoto)" 
+            [alt]="farmer.farmName"
+            class="farmer-photo">
+          
+          <div class="farmer-badges">
+            <span 
+              *ngFor="let badge of getPremiumBadges(farmer)" 
+              class="badge"
+              [ngClass]="getPremiumBadgeClass(badge)">
+              {{ badge }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-content">
+          <h3 class="farmer-name">{{ farmer.farmName }}</h3>
+          <p class="farmer-location">{{ farmer.farmLocation }}</p>
+          
+          <div class="distance-info" *ngIf="isLocationEnabled && calculateDistance(farmer) !== null">
+            <span class="distance-badge">
+              📍 {{ formatDistance(calculateDistance(farmer)!) }} away
+            </span>
+          </div>
+          
+          <div class="farmer-description" *ngIf="farmer.farmDescription">
+            <p>{{ farmer.farmDescription | slice:0:120 }}{{ farmer.farmDescription.length > 120 ? '...' : '' }}</p>
+          </div>
+
+          <div class="farmer-contact" *ngIf="farmer.phone || farmer.website">
+            <p *ngIf="farmer.phone" class="contact-item">
+              <span class="contact-icon">📞</span>
+              {{ farmer.phone }}
+            </p>
+            <p *ngIf="farmer.website" class="contact-item">
+              <span class="contact-icon">🌐</span>
+              <a [href]="farmer.website" target="_blank" class="website-link">Visit Website</a>
+            </p>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button 
+            class="view-profile-btn"
+            [routerLink]="['/farmer', farmer.id]">
+            View Profile
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div class="no-results" *ngIf="!isLoading && !errorMessage && farmers.length === 0">
+      <div class="no-results-content">
+        <h3>No farmers found</h3>
+        <p>Try adjusting your search criteria or filters</p>
+        <button (click)="clearFilters()" class="clear-btn">Clear All Filters</button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="!isLoading && !errorMessage && totalPages > 1">
+      <button 
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="onPageChange(currentPage - 1)">
+        Previous
+      </button>
+      
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of pages.slice(Math.max(0, currentPage - 3), currentPage + 3)"
+          class="page-number"
+          [class.active]="page === currentPage"
+          (click)="onPageChange(page)">
+          {{ page }}
+        </button>
+      </div>
+      
+      <button 
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="onPageChange(currentPage + 1)">
+        Next
+      </button>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,503 @@
+/* TailwindCSS Base Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* LocalLine-inspired Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Base Styles */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-gray-900 leading-tight;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+  
+  h5 {
+    @apply text-lg md:text-xl;
+  }
+  
+  h6 {
+    @apply text-base md:text-lg;
+  }
+  
+  p {
+    @apply text-gray-600 leading-relaxed;
+  }
+}
+
+/* Component Styles */
+@layer components {
+  /* Consistent page header bar (used on inner pages, not global shell) */
+  .page-header {
+    @apply bg-white border-b border-gray-100;
+  }
+
+  .page-header-inner {
+    @apply flex items-center justify-between;
+    min-height: 64px; /* 64px consistent height */
+    padding: 0 1rem;  /* consistent horizontal padding */
+  }
+  /* Buttons - LocalLine Style */
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-success {
+    @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-warning {
+    @apply bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-yellow-400 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-sm {
+    @apply px-4 py-2 text-xs;
+  }
+  
+  .btn-lg {
+    @apply px-8 py-4 text-base;
+  }
+  
+  /* Cards - LocalLine Style */
+  .card {
+    @apply bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden transition-all duration-200 hover:shadow-soft-lg hover:-translate-y-1;
+  }
+  
+  .card-header {
+    @apply px-6 py-5 border-b border-gray-100 bg-gray-50;
+  }
+  
+  .card-body {
+    @apply px-6 py-5;
+  }
+  
+  .card-footer {
+    @apply px-6 py-4 bg-gray-50 border-t border-gray-100;
+  }
+  
+  /* Forms - LocalLine Style */
+  .form-group {
+    @apply mb-6;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+  }
+  
+  .form-input {
+    @apply w-full px-4 py-3 text-sm border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+  }
+  
+  .form-textarea {
+    @apply w-full px-4 py-3 text-sm border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none;
+  }
+  
+  .form-select {
+    @apply w-full px-4 py-3 text-sm border border-gray-300 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+  }
+  
+  .form-error {
+    @apply text-red-600 text-xs mt-1;
+  }
+  
+  /* Navigation - LocalLine Style */
+  .navbar {
+    @apply bg-white shadow-soft border-b border-gray-100 sticky top-0 z-50;
+    padding: 0 1rem 0 1rem;
+  }
+  
+  .navbar-brand {
+    @apply text-2xl font-bold text-blue-600 no-underline;
+  }
+  
+  .nav-link {
+    @apply px-4 py-2 text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200;
+  }
+  
+  .nav-link.active {
+    @apply text-blue-600;
+  }
+  
+  /* Alerts - LocalLine Style */
+  .alert {
+    @apply px-6 py-4 rounded-xl border-l-4 mb-6;
+  }
+  
+  .alert-success {
+    @apply bg-green-50 text-green-800 border-green-400;
+  }
+  
+  .alert-warning {
+    @apply bg-yellow-50 text-yellow-800 border-yellow-400;
+  }
+  
+  .alert-danger {
+    @apply bg-red-50 text-red-800 border-red-400;
+  }
+  
+  .alert-info {
+    @apply bg-blue-50 text-blue-800 border-blue-400;
+  }
+  
+  /* Crop Cards - LocalLine Style */
+  .crop-card {
+    @apply card cursor-pointer;
+  }
+  
+  .crop-card:hover {
+    @apply shadow-soft-lg -translate-y-2;
+  }
+  
+  .crop-image {
+    @apply w-full h-48 object-cover rounded-t-2xl;
+  }
+  
+  .crop-content {
+    @apply p-6;
+  }
+  
+  .crop-title {
+    @apply text-xl font-semibold text-gray-900 mb-2;
+  }
+  
+  .crop-price {
+    @apply text-2xl font-bold text-green-600 mb-2;
+  }
+  
+  .crop-quantity {
+    @apply text-sm text-gray-600 mb-4;
+  }
+  
+  .crop-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .crop-badge.organic {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .crop-badge.premium {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
+  .crop-badge.verified {
+    @apply bg-purple-100 text-purple-800;
+  }
+  
+  /* Farmer Cards - LocalLine Style */
+  .farmer-card {
+    @apply card cursor-pointer;
+  }
+  
+  .farmer-card:hover {
+    @apply shadow-soft-lg -translate-y-2;
+  }
+  
+  .farmer-avatar {
+    @apply w-16 h-16 rounded-full object-cover mx-auto mb-4;
+  }
+  
+  .farmer-name {
+    @apply text-lg font-semibold text-gray-900 text-center mb-2;
+  }
+  
+  .farmer-location {
+    @apply text-sm text-gray-600 text-center mb-4;
+  }
+  
+  .farmer-rating {
+    @apply flex items-center justify-center text-yellow-500 mb-4;
+  }
+  
+  /* Dashboard Cards - LocalLine Style */
+  .stat-card {
+    @apply card p-6;
+  }
+  
+  .stat-value {
+    @apply text-3xl font-bold text-gray-900 mb-2;
+  }
+  
+  .stat-label {
+    @apply text-sm text-gray-600 mb-4;
+  }
+  
+  .stat-change {
+    @apply text-sm font-medium;
+  }
+  
+  .stat-change.positive {
+    @apply text-green-600;
+  }
+  
+  .stat-change.negative {
+    @apply text-red-600;
+  }
+  
+  /* Loading Spinner - LocalLine Style */
+  .spinner {
+    @apply inline-block w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin;
+  }
+  
+  /* Modal - LocalLine Style */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-2xl shadow-soft-lg max-w-md w-full mx-4 max-h-screen overflow-y-auto;
+  }
+  
+  .modal-header {
+    @apply px-6 py-4 border-b border-gray-100;
+  }
+  
+  .modal-body {
+    @apply px-6 py-4;
+  }
+  
+  .modal-footer {
+    @apply px-6 py-4 border-t border-gray-100 flex justify-end space-x-3;
+  }
+  
+  /* Badges - LocalLine Style */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .badge-primary {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
+  .badge-success {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+  
+  .badge-danger {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .badge-gray {
+    @apply bg-gray-100 text-gray-800;
+  }
+  
+  /* Grid Layouts - LocalLine Style */
+  .grid-crops {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+  }
+  
+  .grid-farmers {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+  
+  .grid-stats {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+  }
+  
+  /* Container - LocalLine Style */
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .container-sm {
+    @apply max-w-3xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Section Spacing - LocalLine Style */
+  .section {
+    @apply py-16 md:py-24;
+  }
+  
+  .section-sm {
+    @apply py-8 md:py-12;
+  }
+  
+  .section-lg {
+    @apply py-20 md:py-32;
+  }
+  
+  /* Hero Section - LocalLine Style */
+  .hero {
+    @apply section bg-white;
+  }
+  
+  .hero-content {
+    @apply text-center max-w-4xl mx-auto;
+  }
+  
+  .hero-title {
+    @apply text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6;
+  }
+  
+  .hero-subtitle {
+    @apply text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto;
+  }
+  
+  .hero-cta {
+    @apply flex flex-col sm:flex-row gap-4 justify-center;
+  }
+  
+  /* Footer - LocalLine Style */
+  .footer {
+    @apply bg-gray-900 text-white py-16;
+  }
+  
+  .footer-content {
+    @apply container grid grid-cols-1 md:grid-cols-4 gap-8;
+  }
+  
+  .footer-section h3 {
+    @apply text-lg font-semibold mb-4;
+  }
+  
+  .footer-section ul {
+    @apply space-y-2;
+  }
+  
+  .footer-section a {
+    @apply text-gray-400 hover:text-white transition-colors duration-200;
+  }
+  
+  .footer-bottom {
+    @apply container pt-8 mt-8 border-t border-gray-800 text-center text-gray-400;
+  }
+}
+
+/* Utility Classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  }
+  
+  .shadow-soft-lg {
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .hero-title {
+    @apply text-4xl;
+  }
+  
+  .hero-subtitle {
+    @apply text-lg;
+  }
+  
+  .card-body {
+    @apply px-4 py-4;
+  }
+  
+  .card-header {
+    @apply px-4 py-4;
+  }
+  
+  .card-footer {
+    @apply px-4 py-4;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .navbar,
+  .footer,
+  .btn,
+  .modal-overlay {
+    display: none !important;
+  }
+  
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+}

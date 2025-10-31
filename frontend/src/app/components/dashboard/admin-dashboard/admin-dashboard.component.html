@@ -1,0 +1,804 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="navbar">
+    <div class="container">
+      <div class="flex items-center justify-between py-4">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">🚀 Admin Dashboard</h1>
+          <p class="text-gray-600">Welcome back, {{ user?.firstName }}!</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <button class="btn btn-secondary" (click)="refreshData()" [disabled]="isLoading">
+            <span class="spinner mr-2" *ngIf="isLoading"></span>
+            <span *ngIf="!isLoading">🔄</span>
+            Refresh
+          </button>
+          <button class="btn btn-secondary" (click)="logout()">
+            <span>👋</span> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div class="text-center py-12" *ngIf="isLoading">
+    <div class="spinner mx-auto mb-4"></div>
+    <p class="text-gray-600">Loading dashboard data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="container py-8" *ngIf="errorMessage && !isLoading">
+    <div class="alert alert-danger text-center">
+      <span class="text-2xl mb-2 block">⚠️</span>
+      <p class="mb-4">{{ errorMessage }}</p>
+      <button class="btn btn-primary" (click)="refreshData()">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <main class="container py-8" *ngIf="!isLoading && !errorMessage && stats">
+    
+    <!-- Navigation Tabs -->
+    <div class="card mb-8">
+      <div class="card-body">
+        <nav class="flex flex-wrap gap-2">
+          <button 
+            class="btn btn-secondary"
+            [class.bg-blue-600]="selectedTab === 'overview'"
+            [class.text-white]="selectedTab === 'overview'"
+            (click)="switchTab('overview')">
+            📊 Overview
+          </button>
+          <button 
+            class="btn btn-secondary"
+            [class.bg-blue-600]="selectedTab === 'farmers'"
+            [class.text-white]="selectedTab === 'farmers'"
+            (click)="switchTab('farmers')">
+            🚜 Farmers
+          </button>
+          <button 
+            class="btn btn-secondary"
+            [class.bg-blue-600]="selectedTab === 'consumers'"
+            [class.text-white]="selectedTab === 'consumers'"
+            (click)="switchTab('consumers')">
+            🛒 Consumers
+          </button>
+          <button 
+            class="btn btn-secondary"
+            [class.bg-blue-600]="selectedTab === 'verification'"
+            [class.text-white]="selectedTab === 'verification'"
+            (click)="switchTab('verification')">
+            ✅ Verification
+          </button>
+          <button 
+            class="btn btn-secondary"
+            [class.bg-blue-600]="selectedTab === 'listings'"
+            [class.text-white]="selectedTab === 'listings'"
+            (click)="switchTab('listings')">
+            🧺 Listings
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Overview Tab -->
+    <div *ngIf="selectedTab === 'overview'">
+      <!-- Overview Cards -->
+      <section class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-6">Platform Overview</h2>
+        <div class="grid-stats">
+          
+          <!-- Users Card -->
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">👥 Users</h3>
+              <span class="stat-value">{{ stats.users.total }}</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Farmers</span>
+                <span class="text-sm font-medium">{{ stats.users.farmers }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Consumers</span>
+                <span class="text-sm font-medium">{{ stats.users.consumers }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Premium</span>
+                <span class="text-sm font-medium text-green-600">{{ stats.users.premium }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">New (7d)</span>
+                <span class="text-sm font-medium text-blue-600">{{ stats.users.recent }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Orders Card -->
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">📦 Orders</h3>
+              <span class="stat-value">{{ stats.orders.total }}</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Pending</span>
+                <span class="text-sm font-medium text-yellow-600">{{ stats.orders.pending }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Completed</span>
+                <span class="text-sm font-medium text-green-600">{{ stats.orders.completed }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Recent (7d)</span>
+                <span class="text-sm font-medium text-blue-600">{{ stats.orders.recent }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Revenue Card -->
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">💰 Revenue</h3>
+              <span class="stat-value">{{ formatCurrency(stats.revenue.total) }}</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">This Month</span>
+                <span class="text-sm font-medium">{{ formatCurrency(stats.revenue.monthly) }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">This Week</span>
+                <span class="text-sm font-medium">{{ formatCurrency(stats.revenue.weekly) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Crops Card -->
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">🌾 Crops</h3>
+              <span class="stat-value">{{ stats.crops.total }}</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Active</span>
+                <span class="text-sm font-medium text-green-600">{{ stats.crops.active }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Available</span>
+                <span class="text-sm font-medium">{{ stats.crops.available }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Organic</span>
+                <span class="text-sm font-medium text-green-600">{{ stats.crops.organic }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subscriptions Card -->
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">💳 Subscriptions</h3>
+              <span class="stat-value">{{ stats.subscriptions.total }}</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Active</span>
+                <span class="text-sm font-medium text-green-600">{{ stats.subscriptions.active }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Expired</span>
+                <span class="text-sm font-medium text-red-600">{{ stats.subscriptions.expired }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Recent (7d)</span>
+                <span class="text-sm font-medium text-blue-600">{{ stats.subscriptions.recent }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Farmers Card -->
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">🚜 Farmer Profiles</h3>
+              <span class="stat-value">{{ stats.farmers.totalProfiles }}</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Verified</span>
+                <span class="text-sm font-medium text-green-600">{{ stats.farmers.verified }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Badged</span>
+                <span class="text-sm font-medium text-blue-600">{{ stats.farmers.badged }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-sm text-gray-600">Boosted</span>
+                <span class="text-sm font-medium text-purple-600">{{ stats.farmers.boosted }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts Section -->
+      <section class="mb-8" *ngIf="chartData">
+        <div class="card">
+          <div class="card-header">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-semibold text-gray-900">📊 Analytics</h2>
+              <div class="flex gap-2">
+                <button 
+                  class="btn btn-sm"
+                  [class.btn-primary]="selectedPeriod === '7d'"
+                  [class.btn-secondary]="selectedPeriod !== '7d'"
+                  (click)="onPeriodChange('7d')">
+                  7 Days
+                </button>
+                <button 
+                  class="btn btn-sm"
+                  [class.btn-primary]="selectedPeriod === '30d'"
+                  [class.btn-secondary]="selectedPeriod !== '30d'"
+                  (click)="onPeriodChange('30d')">
+                  30 Days
+                </button>
+                <button 
+                  class="btn btn-sm"
+                  [class.btn-primary]="selectedPeriod === '90d'"
+                  [class.btn-secondary]="selectedPeriod !== '90d'"
+                  (click)="onPeriodChange('90d')">
+                  90 Days
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Role Distribution -->
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-4">User Distribution</h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Farmers</span>
+                      </div>
+                      <span class="text-sm font-medium">{{ chartData.roleDistribution.farmers }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Consumers</span>
+                      </div>
+                      <span class="text-sm font-medium">{{ chartData.roleDistribution.consumers }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Admins</span>
+                      </div>
+                      <span class="text-sm font-medium">{{ chartData.roleDistribution.admins }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order Status Distribution -->
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Status</h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Pending</span>
+                      </div>
+                      <span class="text-sm font-medium">{{ chartData.orderStatusDistribution.pending }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Accepted</span>
+                      </div>
+                      <span class="text-sm font-medium">{{ chartData.orderStatusDistribution.accepted }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Completed</span>
+                      </div>
+                      <span class="text-sm font-medium">{{ chartData.orderStatusDistribution.completed }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Rejected</span>
+                      </div>
+                      <span class="text-sm font-medium">{{ chartData.orderStatusDistribution.rejected }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Activities -->
+      <section class="mb-8" *ngIf="activities.length > 0">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="text-xl font-semibold text-gray-900">📋 Recent Activities</h2>
+          </div>
+          <div class="card-body">
+            <div class="space-y-4">
+              <div class="flex items-start gap-4" *ngFor="let activity of activities">
+                <div class="text-2xl">{{ activity.icon }}</div>
+                <div class="flex-1">
+                  <h4 class="font-medium text-gray-900">{{ activity.title }}</h4>
+                  <p class="text-sm text-gray-600">{{ activity.description }}</p>
+                  <span class="text-xs text-gray-500">{{ formatDate(activity.timestamp) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Users -->
+      <section class="mb-8" *ngIf="users.length > 0">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="text-xl font-semibold text-gray-900">👥 Recent Users</h2>
+          </div>
+          <div class="card-body">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="border-b border-gray-200">
+                    <th class="text-left py-3 px-4 font-medium text-gray-700">Name</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700">Email</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700">Role</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700">Status</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700">Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-gray-100" *ngFor="let user of users">
+                    <td class="py-3 px-4 font-medium text-gray-900">{{ user.firstName }} {{ user.lastName }}</td>
+                    <td class="py-3 px-4 text-gray-600">{{ user.email }}</td>
+                    <td class="py-3 px-4">
+                      <span class="badge" [ngClass]="getRoleClass(user.role)">
+                        {{ getRoleDisplayName(user.role) }}
+                      </span>
+                    </td>
+                    <td class="py-3 px-4">
+                      <span class="badge" [ngClass]="getStatusClass(user.isActive)">
+                        {{ getStatusDisplayName(user.isActive) }}
+                      </span>
+                    </td>
+                    <td class="py-3 px-4 text-gray-600">{{ formatDate(user.createdAt) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Listings Management Tab -->
+    <div *ngIf="selectedTab === 'listings'">
+      <section class="user-management-section">
+        <div class="section-header">
+          <h2>🧺 Listings Moderation</h2>
+          <div class="controls">
+            <div class="search-box">
+              <input 
+                type="text" 
+                [(ngModel)]="listingSearch" 
+                (keyup.enter)="searchListings()"
+                placeholder="Search listings (name/category)...">
+              <button (click)="searchListings()">🔍</button>
+            </div>
+            <select [(ngModel)]="listingStatus" (change)="onListingFilterChange()">
+              <option value="">All Status</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending</option>
+            </select>
+            <select [(ngModel)]="listingSponsored" (change)="onListingFilterChange()">
+              <option value="">All</option>
+              <option value="true">Sponsored</option>
+              <option value="false">Not Sponsored</option>
+            </select>
+            <select [(ngModel)]="listingFlagged" (change)="onListingFilterChange()">
+              <option value="">All</option>
+              <option value="true">Flagged</option>
+              <option value="false">Not Flagged</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="users-table">
+          <div class="table-header">
+            <span>Crop</span>
+            <span>Farmer</span>
+            <span>Status</span>
+            <span>Sponsored</span>
+            <span>Price</span>
+            <span>Created</span>
+            <span>Actions</span>
+          </div>
+          <div class="table-row" *ngFor="let crop of listings">
+            <span class="user-name">{{ crop.name }} <small>({{ crop.category }})</small></span>
+            <span class="user-email">{{ crop.farmer?.firstName }} {{ crop.farmer?.lastName }}</span>
+            <span class="user-status" [ngClass]="crop.isApproved ? 'status-active' : 'status-warning'">
+              {{ crop.isApproved ? 'Approved' : (crop.flaggedReason ? 'Flagged' : 'Pending') }}
+              <span *ngIf="crop.flaggedReason" title="Flag reason"> - {{ crop.flaggedReason }}</span>
+            </span>
+            <span class="premium-status">
+              <span *ngIf="crop.isSponsored" class="premium">⭐ Until {{ crop.sponsoredUntil | date:'mediumDate' }}</span>
+              <span *ngIf="!crop.isSponsored" class="regular">No</span>
+            </span>
+            <span class="user-date">{{ crop.pricePerKg | currency:'INR':'symbol-narrow':'1.0-0':'en-IN' }}</span>
+            <span class="user-date">{{ formatDate(crop.createdAt) }}</span>
+            <span class="actions">
+              <button class="action-btn verify-btn" (click)="approveListing(crop)" [disabled]="crop.isApproved">Approve</button>
+              <button class="action-btn reject-btn" (click)="flagListing(crop)">Flag</button>
+              <button class="action-btn approve-btn" (click)="sponsorListing(crop)">Sponsor</button>
+              <button class="action-btn delete-btn" (click)="unsponsorListing(crop)" [disabled]="!crop.isSponsored">Unsponsor</button>
+            </span>
+          </div>
+        </div>
+
+        <div class="pagination" *ngIf="listingsTotalPages > 1">
+          <button 
+            *ngFor="let page of [].constructor(listingsTotalPages); let i = index" 
+            class="page-btn" 
+            [class.active]="listingsPage === i + 1"
+            (click)="onListingPageChange(i + 1)">
+            {{ i + 1 }}
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Farmers Management Tab -->
+    <div *ngIf="selectedTab === 'farmers'">
+      <section class="user-management-section">
+        <div class="section-header">
+          <h2>🚜 Farmers Management</h2>
+          <div class="controls">
+            <div class="search-box">
+              <input 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                (keyup.enter)="searchUsers()"
+                placeholder="Search farmers...">
+              <button (click)="searchUsers()">🔍</button>
+            </div>
+            <select [(ngModel)]="selectedStatus" (change)="onStatusFilterChange()">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Farmer Stats -->
+        <div class="stats-row" *ngIf="userStats.farmer">
+          <div class="stat-item">
+            <span class="stat-label">Total</span>
+            <span class="stat-value">{{ userStats.farmer.total }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Active</span>
+            <span class="stat-value">{{ userStats.farmer.active }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Blocked</span>
+            <span class="stat-value">{{ userStats.farmer.blocked }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Verified</span>
+            <span class="stat-value">{{ userStats.farmer.verified }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Premium</span>
+            <span class="stat-value">{{ userStats.farmer.premium }}</span>
+          </div>
+        </div>
+
+        <!-- Farmers Table -->
+        <div class="users-table">
+          <div class="table-header">
+            <span>Name</span>
+            <span>Email</span>
+            <span>Status</span>
+            <span>Verified</span>
+            <span>Premium</span>
+            <span>Joined</span>
+            <span>Actions</span>
+          </div>
+          <div class="table-row" *ngFor="let farmer of farmers">
+            <span class="user-name">{{ farmer.firstName }} {{ farmer.lastName }}</span>
+            <span class="user-email">{{ farmer.email }}</span>
+            <span class="user-status" [ngClass]="getUserStatusClass(farmer)">
+              {{ getUserStatusText(farmer) }}
+            </span>
+            <span class="verification-status">
+              <span *ngIf="farmer.farmerProfile?.isVerified" class="verified">✅ Verified</span>
+              <span *ngIf="!farmer.farmerProfile?.isVerified" class="unverified">❌ Unverified</span>
+            </span>
+            <span class="premium-status">
+              <span *ngIf="farmer.isPremium" class="premium">👑 Premium</span>
+              <span *ngIf="!farmer.isPremium" class="regular">Regular</span>
+            </span>
+            <span class="user-date">{{ formatDate(farmer.createdAt) }}</span>
+            <span class="actions">
+              <!-- Verification Actions -->
+              <button 
+                *ngIf="!farmer.farmerProfile?.isVerified"
+                class="action-btn verify-btn" 
+                (click)="verifyFarmer(farmer, true)">
+                ✅ Verify
+              </button>
+              <button 
+                *ngIf="farmer.farmerProfile?.isVerified"
+                class="action-btn unverify-btn" 
+                (click)="verifyFarmer(farmer, false)">
+                ❌ Unverify
+              </button>
+              
+              <!-- Approval Actions -->
+              <button 
+                *ngIf="!farmer.farmerProfile?.isVerified"
+                class="action-btn approve-btn" 
+                (click)="approveFarmer(farmer.id)"
+                title="Approve & give premium features">
+                👑 Approve
+              </button>
+              
+              <!-- User Management Actions -->
+              <button 
+                *ngIf="farmer.isActive && !isUserSuspended(farmer)"
+                class="action-btn suspend-btn" 
+                (click)="suspendUser(farmer.id)">
+                ⛔ Suspend
+              </button>
+              <button 
+                *ngIf="!farmer.isActive && !farmer.deletedAt"
+                class="action-btn block-btn" 
+                (click)="blockUser(farmer)">
+                🚫 Block
+              </button>
+              <button 
+                *ngIf="!farmer.isActive || isUserSuspended(farmer)"
+                class="action-btn restore-btn" 
+                (click)="restoreUser(farmer.id)">
+                ✅ Restore
+              </button>
+              
+              <!-- Account Deletion -->
+              <button 
+                class="action-btn delete-btn" 
+                (click)="deleteUserAccount(farmer.id, farmer.firstName + ' ' + farmer.lastName)"
+                title="Permanently delete account">
+                🗑️ Delete
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button 
+            *ngFor="let page of [].constructor(totalPages); let i = index" 
+            class="page-btn" 
+            [class.active]="currentPage === i + 1"
+            (click)="onPageChange(i + 1)">
+            {{ i + 1 }}
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Consumers Management Tab -->
+    <div *ngIf="selectedTab === 'consumers'">
+      <section class="user-management-section">
+        <div class="section-header">
+          <h2>🛒 Consumers Management</h2>
+          <div class="controls">
+            <div class="search-box">
+              <input 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                (keyup.enter)="searchUsers()"
+                placeholder="Search consumers...">
+              <button (click)="searchUsers()">🔍</button>
+            </div>
+            <select [(ngModel)]="selectedStatus" (change)="onStatusFilterChange()">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Consumer Stats -->
+        <div class="stats-row" *ngIf="userStats.consumer">
+          <div class="stat-item">
+            <span class="stat-label">Total</span>
+            <span class="stat-value">{{ userStats.consumer.total }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Active</span>
+            <span class="stat-value">{{ userStats.consumer.active }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Blocked</span>
+            <span class="stat-value">{{ userStats.consumer.blocked }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Premium</span>
+            <span class="stat-value">{{ userStats.consumer.premium }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Total Orders</span>
+            <span class="stat-value">{{ userStats.consumer.totalOrders }}</span>
+          </div>
+        </div>
+
+        <!-- Consumers Table -->
+        <div class="users-table">
+          <div class="table-header">
+            <span>Name</span>
+            <span>Email</span>
+            <span>Status</span>
+            <span>Premium</span>
+            <span>Joined</span>
+            <span>Actions</span>
+          </div>
+          <div class="table-row" *ngFor="let consumer of consumers">
+            <span class="user-name">{{ consumer.firstName }} {{ consumer.lastName }}</span>
+            <span class="user-email">{{ consumer.email }}</span>
+            <span class="user-status" [ngClass]="getUserStatusClass(consumer)">
+              {{ getUserStatusText(consumer) }}
+            </span>
+            <span class="premium-status">
+              <span *ngIf="consumer.isPremium" class="premium">👑 Premium</span>
+              <span *ngIf="!consumer.isPremium" class="regular">Regular</span>
+            </span>
+            <span class="user-date">{{ formatDate(consumer.createdAt) }}</span>
+            <span class="actions">
+              <!-- User Management Actions -->
+              <button 
+                *ngIf="consumer.isActive && !isUserSuspended(consumer)"
+                class="action-btn suspend-btn" 
+                (click)="suspendUser(consumer.id)">
+                ⛔ Suspend
+              </button>
+              <button 
+                *ngIf="!consumer.isActive && !consumer.deletedAt"
+                class="action-btn block-btn" 
+                (click)="blockUser(consumer)">
+                🚫 Block
+              </button>
+              <button 
+                *ngIf="!consumer.isActive || isUserSuspended(consumer)"
+                class="action-btn restore-btn" 
+                (click)="restoreUser(consumer.id)">
+                ✅ Restore
+              </button>
+              
+              <!-- Account Deletion -->
+              <button 
+                class="action-btn delete-btn" 
+                (click)="deleteUserAccount(consumer.id, consumer.firstName + ' ' + consumer.lastName)"
+                title="Permanently delete account">
+                🗑️ Delete
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button 
+            *ngFor="let page of [].constructor(totalPages); let i = index" 
+            class="page-btn" 
+            [class.active]="currentPage === i + 1"
+            (click)="onPageChange(i + 1)">
+            {{ i + 1 }}
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Farmer Verification Tab -->
+    <div *ngIf="selectedTab === 'verification'">
+      <section class="verification-section">
+        <div class="section-header">
+          <h2>✅ Farmer Verification</h2>
+          <p>Review and approve farmer accounts for verification badges</p>
+        </div>
+
+        <!-- Farmers Pending Verification -->
+        <div class="verification-list">
+          <div class="verification-item" *ngFor="let farmer of farmersForVerification">
+            <div class="farmer-info">
+              <div class="farmer-details">
+                <h3>{{ farmer.user.firstName }} {{ farmer.user.lastName }}</h3>
+                <p class="email">{{ farmer.user.email }}</p>
+                <p class="farm-name" *ngIf="farmer.farmName">🚜 {{ farmer.farmName }}</p>
+                <p class="location" *ngIf="farmer.farmLocation">📍 {{ farmer.farmLocation }}</p>
+                <p class="joined">Joined: {{ formatDate(farmer.user.createdAt) }}</p>
+              </div>
+              <div class="farmer-status">
+                <span class="status-badge" [ngClass]="getStatusClass(farmer.user.isActive)">
+                  {{ getStatusDisplayName(farmer.user.isActive) }}
+                </span>
+                <span class="verification-badge" [ngClass]="farmer.isVerified ? 'verified' : 'unverified'">
+                  {{ farmer.isVerified ? '✅ Verified' : '⏳ Pending' }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="verification-actions">
+              <button 
+                *ngIf="!farmer.isVerified"
+                class="action-btn verify-btn" 
+                (click)="verifyFarmer(farmer, true)">
+                ✅ Verify
+              </button>
+              <button 
+                *ngIf="farmer.isVerified"
+                class="action-btn unverify-btn" 
+                (click)="verifyFarmer(farmer, false)">
+                ❌ Unverify
+              </button>
+              <button 
+                *ngIf="!farmer.isVerified"
+                class="action-btn reject-btn" 
+                (click)="rejectFarmer(farmer.user.id)">
+                ❌ Reject
+              </button>
+              <button 
+                class="action-btn approve-btn" 
+                (click)="approveFarmer(farmer.user.id)"
+                title="Approve & give premium features">
+                👑 Approve
+              </button>
+              <button 
+                *ngIf="farmer.user.isActive && !isUserSuspended(farmer.user)"
+                class="action-btn suspend-btn" 
+                (click)="suspendUser(farmer.user.id)">
+                ⛔ Suspend
+              </button>
+              <button 
+                *ngIf="!farmer.user.isActive || isUserSuspended(farmer.user)"
+                class="action-btn restore-btn" 
+                (click)="restoreUser(farmer.user.id)">
+                ✅ Restore
+              </button>
+              <button 
+                class="action-btn delete-btn" 
+                (click)="deleteUserAccount(farmer.user.id, farmer.user.firstName + ' ' + farmer.user.lastName)"
+                title="Permanently delete account">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="farmersForVerification.length === 0" class="no-data">
+          <p>No farmers pending verification</p>
+        </div>
+      </section>
+    </div>
+
+  </main>
+</div>

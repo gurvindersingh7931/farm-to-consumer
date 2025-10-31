@@ -1,0 +1,86 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <h1 class="text-2xl font-bold text-gray-900">🚜 Farmer Dashboard</h1>
+        <div></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-8">
+    <!-- Dashboard Grid -->
+    <div class="grid-stats">
+      <!-- Profile Management -->
+      <div class="card group cursor-pointer hover:shadow-soft-lg hover:-translate-y-1">
+        <div class="card-body text-center">
+          <div class="text-4xl mb-4">👤</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Profile Management</h3>
+          <p class="text-gray-600 mb-6">Manage your farmer profile and farm information</p>
+          <button class="btn btn-primary w-full" routerLink="/farmer-profile">Manage Profile</button>
+        </div>
+      </div>
+
+      <!-- Crop Management -->
+      <div class="card group cursor-pointer hover:shadow-soft-lg hover:-translate-y-1">
+        <div class="card-body text-center">
+          <div class="text-4xl mb-4">🌾</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Crop Management</h3>
+          <p class="text-gray-600 mb-6">Add, edit, and manage your crop listings</p>
+          <button class="btn btn-primary w-full" routerLink="/crop-management">Manage Crops</button>
+        </div>
+      </div>
+
+      <!-- Premium Subscription -->
+      <div class="card group cursor-pointer hover:shadow-soft-lg hover:-translate-y-1" 
+           [ngClass]="user?.isPremium ? 'border-green-200 bg-green-50' : 'border-blue-200 bg-blue-50'">
+        <div class="card-body text-center">
+          <div class="text-4xl mb-4" [ngClass]="user?.isPremium ? 'text-green-600' : 'text-blue-600'">
+            {{ user?.isPremium ? '👑' : '🚀' }}
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">
+            {{ user?.isPremium ? 'Premium Active' : 'Upgrade to Premium' }}
+          </h3>
+          <p class="text-gray-600 mb-6" *ngIf="user?.isPremium">Unlimited listings and premium features</p>
+          <p class="text-gray-600 mb-6" *ngIf="!user?.isPremium">Unlock unlimited crop listings and premium features</p>
+          <button class="btn w-full" 
+                  [ngClass]="user?.isPremium ? 'btn-success' : 'btn-primary'" 
+                  routerLink="/subscription">
+            {{ user?.isPremium ? 'Manage Subscription' : 'Upgrade Now' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Sales Analytics -->
+      <div class="card group cursor-pointer hover:shadow-soft-lg hover:-translate-y-1">
+        <div class="card-body text-center">
+          <div class="text-4xl mb-4">📊</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Sales Analytics</h3>
+          <p class="text-gray-600 mb-6">Track your sales and revenue</p>
+          <button class="btn btn-primary w-full">View Analytics</button>
+        </div>
+      </div>
+
+      <!-- Orders -->
+      <div class="card group cursor-pointer hover:shadow-soft-lg hover:-translate-y-1">
+        <div class="card-body text-center">
+          <div class="text-4xl mb-4">📋</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Orders</h3>
+          <p class="text-gray-600 mb-6">Manage incoming orders from consumers</p>
+          <button class="btn btn-primary w-full" routerLink="/order-management">View Orders</button>
+        </div>
+      </div>
+
+      <!-- Customers -->
+      <div class="card group cursor-pointer hover:shadow-soft-lg hover:-translate-y-1">
+        <div class="card-body text-center">
+          <div class="text-4xl mb-4">👥</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Customers</h3>
+          <p class="text-gray-600 mb-6">View your customer base and feedback</p>
+          <button class="btn btn-primary w-full">View Customers</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
