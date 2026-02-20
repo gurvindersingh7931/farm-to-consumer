@@ -219,7 +219,7 @@
         <div class="crop-image">
           <img [src]="getCropImageUrl(crop)" [alt]="crop.name" class="crop-img"
                (error)="onImageError($event, cropService.getFallbackImage(crop.category))">
-          <div class="absolute top-4 left-4 flex flex-col gap-2">
+          <div class="absolute top-4 left-4 flex flex-row gap-2">
             <span *ngIf="crop.isOrganic" class="crop-badge organic">Organic</span>
             <span [ngClass]="'crop-badge ' + getFreshnessBadge(crop.harvestDate).class">
               {{ getFreshnessBadge(crop.harvestDate).text }}

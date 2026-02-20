@@ -102,6 +102,16 @@
     }
   }
 }
+.fresh-products-icon-container {
+  display: flex;
+  justify-content: center;
+  img {
+    width: 60px;
+    height: 40px;
+
+  }
+}
+
 
 // Responsive design
 @media (max-width: 768px) {

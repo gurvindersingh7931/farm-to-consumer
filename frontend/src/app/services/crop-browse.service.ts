@@ -249,21 +249,22 @@ export class CropBrowseService {
   }
 
   getFreshnessBadge(harvestDate?: string): { text: string; class: string } {
-    const days = this.getDaysSinceHarvest(harvestDate);
+    return { text: 'Fresh', class: 'badge-fresh' };
+    // const days = this.getDaysSinceHarvest(harvestDate);
     
-    if (days === null) {
-      return { text: 'Unknown', class: 'badge-unknown' };
-    }
+    // if (days === null) {
+    //   return { text: 'Unknown', class: 'badge-unknown' };
+    // }
     
-    if (days <= 1) {
-      return { text: 'Very Fresh', class: 'badge-very-fresh' };
-    } else if (days <= 3) {
-      return { text: 'Fresh', class: 'badge-fresh' };
-    } else if (days <= 7) {
-      return { text: 'Good', class: 'badge-good' };
-    } else {
-      return { text: 'Older', class: 'badge-older' };
-    }
+    // if (days <= 1) {
+    //   return { text: 'Very Fresh', class: 'badge-very-fresh' };
+    // } else if (days <= 3) {
+    //   return { text: 'Fresh', class: 'badge-fresh' };
+    // } else if (days <= 7) {
+    //   return { text: 'Good', class: 'badge-good' };
+    // } else {
+    //   return { text: 'Older', class: 'badge-older' };
+    // }
   }
 
   getRatingStars(rating?: number): { full: number; half: boolean; empty: number } {

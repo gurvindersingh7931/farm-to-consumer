@@ -304,8 +304,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-message {
@@ -361,46 +366,47 @@
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
-
-      .badge {
-        padding: 0.25rem 0.5rem;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-
-        &.badge-organic {
-          background: #28a745;
-          color: white;
-        }
-
-        &.badge-very-fresh {
-          background: #28a745;
-          color: white;
-        }
-
-        &.badge-fresh {
-          background: #17a2b8;
-          color: white;
-        }
-
-        &.badge-good {
-          background: #ffc107;
-          color: #333;
-        }
-
-        &.badge-older {
-          background: #6c757d;
-          color: white;
-        }
-
-        &.badge-unknown {
-          background: #6c757d;
-          color: white;
-        }
-      }
     }
+
+    .badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-organic {
+      background: #28a745;
+      color: white;
+    }
+
+    .badge-very-fresh {
+      background: #28a745;
+      color: white;
+    }
+
+    .badge-fresh {
+      background: #28a745;
+      color: white;
+    }
+
+    .badge-good {
+      background: #ffc107;
+      color: #333;
+    }
+
+    .badge-older {
+      background: #6c757d;
+      color: white;
+    }
+
+    .badge-unknown {
+      background: #6c757d;
+      color: white;
+    }
+
   }
 
   .crop-info {

@@ -44,12 +44,12 @@
   <!-- Main Content -->
   <div class="crop-content">
     <div class="crop-gallery mb-4">
-      <div class="w-full overflow-hidden rounded-2xl ring-1 p-4 ring-gray-200 bg-white shadow-sm">
+      <div class="crop-image-container w-full overflow-hidden rounded-2xl ring-1 p-4 ring-gray-200 bg-white shadow-sm flex justify-center">
         <img 
           [src]="getCropImageUrl(crop.imageUrl)"
           (error)="onImageError($event, cropService.getFallbackImage(crop.category))" 
           [alt]="crop.name"
-          class="w-full h-64 md:h-80 block rounded-xl">
+          class="block rounded-xl crop-image">
       </div>
     </div>
 

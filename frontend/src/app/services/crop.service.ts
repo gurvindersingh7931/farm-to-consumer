@@ -252,7 +252,7 @@ export class CropService {
     }
     
     // Return generic default image for all other cases
-    return 'assets/default-crop.svg';
+    return 'assets/default-crop.jpg';
   }
 
   // Get category-specific default image
@@ -261,15 +261,15 @@ export class CropService {
     
     switch (lowercaseCategory) {
       case 'vegetables':
-        return 'assets/category-images/vegetables-default.svg';
+        return 'assets/category-images/vegetables-default.jpg';
       case 'fruits':
-        return 'assets/category-images/fruits-default.svg';
+        return 'assets/category-images/fruits-default.jpg';
       case 'grains':
-        return 'assets/category-images/grains-default.svg';
+        return 'assets/category-images/grains-default.jpg';
       case 'herbs':
-        return 'assets/category-images/herbs-default.svg';
+        return 'assets/category-images/herbs-default.jpg';
       default:
-        return 'assets/default-crop.svg';
+        return 'assets/default-crop.jpg';
     }
   }
 
@@ -293,7 +293,7 @@ export class CropService {
     if (category) {
       return this.getCategoryDefaultImage(category);
     }
-    return 'assets/default-crop.svg';
+    return 'assets/default-crop.jpg';
   }
 
   // Validate price
