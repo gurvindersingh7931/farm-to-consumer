@@ -207,7 +207,7 @@ export class FarmerService {
   // Helper methods
   getProfilePhotoUrl(profilePhoto?: string): string {
     if (!profilePhoto) {
-      return '/assets/images/default-farmer-avatar.png';
+      return '/assets/images/default-farmer.png';
     }
     // Absolute S3 URL
     if (profilePhoto.startsWith('http://') || profilePhoto.startsWith('https://')) {

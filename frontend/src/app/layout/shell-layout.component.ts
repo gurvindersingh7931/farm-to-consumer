@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../services/auth.service';
 
 type MenuItem = { label: string; path: string; icon: string };
@@ -9,7 +10,7 @@ type MenuItem = { label: string; path: string; icon: string };
 @Component({
   selector: 'app-shell-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule],
+  imports: [CommonModule, RouterModule, MatIconModule, MatTooltipModule],
   templateUrl: './shell-layout.component.html'
 })
 export class ShellLayoutComponent implements OnInit {

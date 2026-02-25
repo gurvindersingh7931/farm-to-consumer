@@ -215,65 +215,11 @@
 
     <!-- Crops Grid/List -->
     <div class="grid-crops" *ngIf="!isLoading && crops.length > 0">
-      <div *ngFor="let crop of crops" class="crop-card">
-        <div class="crop-image">
-          <img [src]="getCropImageUrl(crop)" [alt]="crop.name" class="crop-img"
-               (error)="onImageError($event, cropService.getFallbackImage(crop.category))">
-          <div class="absolute top-4 left-4 flex flex-row gap-2">
-            <span *ngIf="crop.isOrganic" class="crop-badge organic">Organic</span>
-            <span [ngClass]="'crop-badge ' + getFreshnessBadge(crop.harvestDate).class">
-              {{ getFreshnessBadge(crop.harvestDate).text }}
-            </span>
-          </div>
-        </div>
-
-        <div class="crop-content">
-          <h3 class="crop-title">{{ crop.name }}</h3>
-          <p class="text-gray-600 text-sm mb-4" *ngIf="crop.description">{{ crop.description }}</p>
-          
-          <div class="flex items-center justify-between mb-4">
-            <div class="crop-price">{{ formatPrice(crop.pricePerKg) }}</div>
-            <div class="crop-quantity">{{ crop.availableQuantity }} {{ crop.unit }} available</div>
-          </div>
-
-          <div class="space-y-2 mb-4">
-            <div class="text-sm font-medium text-gray-900">{{ getFarmerName(crop.farmer) }}</div>
-            <div class="text-sm text-gray-600 flex items-center gap-1" *ngIf="getFarmerLocation(crop.farmer)">
-              <mat-icon fontIcon="place" class="!text-base"></mat-icon>
-              {{ getFarmerLocation(crop.farmer) }}
-            </div>
-            <div class="text-sm text-blue-600 flex items-center gap-1" *ngIf="isLocationEnabled && calculateDistance(crop) !== null">
-              <mat-icon fontIcon="place" class="!text-base"></mat-icon>
-              {{ formatDistanceNative(calculateDistance(crop)!) }} away
-            </div>
-          </div>
-
-          <div class="flex flex-wrap gap-2 mb-4" *ngIf="getPremiumBadges(crop.farmer).length > 0">
-            <span
-              *ngFor="let badge of getPremiumBadges(crop.farmer)"
-              [ngClass]="'crop-badge ' + getBadgeClass(badge)">
-              {{ badge }}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between mb-4" *ngIf="crop.farmer?.rating">
-            <div class="flex items-center text-yellow-500">
-              <span *ngFor="let star of [].constructor(getRatingStars(crop.farmer?.rating).full)" class="text-sm">⭐</span>
-              <span *ngIf="getRatingStars(crop.farmer?.rating).half" class="text-sm">⭐</span>
-              <span *ngFor="let star of [].constructor(getRatingStars(crop.farmer?.rating).empty)" class="text-gray-300 text-sm">⭐</span>
-            </div>
-            <span class="text-sm text-gray-600">{{ crop.farmer?.rating?.toFixed(1) }}</span>
-          </div>
-
-          <div class="flex gap-2">
-            <a class="btn btn-primary flex-1" [routerLink]="['/crop-detail', crop.id]">View Details</a>
-            <a 
-              *ngIf="crop.farmer?.id"
-              class="btn btn-secondary flex-1" 
-              [routerLink]="['/farmer-detail', crop.farmer?.id]">Contact</a>
-          </div>
-        </div>
-      </div>
+      <app-crop-card
+        *ngFor="let crop of crops"
+        [mode]="'browse'"
+        [data]="getCropCardData(crop)">
+      </app-crop-card>
     </div>
 
     <!-- No Results -->
@@ -285,31 +231,13 @@
     </div>
 
     <!-- Pagination -->
-    <div class="flex items-center justify-center gap-2 mt-8" *ngIf="totalPages > 1">
-      <button
-        class="btn btn-secondary"
-        [disabled]="currentPage === 1"
-        (click)="onPageChange(currentPage - 1)">
-        Previous
-      </button>
-      
-      <span
-        *ngFor="let page of getPageNumbers()"
-        class="px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors"
-        [class.bg-blue-600]="page === currentPage"
-        [class.text-white]="page === currentPage"
-        [class.text-gray-700]="page !== currentPage"
-        [class.hover:bg-gray-100]="page !== currentPage"
-        (click)="onPageChange(page)">
-        {{ page }}
-      </span>
-      
-      <button
-        class="btn btn-secondary"
-        [disabled]="currentPage === totalPages"
-        (click)="onPageChange(currentPage + 1)">
-        Next
-      </button>
-    </div>
+    <app-pagination
+      *ngIf="totalPages > 1"
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [totalItems]="totalCrops"
+      [pageSize]="limit"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
   </main>
 </div>

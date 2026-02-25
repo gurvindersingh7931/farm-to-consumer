@@ -97,7 +97,7 @@ export class CropDetailComponent implements OnInit, OnDestroy {
 
   getFarmerImageUrl(imageUrl?: string): string {
     if (!imageUrl) {
-      return '/assets/images/default-farmer-avatar.png';
+      return '/assets/default-farmer.png';
     }
 
     if (imageUrl.startsWith('uploads/')) {

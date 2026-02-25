@@ -4,12 +4,37 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CropService, Crop, CreateCropRequest, UpdateCropRequest } from '../../services/crop.service';
+import { CropCardComponent, CropCardData } from '../../shared/crop-card/crop-card.component';
+import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-crop-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule,
+    PaginationComponent,
+    CropCardComponent,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    MatInputModule,
+  ],
   templateUrl: './crop-management.component.html',
   styleUrls: ['./crop-management.component.scss']
 })
@@ -57,7 +82,7 @@ export class CropManagementComponent implements OnInit, OnDestroy {
       category: ['', [Validators.required]],
       harvestDate: [''],
       expiryDate: [''],
-      location: ['', [Validators.maxLength(255)]],
+      location: ['', [Validators.required, Validators.maxLength(255)]],
       imageUrl: [''],
       organic: [false],
       isActive: [true]
@@ -363,6 +388,25 @@ export class CropManagementComponent implements OnInit, OnDestroy {
 
   formatQuantity(quantity: number | string, unit: string): string {
     return this.cropService.formatQuantity(quantity, unit);
+  }
+
+  getCropCardData(crop: Crop): CropCardData {
+    return {
+      name: crop.name,
+      imageUrl: this.getCropImageUrl(crop),
+      priceText: this.formatPrice(crop.pricePerKg),
+      fallbackImageUrl: this.cropService.getFallbackImage(crop.category),
+      category: crop.category,
+      quantityText: this.formatQuantity(crop.quantity, crop.unit),
+      isOrganic: crop.organic || crop.isOrganic,
+      isPremium: crop.isPremium,
+      statusLabel: this.getStatusDisplayText(this.getCropStatus(crop)),
+      statusClass: this.getStatusColorClass(this.getCropStatus(crop)),
+      harvestDate: crop.harvestDate ?? null,
+      expiryDate: crop.expiryDate ?? null,
+      isActive: crop.isActive,
+      isAvailable: crop.isAvailable,
+    };
   }
 
   // Modal methods

@@ -1,3 +1,61 @@
+/* Global Color System */
+:root {
+  /* Core palette (HEX) */
+  --dusty-taupe: #9b876f;
+  --camel: #a78f6e;
+  --faded-copper: #a0835c;
+  --faded-copper-2: #987749;
+  --khaki-beige: #c5b89d;
+
+  /* Core palette (HSL) */
+  --dusty-taupe-hsl: 33 18% 52%;
+  --camel-hsl: 35 24% 54%;
+  --faded-copper-hsl: 34 27% 49%;
+  --faded-copper-2-hsl: 35 35% 44%;
+  --khaki-beige-hsl: 40 26% 69%;
+
+  /* Semantic aliases (can be adjusted later) */
+  --color-primary: var(--faded-copper);
+  --color-primary-soft: var(--khaki-beige);
+  --color-accent: var(--camel);
+  --color-surface: #ffffff;
+  --color-surface-muted: #f9fafb;
+}
+
+/* SCSS variables mirroring the palette */
+$dusty-taupe: #9b876f;
+$camel: #a78f6e;
+$faded-copper: #a0835c;
+$faded-copper-2: #987749;
+$khaki-beige: #c5b89d;
+
+$dusty-taupe-hsl: hsla(33, 18%, 52%, 1);
+$camel-hsl: hsla(35, 24%, 54%, 1);
+$faded-copper-hsl: hsla(34, 27%, 49%, 1);
+$faded-copper-2-hsl: hsla(35, 35%, 44%, 1);
+$khaki-beige-hsl: hsla(40, 26%, 69%, 1);
+
+/* Gradients */
+$gradient-top: linear-gradient(0deg, $dusty-taupe, $camel, $faded-copper, $faded-copper-2, $khaki-beige);
+$gradient-right: linear-gradient(90deg, $dusty-taupe, $camel, $faded-copper, $faded-copper-2, $khaki-beige);
+$gradient-bottom: linear-gradient(180deg, $dusty-taupe, $camel, $faded-copper, $faded-copper-2, $khaki-beige);
+$gradient-left: linear-gradient(270deg, $dusty-taupe, $camel, $faded-copper, $faded-copper-2, $khaki-beige);
+$gradient-top-right: linear-gradient(45deg, $dusty-taupe, $camel, $faded-copper, $faded-copper-2, $khaki-beige);
+$gradient-bottom-right: linear-gradient(135deg, $dusty-taupe, $camel, $faded-copper, $faded-copper-2, $khaki-beige);
+$gradient-top-left: linear-gradient(225deg, $dusty-taupe, $camel, $faded-copper, $faded-copper-2, $khaki-beige);
+$gradient-bottom-left: linear-gradient(315deg, $dusty-taupe, $camel, $faded-copper, $faded-copper-2, $khaki-beige);
+$gradient-radial: radial-gradient($dusty-taupe, $camel, $faded-copper, $faded-copper-2, $khaki-beige);
+
+/* Semantic SCSS aliases */
+$color-primary: $faded-copper;
+$color-primary-soft: $khaki-beige;
+$color-accent: $camel;
+$color-success: $camel;
+$color-warning: $faded-copper-2;
+$color-info: $dusty-taupe;
+$color-surface: #ffffff;
+$color-surface-muted: #f9fafb;
+
 /* TailwindCSS Base Styles */
 @tailwind base;
 @tailwind components;
@@ -13,7 +71,9 @@
   }
   
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply antialiased;
+    background-color: $color-surface-muted;
+    color: #111827;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -67,15 +127,46 @@
   }
   
   .btn-primary {
-    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm hover:shadow-md;
+    @apply text-white shadow-sm hover:shadow-md;
+    background-color: $color-primary;
+
+    &:hover {
+      background-color: $color-accent;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-accent;
+      outline-offset: 2px;
+    }
   }
   
   .btn-secondary {
-    @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500 shadow-sm hover:shadow-md;
+    @apply text-gray-800 border shadow-sm hover:shadow-md;
+    background-color: $color-surface;
+    border-color: $dusty-taupe;
+
+    &:hover {
+      background-color: $color-surface-muted;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $dusty-taupe;
+      outline-offset: 2px;
+    }
   }
   
   .btn-success {
-    @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-sm hover:shadow-md;
+    @apply text-white shadow-sm hover:shadow-md;
+    background-color: $color-success;
+
+    &:hover {
+      background-color: $faded-copper-2;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $faded-copper-2;
+      outline-offset: 2px;
+    }
   }
   
   .btn-danger {
@@ -138,20 +229,26 @@
   
   /* Navigation - LocalLine Style */
   .navbar {
-    @apply bg-white shadow-soft border-b border-gray-100 sticky top-0 z-50;
+    @apply shadow-soft border-b border-gray-100 sticky top-0 z-50;
+    background-color: $color-surface;
     padding: 0 1rem 0 1rem;
   }
   
   .navbar-brand {
-    @apply text-2xl font-bold text-blue-600 no-underline;
+    @apply text-2xl font-bold no-underline;
+    color: $color-primary;
   }
   
   .nav-link {
-    @apply px-4 py-2 text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200;
+    @apply px-4 py-2 text-gray-600 font-medium transition-colors duration-200;
+
+    &:hover {
+      color: $color-primary;
+    }
   }
   
   .nav-link.active {
-    @apply text-blue-600;
+    color: $color-primary;
   }
   
   /* Alerts - LocalLine Style */
@@ -160,11 +257,17 @@
   }
   
   .alert-success {
-    @apply bg-green-50 text-green-800 border-green-400;
+    @apply border;
+    background-color: $color-primary-soft;
+    color: $faded-copper-2;
+    border-color: $color-primary;
   }
   
   .alert-warning {
-    @apply bg-yellow-50 text-yellow-800 border-yellow-400;
+    @apply border;
+    background-color: $color-surface-muted;
+    color: $color-warning;
+    border-color: $color-warning;
   }
   
   .alert-danger {
@@ -172,7 +275,10 @@
   }
   
   .alert-info {
-    @apply bg-blue-50 text-blue-800 border-blue-400;
+    @apply border;
+    background-color: $color-surface-muted;
+    color: $color-info;
+    border-color: $color-info;
   }
   
   /* Crop Cards - LocalLine Style */
@@ -197,7 +303,8 @@
   }
   
   .crop-price {
-    @apply text-2xl font-bold text-green-600 mb-2;
+    @apply text-2xl font-bold mb-2;
+    color: $color-primary;
   }
   
   .crop-quantity {
@@ -209,11 +316,13 @@
   }
   
   .crop-badge.organic {
-    @apply bg-green-100 text-green-800;
+    background-color: $color-primary-soft;
+    color: $faded-copper-2;
   }
   
   .crop-badge.premium {
-    @apply bg-blue-100 text-blue-800;
+    background-color: $color-surface-muted;
+    color: $color-primary;
   }
   
   .crop-badge.verified {
@@ -302,15 +411,18 @@
   }
   
   .badge-primary {
-    @apply bg-blue-100 text-blue-800;
+    background-color: $color-primary-soft;
+    color: $color-primary;
   }
   
   .badge-success {
-    @apply bg-green-100 text-green-800;
+    background-color: $color-primary-soft;
+    color: $color-success;
   }
   
   .badge-warning {
-    @apply bg-yellow-100 text-yellow-800;
+    background-color: $color-surface-muted;
+    color: $color-warning;
   }
   
   .badge-danger {
@@ -379,7 +491,8 @@
   
   /* Footer - LocalLine Style */
   .footer {
-    @apply bg-gray-900 text-white py-16;
+    @apply text-white py-16;
+    background: $gradient-top;
   }
   
   .footer-content {
@@ -485,6 +598,130 @@
   .card-footer {
     @apply px-4 py-4;
   }
+}
+
+/* Angular Material color overrides to use design system palette */
+.mat-toolbar.mat-primary {
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-fab.mat-primary,
+.mat-mdc-mini-fab.mat-primary {
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  /* MDC filled button tokens */
+  --mdc-filled-button-container-color: var(--color-primary);
+  --mdc-filled-button-label-text-color: var(--color-surface);
+}
+
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-unelevated-button.mat-accent {
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.mat-mdc-outlined-button.mat-primary,
+.mat-mdc-stroked-button.mat-primary {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.mat-mdc-checkbox.mat-primary .mdc-checkbox__background {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+}
+
+.mat-mdc-slide-toggle.mat-primary .mdc-switch__handle,
+.mat-mdc-slide-toggle.mat-primary .mdc-switch__track {
+  background-color: var(--color-primary);
+}
+
+/* mat-select: displayed value (trigger) and selected option in panel – use design system instead of blue */
+.mat-mdc-select-value,
+.mat-mdc-select-value-text {
+  color: var(--faded-copper-2) !important;
+}
+
+.mat-mdc-select.mat-mdc-select-focused .mat-mdc-select-value,
+.mat-mdc-select.mat-mdc-select-focused .mat-mdc-select-value-text {
+  color: var(--color-primary) !important;
+}
+
+/* mat-select: dropdown arrow (trigger) – border-based triangle or icon */
+.mat-mdc-select-arrow {
+  border-top-color: var(--faded-copper-2) !important;
+  color: var(--faded-copper-2) !important;
+}
+
+.mat-mdc-select-arrow svg,
+.mat-mdc-select-arrow .mat-icon {
+  color: var(--faded-copper-2) !important;
+  fill: var(--faded-copper-2) !important;
+}
+
+.mat-mdc-select.mat-mdc-select-focused .mat-mdc-select-arrow {
+  border-top-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+.mat-mdc-select.mat-mdc-select-focused .mat-mdc-select-arrow svg,
+.mat-mdc-select.mat-mdc-select-focused .mat-mdc-select-arrow .mat-icon {
+  color: var(--color-primary) !important;
+  fill: var(--color-primary) !important;
+}
+
+/* mat-pseudo-checkbox (e.g. selected option check in select panel) – use design system instead of blue */
+.mat-pseudo-checkbox-checked,
+.mat-pseudo-checkbox-indeterminate,
+.mat-primary .mat-pseudo-checkbox-checked,
+.mat-primary .mat-pseudo-checkbox-indeterminate {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.mat-pseudo-checkbox-checked .mat-pseudo-checkbox-checkmark,
+.mat-pseudo-checkbox-checked .mat-pseudo-checkbox-mixedmark,
+.mat-pseudo-checkbox-indeterminate .mat-pseudo-checkbox-checkmark,
+.mat-pseudo-checkbox-indeterminate .mat-pseudo-checkbox-mixedmark {
+  color: var(--color-surface) !important;
+  border-color: var(--color-surface) !important;
+}
+
+.mat-pseudo-checkbox-checked .mat-pseudo-checkbox-checkmark path,
+.mat-pseudo-checkbox-checked .mat-pseudo-checkbox-mixedmark path {
+  fill: var(--color-surface) !important;
+  stroke: var(--color-surface) !important;
+}
+
+/* Selected option in the open dropdown panel (rendered in overlay) */
+.mat-mdc-select-panel .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) .mdc-list-item__primary-text,
+.mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) .mdc-list-item__primary-text {
+  color: var(--color-primary) !important;
+}
+
+/* Checkmark icon next to selected option in select panel */
+.mat-mdc-select-panel .mat-mdc-option.mdc-list-item--selected .mdc-list-item__meta,
+.mat-mdc-select-panel .mat-mdc-option.mdc-list-item--selected .mat-icon,
+.mat-mdc-option.mdc-list-item--selected .mdc-list-item__meta,
+.mat-mdc-option.mdc-list-item--selected .mat-icon {
+  color: var(--color-primary) !important;
+}
+
+.mat-mdc-select-panel .mat-mdc-option.mdc-list-item--selected .mdc-list-item__meta svg path,
+.mat-mdc-option.mdc-list-item--selected .mdc-list-item__meta svg path,
+.mat-mdc-select-panel .mat-mdc-option.mdc-list-item--selected .mdc-checkbox__checkmark-path,
+.mat-mdc-option.mdc-list-item--selected .mdc-checkbox__checkmark-path {
+  fill: var(--color-primary) !important;
+  stroke: var(--color-primary) !important;
+}
+
+/* Ensure Angular CDK / Material overlays (tooltips, menus, select dropdowns) sit above modal and sidebar */
+.cdk-overlay-container,
+.cdk-overlay-pane {
+  z-index: 10001 !important;
 }
 
 /* Print Styles */

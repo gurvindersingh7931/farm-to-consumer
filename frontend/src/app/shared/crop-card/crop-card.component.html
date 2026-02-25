@@ -1,0 +1,171 @@
+<mat-card class="crop-card-root shadow-soft hover:shadow-soft-lg transition-shadow duration-200" *ngIf="data">
+  <!-- Image & top badges -->
+  <div class="relative overflow-hidden rounded-t-[1rem]">
+    <img
+      [src]="data.imageUrl"
+      [alt]="data.name"
+      class="w-full h-48 object-cover"
+      (error)="onImageError($event)"
+    />
+  </div>
+
+  <!-- Content -->
+  <mat-card-content class="p-4 space-y-4">
+    <!-- Title & quick badges -->
+    <div class="flex items-start justify-between gap-3">
+      <div class="space-y-1">
+        <h3 class="text-base font-semibold leading-snug text-[color:var(--color-primary)]">
+          {{ data.name }}
+        </h3>
+        <p *ngIf="data.category" class="text-[11px] font-medium text-gray-600 uppercase tracking-wide" matTooltip="Category">
+          {{ data.category }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <p *ngIf="data.description" class="text-xs text-gray-600 line-clamp-2">
+      {{ data.description }}
+    </p>
+
+    <!-- Price & quantity -->
+    <div class="flex items-center justify-between">
+      <div class="text-lg font-bold text-[color:var(--color-primary)]">
+        {{ data.priceText }}
+      </div>
+      <div *ngIf="data.quantityText" class="text-[11px] text-gray-600">
+        {{ data.quantityText }}
+      </div>
+    </div>
+
+    <!-- Browse-specific extra info -->
+    <ng-container *ngIf="mode === 'browse'">
+      <div class="space-y-2">
+        <div *ngIf="data.farmerName" class="flex items-center justify-between text-xs">
+          <div class="text-gray-900 font-medium">
+            {{ data.farmerName }}
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 text-[11px]">
+          <div *ngIf="data.farmerLocation" class="flex items-center gap-1 text-gray-600">
+            <mat-icon class="!text-base">place</mat-icon>
+            <span>{{ data.farmerLocation }}</span>
+          </div>
+          <div *ngIf="data.distanceText" class="flex items-center gap-1 text-[color:var(--camel)]">
+            <mat-icon class="!text-base">map</mat-icon>
+            <span>{{ data.distanceText }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="data.premiumBadges?.length" class="flex flex-wrap gap-1">
+          <span
+            *ngFor="let badge of data.premiumBadges"
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium badge-chip">
+            {{ badge }}
+          </span>
+        </div>
+
+        <div *ngIf="data.ratingValue != null && data.ratingInfo" class="flex items-center justify-between">
+          <div class="flex items-center text-yellow-500 text-xs">
+            <span *ngFor="let _ of [].constructor(data.ratingInfo.full)">★</span>
+            <span *ngIf="data.ratingInfo.half">★</span>
+            <span *ngFor="let _ of [].constructor(data.ratingInfo.empty)" class="text-gray-300">★</span>
+          </div>
+          <span class="text-xs text-gray-600">
+            {{ data.ratingValue.toFixed(1) }}
+          </span>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Manage-specific extra info -->
+    <ng-container *ngIf="mode === 'manage'">
+      <div class="space-y-2 text-[11px] text-gray-600">
+        <div class="flex justify-between" *ngIf="data.harvestDate">
+          <span class="font-medium">Harvest</span>
+          <span>{{ data.harvestDate | date: 'shortDate' }}</span>
+        </div>
+        <div class="flex justify-between" *ngIf="data.expiryDate">
+          <span class="font-medium">Expires</span>
+          <span>{{ data.expiryDate | date: 'shortDate' }}</span>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-1 mt-2">
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium organic-chip"
+              *ngIf="data.isOrganic">
+          🌿 Organic
+        </span>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium premium-chip"
+              *ngIf="data.isPremium">
+          ⭐ Premium
+        </span>
+        <span *ngIf="data.statusLabel"
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium status-chip"
+            matTooltip="Status"
+            [ngClass]="data.statusClass">
+        {{ data.statusLabel }}
+      </span>
+      <span *ngIf="data.freshnessBadge"
+            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium freshness-chip"
+            [ngClass]="data.freshnessBadge.class">
+        {{ data.freshnessBadge.text }}
+      </span>
+      </div>
+      <!-- actions (manage mode) -->
+      <div *ngIf="mode === 'manage'" class="crop-action-container">
+        <button
+          type="button"
+          mat-icon-button
+          [disabled]="data.isActive === false"
+          (click)="onToggleAvailability()"
+          [matTooltip]="data.isAvailable ? 'Mark as Sold Out' : 'Mark as Available'"
+          matTooltipPosition="above"
+          matTooltipShowDelay="400"
+          matTooltipClass="crop-card-action-tooltip">
+          <mat-icon>{{ data.isAvailable ? 'inventory_2' : 'check_circle' }}</mat-icon>
+        </button>
+        <button
+          type="button"
+          mat-icon-button
+          (click)="onEdit()"
+          matTooltip="Edit crop"
+          matTooltipPosition="above"
+          matTooltipShowDelay="400"
+          matTooltipClass="crop-card-action-tooltip">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button
+          type="button"
+          mat-icon-button
+          (click)="onDelete()"
+          matTooltip="Delete crop"
+          matTooltipPosition="above"
+          matTooltipShowDelay="400"
+          matTooltipClass="crop-card-action-tooltip">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </ng-container>
+  </mat-card-content>
+
+  <!-- Browse actions -->
+  <mat-card-actions *ngIf="mode === 'browse'" class="px-4 pb-4 pt-0 flex gap-2">
+    <a
+      *ngIf="data.detailLink"
+      mat-flat-button
+      color="primary"
+      class="flex-1"
+      [routerLink]="data.detailLink">
+      View Details
+    </a>
+    <a
+      *ngIf="data.farmerLink"
+      mat-stroked-button
+      class="flex-1"
+      [routerLink]="data.farmerLink">
+      Contact
+    </a>
+  </mat-card-actions>
+</mat-card>

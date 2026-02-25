@@ -1,0 +1,96 @@
+:host {
+  display: block;
+}
+
+.crop-card-root {
+  border-radius: 1rem;
+  background-color: var(--color-surface);
+}
+
+.status-chip {
+  background-color: var(--color-primary-soft);
+  color: var(--faded-copper-2);
+}
+
+.organic-chip {
+  background-color: var(--color-primary-soft);
+  color: var(--faded-copper-2);
+}
+
+.freshness-chip {
+  background-color: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+
+.badge-chip {
+  background-color: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+
+.premium-chip {
+  background-color: var(--color-surface-muted);
+  color: var(--color-primary);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 500;
+
+  &--soft {
+    background-color: var(--color-primary-soft);
+    color: var(--faded-copper-2);
+  }
+
+  &--outline {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary-soft);
+  }
+}
+
+.crop-action-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-primary-soft);
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+
+  button {
+    cursor: pointer;
+    pointer-events: auto;
+    color: var(--faded-copper-2);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-surface-muted);
+      color: var(--faded-copper-2);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    mat-icon {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+/* Scope Material tooltip styling for crop card actions to this component */
+::ng-deep .crop-card-action-tooltip .mat-mdc-tooltip-surface {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { PaginationComponent } from '../../shared/pagination/pagination.component';
+import { CropCardComponent, CropCardData } from '../../shared/crop-card/crop-card.component';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { CropBrowseService, CropListing, CropFilters, CropSortOptions, CropCategory } from '../../services/crop-browse.service';
@@ -12,7 +14,7 @@ import { MapsService } from '../../services/maps.service';
 @Component({
   selector: 'app-crop-browse',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MatIconModule],
+  imports: [CommonModule, FormsModule, RouterModule, MatIconModule, PaginationComponent, CropCardComponent],
   templateUrl: './crop-browse.component.html',
   styleUrls: ['./crop-browse.component.scss']
 })
@@ -294,6 +296,29 @@ export class CropBrowseComponent implements OnInit, OnDestroy {
 
   getCropImageUrl(crop: CropListing): string {
     return this.cropService.getCropImageUrl(crop.imageUrl, crop.category);
+  }
+
+  getCropCardData(crop: CropListing): CropCardData {
+    const distance = this.calculateDistance(crop);
+    return {
+      name: crop.name,
+      imageUrl: this.getCropImageUrl(crop),
+      priceText: this.formatPrice(crop.pricePerKg),
+      fallbackImageUrl: this.cropService.getFallbackImage(crop.category),
+      category: crop.category,
+      description: crop.description ?? null,
+      quantityText: `${crop.availableQuantity} ${crop.unit} available`,
+      isOrganic: crop.isOrganic,
+      freshnessBadge: this.getFreshnessBadge(crop.harvestDate),
+      premiumBadges: this.getPremiumBadges(crop.farmer),
+      farmerName: this.getFarmerName(crop.farmer),
+      farmerLocation: this.getFarmerLocation(crop.farmer),
+      distanceText: this.isLocationEnabled && distance !== null ? `${this.formatDistanceNative(distance)} away` : undefined,
+      ratingValue: crop.farmer?.rating,
+      ratingInfo: crop.farmer?.rating != null ? this.getRatingStars(crop.farmer.rating) : null,
+      detailLink: ['/crop-detail', crop.id],
+      farmerLink: crop?.farmer?.id != null ? ['/farmer-detail', crop.farmer.id] : null,
+    };
   }
 
   getFarmerName(farmer?: CropListing['farmer']): string {

@@ -1,319 +1,290 @@
-<div class="min-h-screen bg-gray-50">
-  <!-- Header -->
-  <header class="page-header">
-    <div class="container">
-      <div class="page-header-inner">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900">🌾 My Crops</h1>
-        </div>
-        <button class="btn btn-primary" type="button" (click)="openCropModal()">Add New Crop</button>
-      </div>
+<div class="crop-management-page">
+  <mat-toolbar color="primary" class="crop-management-toolbar">
+    <div class="toolbar-title">
+      <span class="toolbar-emoji">🌾</span>
+      <span>My Crops</span>
     </div>
-  </header>
+    <span class="toolbar-spacer"></span>
+    <button class="add-crop-button" mat-raised-button type="button" (click)="openCropModal()">
+      <mat-icon>add</mat-icon>
+      <span>Add New Crop</span>
+    </button>
+  </mat-toolbar>
 
-  <main class="container py-8">
+  <div class="crop-management-content">
     <!-- Stats Dashboard -->
-    <div class="grid-stats mb-8" *ngIf="crops.length > 0">
-      <div class="stat-card">
-        <div class="text-3xl mb-2">📊</div>
-        <div class="stat-value">{{ crops.length }}</div>
-        <div class="stat-label">Total Crops</div>
-      </div>
-      <div class="stat-card">
-        <div class="text-3xl mb-2">✅</div>
-        <div class="stat-value">{{ getActiveCropsCount() }}</div>
-        <div class="stat-label">Active</div>
-      </div>
-      <div class="stat-card">
-        <div class="text-3xl mb-2">⏸️</div>
-        <div class="stat-value">{{ getAvailableCropsCount() }}</div>
-        <div class="stat-label">Available</div>
-      </div>
-      <div class="stat-card">
-        <div class="text-3xl mb-2">💰</div>
-        <div class="stat-value">{{ getSoldOutCropsCount() }}</div>
-        <div class="stat-label">Sold Out</div>
-      </div>
+    <div *ngIf="crops.length > 0" class="stats-row">
+      <mat-card class="stat-card stat-card--total">
+        <mat-card-content class="stat-card__content">
+          <div class="stat-card__icon">
+            <mat-icon>inventory_2</mat-icon>
+          </div>
+          <div class="stat-card__text">
+            <div class="stat-label">Total Crops</div>
+            <div class="stat-value">{{ crops.length }}</div>
+            <div class="stat-caption">All listings you&apos;ve created</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-card--active">
+        <mat-card-content class="stat-card__content">
+          <div class="stat-card__icon">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <div class="stat-card__text">
+            <div class="stat-label">Active</div>
+            <div class="stat-value">{{ getActiveCropsCount() }}</div>
+            <div class="stat-caption">Visible to buyers</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-card--available">
+        <mat-card-content class="stat-card__content">
+          <div class="stat-card__icon">
+            <mat-icon>storefront</mat-icon>
+          </div>
+          <div class="stat-card__text">
+            <div class="stat-label">Available</div>
+            <div class="stat-value">{{ getAvailableCropsCount() }}</div>
+            <div class="stat-caption">In stock &amp; ready</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card stat-card--sold">
+        <mat-card-content class="stat-card__content">
+          <div class="stat-card__icon">
+            <mat-icon>shopping_bag</mat-icon>
+          </div>
+          <div class="stat-card__text">
+            <div class="stat-label">Sold Out</div>
+            <div class="stat-value">{{ getSoldOutCropsCount() }}</div>
+            <div class="stat-caption">Completed harvests</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
     </div>
 
     <!-- Loading State -->
-    <div class="text-center py-12" *ngIf="isLoading">
-      <div class="spinner mx-auto mb-4"></div>
-      <p class="text-gray-600">Loading your crops...</p>
+    <div *ngIf="isLoading" class="state-wrapper">
+      <mat-card>
+        <mat-card-content class="state-card">
+          <div class="spinner mb-4"></div>
+          <p>Loading your crops...</p>
+        </mat-card-content>
+      </mat-card>
     </div>
 
     <!-- Empty State -->
-    <div class="text-center py-12" *ngIf="!isLoading && crops.length === 0">
-      <div class="text-6xl mb-4">🌱</div>
-      <h3 class="text-xl font-semibold text-gray-900 mb-2">No crops yet</h3>
-      <p class="text-gray-600 mb-6">Start building your crop inventory by adding your first crop.</p>
-      <button class="btn btn-primary" type="button" (click)="openCropModal()">
-        Add Your First Crop
-      </button>
+    <div *ngIf="!isLoading && crops.length === 0" class="state-wrapper">
+      <mat-card>
+        <mat-card-content class="state-card">
+          <div class="text-6xl mb-4">🌱</div>
+          <h3>No crops yet</h3>
+          <p>Start building your crop inventory by adding your first crop.</p>
+          <button mat-raised-button color="primary" type="button" (click)="openCropModal()">
+            Add Your First Crop
+          </button>
+        </mat-card-content>
+      </mat-card>
     </div>
 
     <!-- Crops Section -->
-    <div *ngIf="!isLoading && crops.length > 0">
+    <ng-container *ngIf="!isLoading && crops.length > 0">
       <!-- Filters -->
-      <div class="card mb-8">
-        <div class="card-body">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <label class="flex items-center">
-                <input type="checkbox" [(ngModel)]="showFilters" class="mr-2">
-                <span class="text-sm font-medium text-gray-700">Show Filters</span>
-              </label>
-              
-              <div class="flex items-center gap-2" *ngIf="showFilters">
-                <select [(ngModel)]="selectedStatus" (ngModelChange)="loadCrops()" class="form-select">
-                  <option value="">All Status</option>
-                  <option value="available">Available</option>
-                  <option value="sold-out">Sold Out</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="expired">Expired</option>
-                </select>
-              </div>
+      <mat-card class="filters-card">
+        <mat-card-content>
+          <div class="filters-row">
+            <mat-checkbox [(ngModel)]="showFilters">
+              Show filters
+            </mat-checkbox>
+
+            <div *ngIf="showFilters" class="filters-controls">
+              <mat-form-field appearance="fill" class="crop-form-field">
+                <mat-label>Status</mat-label>
+                <mat-select [(ngModel)]="selectedStatus" (selectionChange)="loadCrops()">
+                  <mat-option value="">All Status</mat-option>
+                  <mat-option value="available">Available</mat-option>
+                  <mat-option value="sold-out">Sold Out</mat-option>
+                  <mat-option value="inactive">Inactive</mat-option>
+                  <mat-option value="expired">Expired</mat-option>
+                </mat-select>
+              </mat-form-field>
             </div>
           </div>
-        </div>
-      </div>
+        </mat-card-content>
+      </mat-card>
 
       <!-- Crops Grid -->
       <div class="grid-crops">
-        <div class="crop-card" *ngFor="let crop of crops">
-          <div class="crop-image">
-          <img [src]="getCropImageUrl(crop)" [alt]="crop.name" class="crop-img"
-                 (error)="onImageError($event, cropService.getFallbackImage(crop.category))">
-            <div class="absolute top-4 left-4 flex flex-col gap-2">
-              <span class="crop-badge" [ngClass]="getStatusColorClass(getCropStatus(crop))">
-                {{ getStatusDisplayText(getCropStatus(crop)) }}
-              </span>
-            </div>
-            
-            <!-- Actions Menu -->
-            <div class="absolute top-4 right-4 flex gap-2">
-              <button class="btn btn-sm btn-secondary" (click)="toggleAvailability(crop)" 
-                      [disabled]="!crop.isActive" 
-                      [title]="crop.isAvailable ? 'Mark as Sold Out' : 'Mark as Available'">
-                <span *ngIf="crop.isAvailable">📦</span>
-                <span *ngIf="!crop.isAvailable">✅</span>
-              </button>
-              <button class="btn btn-sm btn-secondary" (click)="editCrop(crop)" title="Edit">
-                ✏️
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="deleteCrop(crop)" title="Delete">
-                🗑️
-              </button>
-            </div>
-          </div>
-
-          <div class="crop-content">
-            <div class="crop-title">{{ crop.name }}</div>
-            <div class="text-sm text-gray-600 mb-2">{{ crop.category }}</div>
-            
-            <div class="space-y-2 mb-4">
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Price:</span>
-                <span class="text-sm font-medium text-green-600">{{ formatPrice(crop.pricePerKg) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-sm text-gray-600">Quantity:</span>
-                <span class="text-sm font-medium">{{ formatQuantity(crop.quantity, crop.unit) }}</span>
-              </div>
-              <div class="flex justify-between" *ngIf="crop.harvestDate">
-                <span class="text-sm text-gray-600">Harvest:</span>
-                <span class="text-sm font-medium">{{ crop.harvestDate | date:'shortDate' }}</span>
-              </div>
-              <div class="flex justify-between" *ngIf="crop.expiryDate">
-                <span class="text-sm text-gray-600">Expires:</span>
-                <span class="text-sm font-medium">{{ crop.expiryDate | date:'shortDate' }}</span>
-              </div>
-            </div>
-
-            <!-- Badges -->
-            <div class="flex flex-wrap gap-2">
-              <span class="crop-badge organic" *ngIf="crop.organic || crop.isOrganic">
-                🌿 Organic
-              </span>
-              <span class="crop-badge premium" *ngIf="crop.isPremium">
-                ⭐ Premium
-              </span>
-            </div>
-          </div>
-        </div>
+        <app-crop-card
+          *ngFor="let crop of crops"
+          [mode]="'manage'"
+          [data]="getCropCardData(crop)"
+          (toggleAvailability)="toggleAvailability(crop)"
+          (edit)="editCrop(crop)"
+          (delete)="deleteCrop(crop)">
+        </app-crop-card>
       </div>
 
       <!-- Pagination -->
-      <div class="flex items-center justify-between mt-8" *ngIf="totalPages > 1">
-        <div class="text-sm text-gray-600">
-          Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ (Math.min(currentPage * pageSize, totalCrops)) }} of {{ totalCrops }} crops
-        </div>
-        <div class="flex items-center gap-2">
-          <button class="btn btn-sm btn-secondary" 
-                  (click)="onPageChange(1)" 
-                  [disabled]="currentPage === 1">
-            First
-          </button>
-          <button class="btn btn-sm btn-secondary" 
-                  (click)="onPageChange(currentPage - 1)" 
-                  [disabled]="currentPage === 1">
-            Previous
-          </button>
-          <span class="px-3 py-1 text-sm text-gray-600">
-            Page {{ currentPage }} of {{ totalPages }}
-          </span>
-          <button class="btn btn-sm btn-secondary" 
-                  (click)="onPageChange(currentPage + 1)" 
-                  [disabled]="currentPage === totalPages">
-            Next
-          </button>
-          <button class="btn btn-sm btn-secondary" 
-                  (click)="onPageChange(totalPages)" 
-                  [disabled]="currentPage === totalPages">
-            Last
-          </button>
-        </div>
+      <div class="pagination-wrapper">
+        <app-pagination
+          *ngIf="totalPages > 1"
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          [totalItems]="totalCrops"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
       </div>
-    </div>
-  </main>
+    </ng-container>
+  </div>
 
   <!-- Modal -->
-  <div class="modal-overlay fixed inset-0 bg-black/60 z-[10000] flex items-center justify-center" *ngIf="showModal" (click)="closeModal()">
-    <div class="modal-content bg-white rounded-2xl shadow-soft-lg max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto text-gray-900" (click)="$event.stopPropagation()">
-      <div class="modal-header bg-gray-50 border-b border-gray-100">
-        <h2 class="text-xl font-semibold text-gray-900">{{ editingCrop ? 'Edit Crop' : 'Add New Crop' }}</h2>
-        <button class="btn btn-secondary btn-sm" (click)="closeModal()">
-          <span class="text-xl">×</span>
-        </button>
-      </div>
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <mat-card class="crop-modal-card">
+        <mat-card-header class="crop-modal-header">
+          <mat-card-title class="crop-modal-title">
+            {{ editingCrop ? 'Edit Crop' : 'Add New Crop' }}
+          </mat-card-title>
+          <button mat-icon-button class="crop-modal-close" type="button" (click)="closeModal()" aria-label="Close">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-card-header>
 
-      <div class="modal-body bg-white">
-        <form [formGroup]="cropForm" (ngSubmit)="saveCrop()" class="space-y-6 text-gray-900">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="form-group">
-              <label class="form-label text-gray-800">Crop Name</label>
-              <input type="text" formControlName="name" class="form-input" placeholder="Enter crop name">
-              <div class="form-error" *ngIf="cropForm.get('name')?.invalid && cropForm.get('name')?.touched">
+        <mat-card-content class="modal-add-new-crop-body">
+          <form [formGroup]="cropForm" (ngSubmit)="saveCrop()" class="modal-form">
+            <mat-form-field class="crop-form-field">
+              <mat-label>Crop Name</mat-label>
+              <input matInput formControlName="name" placeholder="Enter crop name">
+              <mat-error *ngIf="name?.invalid && name?.touched">
                 Crop name is required
-              </div>
-            </div>
+              </mat-error>
+            </mat-form-field>
 
-            <div class="form-group">
-              <label class="form-label text-gray-800">Category</label>
-              <select formControlName="category" class="form-select">
-                <option value="">Select Category</option>
-                <option value="fruits">Fruits</option>
-                <option value="vegetables">Vegetables</option>
-                <option value="grains">Grains</option>
-                <option value="herbs">Herbs</option>
-                <option value="other">Other</option>
-              </select>
-              <div class="form-error" *ngIf="cropForm.get('category')?.invalid && cropForm.get('category')?.touched">
+            <mat-form-field appearance="fill" class="crop-form-field">
+              <mat-label>Category</mat-label>
+              <mat-select formControlName="category">
+                <mat-option value="">Select Category</mat-option>
+                <mat-option *ngFor="let category of categoryOptions" [value]="category">
+                  {{ category }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="category?.invalid && category?.touched">
                 Category is required
-              </div>
-            </div>
-          </div>
+              </mat-error>
+            </mat-form-field>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="form-group">
-              <label class="form-label text-gray-800">Price per Kg</label>
-              <input type="number" formControlName="pricePerKg" min="0" step="0.01" class="form-input" placeholder="Enter price">
-              <div class="form-error" *ngIf="cropForm.get('pricePerKg')?.invalid && cropForm.get('pricePerKg')?.touched">
+            <mat-form-field appearance="fill" class="crop-form-field">
+              <mat-label>Price per Kg</mat-label>
+              <input matInput type="number" formControlName="pricePerKg" min="0" step="0.01">
+              <mat-error *ngIf="pricePerKg?.invalid && pricePerKg?.touched">
                 Price must be greater than 0
-              </div>
-            </div>
+              </mat-error>
+            </mat-form-field>
 
-            <div class="form-group">
-              <label class="form-label text-gray-800">Quantity</label>
-              <input type="number" formControlName="quantity" min="0" step="0.1" class="form-input" placeholder="Enter quantity">
-              <div class="form-error" *ngIf="cropForm.get('quantity')?.invalid && cropForm.get('quantity')?.touched">
+            <mat-form-field appearance="fill" class="crop-form-field">
+              <mat-label>Quantity</mat-label>
+              <input matInput type="number" formControlName="quantity" min="0" step="0.1">
+              <mat-error *ngIf="quantity?.invalid && quantity?.touched">
                 Quantity is required
-              </div>
-            </div>
+              </mat-error>
+            </mat-form-field>
 
-            <div class="form-group">
-              <label class="form-label text-gray-800">Unit</label>
-              <input type="text" formControlName="unit" class="form-input" placeholder="kg, g, lb, etc.">
-              <div class="form-error" *ngIf="cropForm.get('unit')?.invalid && cropForm.get('unit')?.touched">
+            <mat-form-field appearance="fill" class="crop-form-field">
+              <mat-label>Unit</mat-label>
+              <mat-select formControlName="unit">
+                <mat-option *ngFor="let unit of unitOptions" [value]="unit">
+                  {{ unit }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="unit?.invalid && unit?.touched">
                 Unit is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="crop-form-field">
+              <mat-label>Harvest Date</mat-label>
+              <input matInput type="date" formControlName="harvestDate">
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="crop-form-field">
+              <mat-label>Expiry Date</mat-label>
+              <input matInput type="date" formControlName="expiryDate">
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="crop-form-field">
+              <mat-label>Location</mat-label>
+              <input matInput formControlName="location" placeholder="Enter location">
+              <mat-error *ngIf="location?.invalid && location?.touched">
+                Location is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="crop-form-field form-full-width">
+              <mat-label>Description</mat-label>
+              <textarea matInput rows="3" formControlName="description" placeholder="Enter description"></textarea>
+            </mat-form-field>
+
+            <mat-checkbox formControlName="organic" class="form-full-width">
+              This is organic produce
+            </mat-checkbox>
+
+            <div *ngIf="!editingCrop" class="file-row form-full-width">
+              <input
+                #cropFileInput
+                type="file"
+                formControlName="imageUrl"
+                accept="image/*"
+                (change)="onFileSelected($event)"
+                class="file-input-hidden"
+              />
+              <button type="button" class="file-picker-btn" (click)="cropFileInput.click()">
+                <mat-icon class="file-picker-icon">cloud_upload</mat-icon>
+                <span class="file-picker-text" *ngIf="!imageFile">Choose crop image</span>
+                <span class="file-picker-text file-picker-filename" *ngIf="imageFile">{{ imageFile.name }}</span>
+                <span class="file-picker-hint">PNG, JPG up to 5MB</span>
+              </button>
+            </div>
+
+            <div *ngIf="editingCrop" class="status-settings form-full-width">
+              <h4>Status Settings</h4>
+              <div class="status-checkboxes">
+                <mat-checkbox formControlName="isActive" [(ngModel)]="editingCrop.isActive">
+                  Active Listing
+                </mat-checkbox>
+                <mat-checkbox formControlName="isAvailable" [(ngModel)]="editingCrop.isAvailable">
+                  Available for Purchase
+                </mat-checkbox>
+                <mat-checkbox formControlName="isPremium">
+                  Premium Listing
+                </mat-checkbox>
               </div>
             </div>
-          </div>
+          </form>
+        </mat-card-content>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="form-group">
-              <label class="form-label text-gray-800">Harvest Date</label>
-              <input type="date" formControlName="harvestDate" class="form-input">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label text-gray-800">Expiry Date</label>
-              <input type="date" formControlName="expiryDate" class="form-input">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label text-gray-800">Location</label>
-              <input type="text" formControlName="location" class="form-input" placeholder="Enter location">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label text-gray-800">Description</label>
-            <textarea formControlName="description" rows="4" class="form-textarea" placeholder="Enter description"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="flex items-center">
-              <input type="checkbox" formControlName="organic" class="mr-2">
-              <span class="text-sm font-medium text-gray-800">This is organic produce</span>
-            </label>
-          </div>
-
-          <div class="form-group" *ngIf="!editingCrop">
-            <label class="form-label text-gray-800">Crop Image</label>
-            <div class="file-upload">
-              <input id="cropImage" type="file" formControlName="imageUrl" accept="image/*" (change)="onFileSelected($event)" class="file-input-hidden">
-              <label for="cropImage" class="file-picker btn btn-secondary">
-                Choose File
-              </label>
-              <span class="file-name" *ngIf="imageFile; else noFile">{{ imageFile.name }}</span>
-              <ng-template #noFile>
-                <span class="file-name file-name--placeholder">No file chosen</span>
-              </ng-template>
-              <div class="file-hint">PNG, JPG up to 5MB</div>
-            </div>
-          </div>
-
-          <div class="form-group" *ngIf="editingCrop">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4">Status Settings</h4>
-            <div class="space-y-3">
-              <label class="flex items-center">
-                <input type="checkbox" formControlName="isActive" [(ngModel)]="editingCrop.isActive" class="mr-2">
-                <span class="text-sm font-medium text-gray-800">Active Listing</span>
-              </label>
-              <label class="flex items-center">
-                <input type="checkbox" formControlName="isAvailable" [(ngModel)]="editingCrop.isAvailable" class="mr-2">
-                <span class="text-sm font-medium text-gray-800">Available for Purchase</span>
-              </label>
-              <label class="flex items-center">
-                <input type="checkbox" formControlName="isPremium" class="mr-2">
-                <span class="text-sm font-medium text-gray-800">Premium Listing</span>
-              </label>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <div class="modal-footer bg-gray-50 border-t border-gray-100">
-        <button class="btn btn-secondary" (click)="closeModal()">
-          Cancel
-        </button>
-        <button class="btn btn-primary" (click)="saveCrop()" 
-                [disabled]="cropForm.invalid || isSubmitting">
-          <span class="spinner mr-2" *ngIf="isSubmitting"></span>
-          {{ editingCrop ? 'Update Crop' : 'Save Crop' }}
-        </button>
-      </div>
+        <mat-card-actions align="end" class="crop-modal-actions">
+          <button mat-stroked-button type="button" class="crop-modal-cancel" (click)="closeModal()">
+            Cancel
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            class="crop-modal-save"
+            (click)="saveCrop()"
+            [disabled]="cropForm.invalid || isSubmitting">
+            <span class="crop-modal-spinner" *ngIf="isSubmitting"></span>
+            <mat-icon class="crop-modal-save-icon" *ngIf="!isSubmitting">check_circle</mat-icon>
+            {{ editingCrop ? 'Update Crop' : 'Save Crop' }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
     </div>
   </div>
 </div>
