@@ -12,7 +12,7 @@
   <!-- Content -->
   <mat-card-content class="p-4 space-y-4">
     <!-- Title & quick badges -->
-    <div class="flex items-start justify-between gap-3">
+    <div class="flex items-start justify-between gap-3 mt-3">
       <div class="space-y-1">
         <h3 class="text-base font-semibold leading-snug text-[color:var(--color-primary)]">
           {{ data.name }}
@@ -38,9 +38,20 @@
     <!-- Browse-specific extra info (reserve space for alignment) -->
     <ng-container *ngIf="mode === 'browse'">
       <div class="space-y-2 crop-card-root__browse-extra">
-        <div *ngIf="data.farmerName" class="flex items-center justify-between text-xs">
-          <div class="text-gray-900 font-medium">
-            {{ data.farmerName }}
+        <div class="flex items-center justify-between gap-2 text-xs">
+          <div class="text-gray-900 font-medium min-w-0 truncate" [title]="data.farmerName">
+            {{ data.farmerName || '—' }}
+          </div>
+          <div *ngIf="data.ratingValue != null && data.ratingInfo" class="flex items-center gap-1 flex-shrink-0">
+            <span class="flex items-center text-yellow-500" [attr.aria-label]="'Rating ' + data.ratingValue.toFixed(1)">
+              <span *ngFor="let _ of [].constructor(data.ratingInfo.full)">★</span>
+              <span *ngIf="data.ratingInfo.half">★</span>
+              <span *ngFor="let _ of [].constructor(data.ratingInfo.empty)" class="text-gray-300">★</span>
+            </span>
+            <span class="text-gray-600 font-medium">{{ data.ratingValue.toFixed(1) }}</span>
+          </div>
+          <div *ngIf="(data.ratingValue == null || !data.ratingInfo) && data.farmerName" class="text-gray-400 flex-shrink-0">
+            No rating
           </div>
         </div>
 
@@ -62,22 +73,11 @@
             {{ badge }}
           </span>
         </div>
-
-        <div *ngIf="data.ratingValue != null && data.ratingInfo" class="flex items-center justify-between">
-          <div class="flex items-center text-yellow-500 text-xs">
-            <span *ngFor="let _ of [].constructor(data.ratingInfo.full)">★</span>
-            <span *ngIf="data.ratingInfo.half">★</span>
-            <span *ngFor="let _ of [].constructor(data.ratingInfo.empty)" class="text-gray-300">★</span>
-          </div>
-          <span class="text-xs text-gray-600">
-            {{ data.ratingValue.toFixed(1) }}
-          </span>
-        </div>
       </div>
     </ng-container>
 
     <!-- Manage-specific extra info -->
-    <ng-container *ngIf="mode === 'manage'">
+    <ng-container>
       <div class="space-y-2 text-[11px] text-gray-600 crop-card-root__dates">
         <div class="flex justify-between">
           <span class="font-medium">Harvest</span>
@@ -147,20 +147,18 @@
     </ng-container>
   </mat-card-content>
 
-  <!-- Browse actions -->
-  <mat-card-actions *ngIf="mode === 'browse'" class="crop-card-root__actions px-4 pb-4 pt-0 flex gap-2">
+  <!-- Browse actions: View Details & Contact -->
+  <mat-card-actions *ngIf="mode === 'browse'" class="crop-card-root__actions">
     <a
       *ngIf="data.detailLink"
       mat-flat-button
       color="primary"
-      class="flex-1"
       [routerLink]="data.detailLink">
-      View Details
+      Details
     </a>
     <a
       *ngIf="data.farmerLink"
       mat-stroked-button
-      class="flex-1"
       [routerLink]="data.farmerLink">
       Contact
     </a>

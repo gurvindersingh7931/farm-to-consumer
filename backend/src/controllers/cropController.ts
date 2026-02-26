@@ -622,6 +622,43 @@ export const browseCrops = async (req: Request, res: Response): Promise<void> =>
       // filteredCrops = filteredCrops.filter(crop => crop.farmer?.rating >= minRatingValue);
     }
 
+    // Presign image URLs first (this converts to plain objects; rating must be attached after)
+    const cropsData = await s3Presign.withPresignedCropImageUrls(filteredCrops);
+
+    // Attach farmer rating to each crop (after presign so plain response includes rating)
+    const farmerIds = [...new Set((cropsData as any[]).map((c: any) => c.farmer?.id).filter(Boolean))] as number[];
+    if (farmerIds.length > 0) {
+      const ratingRows = await FarmerRating.findAll({
+        attributes: [
+          'farmerId',
+          [Sequelize.fn('AVG', Sequelize.col('rating')), 'avg'],
+          [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+        ],
+        where: { farmerId: { [Op.in]: farmerIds } },
+        group: ['farmerId'],
+        raw: true
+      }) as unknown as Array<{ farmerId: number; avg: number | string; count: number | string }>;
+      const ratingByFarmer: Record<number, { rating: number; totalRatings: number }> = {};
+      ratingRows.forEach((r: { farmerId: number; avg: number | string; count: number | string }) => {
+        ratingByFarmer[r.farmerId] = {
+          rating: r.avg != null ? parseFloat(String(r.avg)) : 0,
+          totalRatings: r.count != null ? parseInt(String(r.count), 10) : 0
+        };
+      });
+      (cropsData as any[]).forEach((crop: any) => {
+        if (crop.farmer?.id == null) return;
+        const { rating, totalRatings } = ratingByFarmer[crop.farmer.id] ?? { rating: 0, totalRatings: 0 };
+        crop.farmer.rating = rating;
+        crop.farmer.totalRatings = totalRatings;
+        if (crop.farmer.farmerProfile && typeof crop.farmer.farmerProfile === 'object') {
+          crop.farmer.farmerProfile.rating = rating;
+          crop.farmer.farmerProfile.totalRatings = totalRatings;
+        } else {
+          crop.farmer.farmerProfile = { ...(crop.farmer.farmerProfile || {}), rating, totalRatings };
+        }
+      });
+    }
+
     // Get aggregation data for filters
     const [priceRange, categoryCounts] = await Promise.all([
       // Price range
@@ -653,7 +690,6 @@ export const browseCrops = async (req: Request, res: Response): Promise<void> =>
         }
       : { min: 0, max: 100 };
 
-    const cropsData = await s3Presign.withPresignedCropImageUrls(filteredCrops);
     res.status(200).json({
       message: 'Crops retrieved successfully',
       crops: cropsData,
@@ -712,6 +748,39 @@ export const getFarmerCropsPublic = async (req: Request, res: Response): Promise
     });
 
     const cropsData = await s3Presign.withPresignedCropImageUrls(crops);
+    // Attach farmer rating to each crop (same as browse / getCropById)
+    const farmerIds = [...new Set((cropsData as any[]).map((c: any) => c.farmer?.id).filter(Boolean))] as number[];
+    if (farmerIds.length > 0) {
+      const ratingRows = await FarmerRating.findAll({
+        attributes: [
+          'farmerId',
+          [Sequelize.fn('AVG', Sequelize.col('rating')), 'avg'],
+          [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+        ],
+        where: { farmerId: { [Op.in]: farmerIds } },
+        group: ['farmerId'],
+        raw: true
+      }) as unknown as Array<{ farmerId: number; avg: number | string; count: number | string }>;
+      const ratingByFarmer: Record<number, { rating: number; totalRatings: number }> = {};
+      ratingRows.forEach((r: { farmerId: number; avg: number | string; count: number | string }) => {
+        ratingByFarmer[r.farmerId] = {
+          rating: r.avg != null ? parseFloat(String(r.avg)) : 0,
+          totalRatings: r.count != null ? parseInt(String(r.count), 10) : 0
+        };
+      });
+      (cropsData as any[]).forEach((crop: any) => {
+        if (crop.farmer?.id == null) return;
+        const { rating, totalRatings } = ratingByFarmer[crop.farmer.id] ?? { rating: 0, totalRatings: 0 };
+        crop.farmer.rating = rating;
+        crop.farmer.totalRatings = totalRatings;
+        if (crop.farmer.farmerProfile && typeof crop.farmer.farmerProfile === 'object') {
+          crop.farmer.farmerProfile.rating = rating;
+          crop.farmer.farmerProfile.totalRatings = totalRatings;
+        } else {
+          crop.farmer.farmerProfile = { ...(crop.farmer.farmerProfile || {}), rating, totalRatings };
+        }
+      });
+    }
     res.status(200).json({
       message: 'Farmer crops retrieved successfully',
       crops: cropsData,
@@ -777,14 +846,18 @@ export const getCropById = async (req: Request, res: Response): Promise<void> =>
     const farmerAvg = row && row.avg != null ? parseFloat(String(row.avg)) : 0;
     const farmerCount = row && row.count != null ? parseInt(String(row.count)) : 0;
 
+    const farmerJson = (crop as any).farmer?.toJSON?.() ?? (crop as any).farmer;
     const cropData = {
       ...crop.toJSON(),
       averageRating,
       totalRatings,
       farmer: {
-        ...(crop as any).farmer?.toJSON?.() ?? (crop as any).farmer,
+        ...farmerJson,
         rating: farmerAvg,
-        totalRatings: farmerCount
+        totalRatings: farmerCount,
+        farmerProfile: farmerJson?.farmerProfile && typeof farmerJson.farmerProfile === 'object'
+          ? { ...farmerJson.farmerProfile, rating: farmerAvg, totalRatings: farmerCount }
+          : { ...(farmerJson?.farmerProfile || {}), rating: farmerAvg, totalRatings: farmerCount }
       }
     } as any;
 

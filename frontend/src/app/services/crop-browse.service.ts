@@ -15,6 +15,8 @@ export interface CropListing {
   category: string;
   isAvailable: boolean;
   isOrganic: boolean;
+  isActive?: boolean;
+  isPremium?: boolean;
   harvestDate?: string;
   expiryDate?: string;
   createdAt: string;

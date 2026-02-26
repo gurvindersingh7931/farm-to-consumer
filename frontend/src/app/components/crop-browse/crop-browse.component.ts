@@ -302,17 +302,26 @@ export class CropBrowseComponent implements OnInit, OnDestroy {
   getCropCardData(crop: CropListing): CropCardData {
     const distance = this.calculateDistance(crop);
     const imageUrl = (crop as any).image_url ?? crop.imageUrl;
+    const qty = crop.availableQuantity ?? crop.quantity ?? 0;
+    const unit = crop.unit ?? 'kg';
     return {
       name: crop.name,
       imageUrl: this.cropService.getCropImageUrl(imageUrl, crop.category),
       priceText: this.formatPrice(crop.pricePerKg),
       fallbackImageUrl: this.cropService.getFallbackImage(crop.category),
       category: crop.category,
-      description: crop.description ?? null,
-      quantityText: `${crop.availableQuantity} ${crop.unit} available`,
+      description: crop.description ?? null, 
+      quantityText: `${qty} ${unit} available`,
       isOrganic: crop.isOrganic,
       freshnessBadge: this.getFreshnessBadge(crop.harvestDate),
       premiumBadges: this.getPremiumBadges(crop.farmer),
+      isPremium: crop.isPremium,
+      statusLabel: this.getStatusDisplayText(this.getCropStatus(crop)),
+      statusClass: this.getStatusColorClass(this.getCropStatus(crop)),
+      harvestDate: crop.harvestDate ?? null,
+      expiryDate: crop.expiryDate ?? null,
+      isActive: crop.isActive,
+      isAvailable: crop.isAvailable,
       farmerName: this.getFarmerName(crop.farmer),
       farmerLocation: this.getFarmerLocation(crop.farmer),
       distanceText: this.isLocationEnabled && distance !== null ? `${this.formatDistanceNative(distance)} away` : undefined,
@@ -321,6 +330,19 @@ export class CropBrowseComponent implements OnInit, OnDestroy {
       detailLink: ['/crop-detail', crop.id],
       farmerLink: crop?.farmer?.id != null ? ['/farmer-detail', crop.farmer.id] : null,
     };
+  }
+
+
+  getCropStatus(crop: any): string {
+    return this.cropService.getCropStatus(crop);
+  }
+
+  getStatusColorClass(status: string): string {
+    return this.cropService.getStatusColorClass(status);
+  }
+
+  getStatusDisplayText(status: string): string {
+    return this.cropService.getStatusDisplayText(status);
   }
 
   getFarmerName(farmer?: CropListing['farmer']): string {
