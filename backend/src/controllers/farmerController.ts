@@ -5,7 +5,7 @@ import Farmer from '../models/Farmer';
 import User from '../models/User';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
-import AWS from 'aws-sdk';
+import { S3Client } from '@aws-sdk/client-s3';
 import path from 'path';
 import fs from 'fs';
 
@@ -41,17 +41,17 @@ const isS3Enabled = Boolean(
 let storage: multer.StorageEngine;
 
 if (isS3Enabled) {
-  AWS.config.update({
+  const s3 = new S3Client({
     region: process.env.AWS_REGION || 'ap-south-1',
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+    },
   });
-  const s3 = new AWS.S3();
 
   storage = multerS3({
     s3: s3 as any,
     bucket: process.env.AWS_S3_BUCKET as string,
-    acl: 'public-read',
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key: (req: Express.Request, file: Express.Multer.File, cb: (error: any, key?: string) => void) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);

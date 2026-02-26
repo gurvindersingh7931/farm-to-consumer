@@ -14,7 +14,10 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { Subscription } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-crop-management',
@@ -34,6 +37,8 @@ import { Subscription } from 'rxjs';
     MatSelectModule,
     MatFormFieldModule,
     MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   templateUrl: './crop-management.component.html',
   styleUrls: ['./crop-management.component.scss']
@@ -71,7 +76,8 @@ export class CropManagementComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     public cropService: CropService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {
     this.cropForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(255)]],
@@ -85,7 +91,9 @@ export class CropManagementComponent implements OnInit, OnDestroy {
       location: ['', [Validators.required, Validators.maxLength(255)]],
       imageUrl: [''],
       organic: [false],
-      isActive: [true]
+      isActive: [true],
+      isAvailable: [true],
+      isPremium: [false],
     });
 
     this.categoryOptions = this.cropService.categoryOptions;
@@ -133,8 +141,20 @@ export class CropManagementComponent implements OnInit, OnDestroy {
   loadCategories(): void {
     this.cropService.getCropCategories().subscribe({
       next: (response) => {
+        // Normalize API categories to plain strings (backend may return objects)
+        const apiCategories = (response.categories || []).map((c: any) => {
+          if (typeof c === 'string') {
+            return c;
+          }
+          // Try common field names first
+          const candidate =
+            (c && (c.name || c.label || c.title || c.category)) ??
+            Object.values(c).find((v) => typeof v === 'string');
+          return candidate || '';
+        }).filter((c: string) => !!c && c.trim().length > 0);
+
         // Merge with predefined categories and remove duplicates
-        const allCategories = [...new Set([...this.categoryOptions, ...response.categories])];
+        const allCategories = [...new Set([...this.categoryOptions, ...apiCategories])];
         this.categoryOptions = allCategories.sort();
       },
       error: (error) => {
@@ -247,30 +267,32 @@ export class CropManagementComponent implements OnInit, OnDestroy {
 
     const formValue = this.cropForm.value;
 
-    if (this.showEditForm && this.editingCrop) {
+    // If editingCrop is set, we are in edit mode (modal or inline)
+    if (this.editingCrop) {
       // Update existing crop
-        const updateData: UpdateCropRequest = {
-          name: formValue.name,
-          description: formValue.description,
-          pricePerKg: parseFloat(formValue.pricePerKg),
-          quantity: parseFloat(formValue.quantity),
-          unit: formValue.unit,
-          category: formValue.category,
-          harvestDate: formValue.harvestDate || undefined,
-          expiryDate: formValue.expiryDate || undefined,
-          location: formValue.location,
-          organic: formValue.organic,
-          isActive: formValue.isActive,
-          isAvailable: this.editingCrop.isAvailable, // Keep current availability status
-          removeImage: !this.imagePreview && this.editingCrop.imageUrl ? true : undefined
-        };
+      const updateData: UpdateCropRequest = {
+        name: formValue.name,
+        description: formValue.description,
+        pricePerKg: parseFloat(formValue.pricePerKg),
+        quantity: parseFloat(formValue.quantity),
+        unit: formValue.unit,
+        category: formValue.category,
+        harvestDate: formValue.harvestDate || undefined,
+        expiryDate: formValue.expiryDate || undefined,
+        location: formValue.location,
+        organic: formValue.organic,
+        isActive: formValue.isActive,
+        isAvailable: formValue.isAvailable,
+        isPremium: formValue.isPremium,
+        removeImage: !this.imagePreview && this.editingCrop.imageUrl ? true : undefined
+      };
 
       this.cropService.updateCrop(this.editingCrop.id!, updateData, this.selectedFile || undefined).subscribe({
         next: (response) => {
           this.isSaving = false;
-          this.successMessage = response.message;
-          this.hideForms();
+          this.closeCropModal();
           this.loadCrops();
+          this.toastr.success('Crop updated successfully');
         },
         error: (error) => {
           this.isSaving = false;
@@ -295,9 +317,9 @@ export class CropManagementComponent implements OnInit, OnDestroy {
       this.cropService.createCrop(createData, this.selectedFile || undefined).subscribe({
         next: (response) => {
           this.isSaving = false;
-          this.successMessage = response.message;
-          this.hideForms();
+          this.closeCropModal();
           this.loadCrops();
+          this.toastr.success('Crop saved successfully');
         },
         error: (error) => {
           this.isSaving = false;
@@ -379,7 +401,8 @@ export class CropManagementComponent implements OnInit, OnDestroy {
   }
 
   getCropImageUrl(crop: Crop): string {
-    return this.cropService.getCropImageUrl(crop.imageUrl, crop.category);
+    const imageUrl = (crop as any).image_url ?? crop.imageUrl;
+    return this.cropService.getCropImageUrl(imageUrl, crop.category);
   }
 
   formatPrice(price: number | string): string {
@@ -391,9 +414,11 @@ export class CropManagementComponent implements OnInit, OnDestroy {
   }
 
   getCropCardData(crop: Crop): CropCardData {
+    // Support both imageUrl and image_url (snake_case) from API
+    const imageUrl = (crop as any).image_url ?? crop.imageUrl;
     return {
       name: crop.name,
-      imageUrl: this.getCropImageUrl(crop),
+      imageUrl: this.cropService.getCropImageUrl(imageUrl, crop.category),
       priceText: this.formatPrice(crop.pricePerKg),
       fallbackImageUrl: this.cropService.getFallbackImage(crop.category),
       category: crop.category,
@@ -468,11 +493,13 @@ export class CropManagementComponent implements OnInit, OnDestroy {
       quantity: crop.quantity,
       unit: crop.unit,
       category: crop.category,
-      harvestDate: crop.harvestDate || '',
-      expiryDate: crop.expiryDate || '',
+      harvestDate: crop.harvestDate ? crop.harvestDate.split('T')[0] : '',
+      expiryDate: crop.expiryDate ? crop.expiryDate.split('T')[0] : '',
       location: crop.location || '',
       organic: crop.organic || false,
-      isActive: crop.isActive
+      isActive: crop.isActive,
+      isAvailable: crop.isAvailable,
+      isPremium: crop.isPremium
     });
     this.imagePreview = crop.imageUrl ? this.getCropImageUrl(crop) : null;
   }

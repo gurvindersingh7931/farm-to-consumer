@@ -295,14 +295,16 @@ export class CropBrowseComponent implements OnInit, OnDestroy {
   }
 
   getCropImageUrl(crop: CropListing): string {
-    return this.cropService.getCropImageUrl(crop.imageUrl, crop.category);
+    const imageUrl = (crop as any).image_url ?? crop.imageUrl;
+    return this.cropService.getCropImageUrl(imageUrl, crop.category);
   }
 
   getCropCardData(crop: CropListing): CropCardData {
     const distance = this.calculateDistance(crop);
+    const imageUrl = (crop as any).image_url ?? crop.imageUrl;
     return {
       name: crop.name,
-      imageUrl: this.getCropImageUrl(crop),
+      imageUrl: this.cropService.getCropImageUrl(imageUrl, crop.category),
       priceText: this.formatPrice(crop.pricePerKg),
       fallbackImageUrl: this.cropService.getFallbackImage(crop.category),
       category: crop.category,

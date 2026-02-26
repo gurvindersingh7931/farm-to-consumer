@@ -48,6 +48,7 @@ export interface CreateCropRequest {
 export interface UpdateCropRequest extends CreateCropRequest {
   isActive?: boolean;
   isAvailable?: boolean;
+  isPremium?: boolean;
   removeImage?: boolean;
 }
 
@@ -233,25 +234,55 @@ export class CropService {
   }
 
   // Get crop image URL with robust fallback handling
-  getCropImageUrl(imagePath?: string, category?: string): string {
-    // Check if imagePath exists and is valid
-    if (imagePath && imagePath.trim() !== '' && imagePath.length > 10) {
-      // Absolute S3 URL
-      if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-        return imagePath;
-      }
-      // Local upload path
-      if (imagePath.startsWith('/uploads')) {
-        return `${environment.backendUrl}${imagePath}`;
+  getCropImageUrl(imagePath?: string | { location?: string } | null, category?: string): string {
+    // Normalize: API may send image_url, or S3 multer may expose { location }
+    let pathStr: string | undefined;
+    if (imagePath != null) {
+      if (typeof imagePath === 'string') {
+        pathStr = imagePath;
+      } else if (typeof imagePath === 'object' && imagePath !== null && 'location' in imagePath) {
+        pathStr = (imagePath as { location?: string }).location;
       }
     }
+    const trimmedPath = pathStr?.trim();
+
+    // If we have a usable image path, always try to build a URL from it
+    if (trimmedPath && trimmedPath !== 'null' && trimmedPath !== 'undefined') {
+      // Absolute S3 / external URL – return as-is so crop card uses it
+      if (trimmedPath.startsWith('http://') || trimmedPath.startsWith('https://')) {
+        return trimmedPath;
+      }
+
+      // Already an absolute asset path
+      if (trimmedPath.startsWith('/assets')) {
+        return trimmedPath;
+      }
+
+      // Local upload paths served by backend (new uploads)
+      if (trimmedPath.startsWith('/uploads')) {
+        return `${environment.backendUrl}${trimmedPath}`;
+      }
+
+      // Legacy local uploads stored as "crop-images/..."
+      if (trimmedPath.startsWith('crop-images/')) {
+        return `${environment.backendUrl}/uploads/${trimmedPath}`;
+      }
+
+      // Legacy local uploads stored as "uploads/..."
+      if (trimmedPath.startsWith('uploads/')) {
+        return `${environment.backendUrl}/${trimmedPath}`;
+      }
+
+      // Fallback: treat as a relative path on the backend
+      return `${environment.backendUrl}/${trimmedPath.replace(/^\//, '')}`;
+    }
     
-    // Return category-specific default image if category is known
+    // No valid image path – fall back to category-specific default if available
     if (category) {
       return this.getCategoryDefaultImage(category);
     }
     
-    // Return generic default image for all other cases
+    // Generic default image for all other cases
     return 'assets/default-crop.jpg';
   }
 

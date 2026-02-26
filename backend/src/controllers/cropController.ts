@@ -2,9 +2,10 @@ import { Request, Response } from 'express';
 import { Crop, User, Farmer } from '../models';
 import FarmerRating from '../models/FarmerRating';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import * as s3Presign from '../services/s3PresignService';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
-import AWS from 'aws-sdk';
+import { S3Client } from '@aws-sdk/client-s3';
 import path from 'path';
 import fs from 'fs';
 import { Op, Sequelize } from 'sequelize';
@@ -17,17 +18,17 @@ const isS3Enabled = Boolean(
 let storage: multer.StorageEngine;
 
 if (isS3Enabled) {
-  AWS.config.update({
+  const s3 = new S3Client({
     region: process.env.AWS_REGION || 'ap-south-1',
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+    },
   });
-  const s3 = new AWS.S3();
 
   storage = multerS3({
     s3: s3 as any,
     bucket: process.env.AWS_S3_BUCKET as string,
-    acl: 'public-read',
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key: (req: Express.Request, file: Express.Multer.File, cb: (error: any, key?: string) => void) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -51,7 +52,7 @@ if (isS3Enabled) {
 }
 
 const upload = multer({
-  storage: storage,
+  storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
     const filetypes = /jpeg|jpg|png|gif/;
@@ -78,10 +79,10 @@ const checkCropLimit = async (farmerId: number, isPremium: boolean): Promise<{ c
     },
   });
 
-  if (activeCropCount >= 3) {
+  if (activeCropCount >= 10) {
     return {
       canAdd: false,
-      message: 'Free users are limited to 3 active crop listings. Upgrade to premium for unlimited listings.',
+      message: 'Free users are limited to 10 active crop listings. Upgrade to premium for unlimited listings.',
     };
   }
 
@@ -149,9 +150,10 @@ export const createCrop = async (req: AuthenticatedRequest, res: Response): Prom
         isOrganic: organic || false, // Set isOrganic based on organic field
       });
 
+      const cropData = await s3Presign.withPresignedCropImageUrl(crop);
       res.status(201).json({
         message: 'Crop created successfully',
-        crop,
+        crop: cropData,
       });
     } catch (error) {
       console.error('Error creating crop:', error);
@@ -191,8 +193,9 @@ export const getFarmerCrops = async (req: AuthenticatedRequest, res: Response): 
       offset,
     });
 
+    const cropsData = await s3Presign.withPresignedCropImageUrls(crops);
     res.status(200).json({
-      crops,
+      crops: cropsData,
       pagination: {
         total: count,
         page: Number(page),
@@ -284,9 +287,10 @@ export const updateCrop = async (req: AuthenticatedRequest, res: Response): Prom
         isAvailable: isAvailable !== undefined ? (isAvailable === 'true' || isAvailable === true) : crop.isAvailable,
       });
 
+      const cropData = await s3Presign.withPresignedCropImageUrl(crop);
       res.status(200).json({
         message: 'Crop updated successfully',
-        crop,
+        crop: cropData,
       });
     } catch (error) {
       console.error('Error updating crop:', error);
@@ -369,8 +373,9 @@ export const getAllCrops = async (req: Request, res: Response): Promise<void> =>
       offset,
     });
 
+    const cropsData = await s3Presign.withPresignedCropImageUrls(crops);
     res.status(200).json({
-      crops,
+      crops: cropsData,
       pagination: {
         total: count,
         page: Number(page),
@@ -403,9 +408,10 @@ export const toggleCropAvailability = async (req: AuthenticatedRequest, res: Res
       isAvailable: !crop.isAvailable,
     });
 
+    const cropData = await s3Presign.withPresignedCropImageUrl(crop);
     res.status(200).json({
       message: `Crop marked as ${crop.isAvailable ? 'available' : 'sold out'}`,
-      crop,
+      crop: cropData,
     });
   } catch (error) {
     console.error('Error toggling crop availability:', error);
@@ -647,9 +653,10 @@ export const browseCrops = async (req: Request, res: Response): Promise<void> =>
         }
       : { min: 0, max: 100 };
 
+    const cropsData = await s3Presign.withPresignedCropImageUrls(filteredCrops);
     res.status(200).json({
       message: 'Crops retrieved successfully',
-      crops: filteredCrops,
+      crops: cropsData,
       pagination: {
         total: count,
         page: Number(page),
@@ -704,9 +711,10 @@ export const getFarmerCropsPublic = async (req: Request, res: Response): Promise
       offset,
     });
 
+    const cropsData = await s3Presign.withPresignedCropImageUrls(crops);
     res.status(200).json({
       message: 'Farmer crops retrieved successfully',
-      crops,
+      crops: cropsData,
       pagination: {
         total: count,
         page: Number(page),
@@ -780,6 +788,7 @@ export const getCropById = async (req: Request, res: Response): Promise<void> =>
       }
     } as any;
 
+    cropData.imageUrl = await s3Presign.getPresignedImageUrl(cropData.imageUrl) ?? cropData.imageUrl;
     res.status(200).json({
       message: 'Crop details retrieved successfully',
       crop: cropData

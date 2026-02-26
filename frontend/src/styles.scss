@@ -1,3 +1,6 @@
+/* Toast notifications */
+@import 'ngx-toastr/toastr';
+
 /* Global Color System */
 :root {
   /* Core palette (HEX) */
@@ -20,6 +23,12 @@
   --color-accent: var(--camel);
   --color-surface: #ffffff;
   --color-surface-muted: #f9fafb;
+
+  /* Angular Material / MDC global primary wiring */
+  --mdc-theme-primary: var(--color-primary);
+  --mdc-theme-on-primary: var(--color-surface);
+  --mdc-theme-secondary: var(--color-accent);
+  --mdc-theme-on-secondary: var(--color-surface);
 }
 
 /* SCSS variables mirroring the palette */
@@ -631,7 +640,6 @@ $color-surface-muted: #f9fafb;
 
 .mat-mdc-checkbox.mat-primary .mdc-checkbox__background {
   border-color: var(--color-primary);
-  background-color: var(--color-primary);
 }
 
 .mat-mdc-slide-toggle.mat-primary .mdc-switch__handle,
@@ -696,6 +704,17 @@ $color-surface-muted: #f9fafb;
   stroke: var(--color-surface) !important;
 }
 
+/* Hide checkbox/checkmark in Add New Crop selects only (via panelClass) */
+.cdk-overlay-pane .crop-select-panel .mat-pseudo-checkbox,
+.cdk-overlay-pane .crop-select-panel .mat-pseudo-checkbox-checked,
+.cdk-overlay-pane .crop-select-panel .mat-pseudo-checkbox-indeterminate {
+  display: none !important;
+}
+
+.cdk-overlay-pane .crop-select-panel .mdc-list-item__meta {
+  display: none !important;
+}
+
 /* Selected option in the open dropdown panel (rendered in overlay) */
 .mat-mdc-select-panel .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) .mdc-list-item__primary-text,
 .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) .mdc-list-item__primary-text {
@@ -716,6 +735,48 @@ $color-surface-muted: #f9fafb;
 .mat-mdc-option.mdc-list-item--selected .mdc-checkbox__checkmark-path {
   fill: var(--color-primary) !important;
   stroke: var(--color-primary) !important;
+}
+
+/* Datepicker toggle icons (calendar icons) – force primary color in all states */
+.mat-datepicker-toggle .mat-mdc-icon-button,
+.mat-datepicker-toggle .mat-mdc-icon-button.cdk-focused,
+.mat-datepicker-toggle .mat-mdc-icon-button.cdk-program-focused {
+  color: var(--color-primary) !important;
+  --mdc-icon-button-icon-color: var(--color-primary);
+  --mdc-icon-button-focus-icon-color: var(--color-primary);
+}
+
+.mat-datepicker-toggle,
+.mat-datepicker-toggle.mat-accent,
+.mat-datepicker-toggle .mat-mdc-icon-button .mat-icon,
+.mat-datepicker-toggle .mat-mdc-icon-button .mat-icon svg,
+.mat-datepicker-toggle .mat-mdc-icon-button .mat-icon path,
+.mat-datepicker-toggle-default-icon,
+.mat-datepicker-toggle-default-icon svg,
+.mat-datepicker-toggle-default-icon path {
+  color: var(--color-primary) !important;
+  fill: var(--color-primary) !important;
+}
+
+/* Datepicker calendar header buttons (month/year and nav arrows) */
+.mat-datepicker-content .mat-calendar-previous-button,
+.mat-datepicker-content .mat-calendar-next-button,
+.mat-datepicker-content .mat-calendar-period-button {
+  color: var(--color-primary) !important;
+}
+
+/* Current day highlight (today) – use primary border instead of blue fill */
+.mat-datepicker-content .mat-calendar-body-today:not(.mat-calendar-body-selected) .mat-calendar-body-cell-content {
+  border-color: var(--color-primary) !important;
+  background-color: transparent !important;
+  color: var(--color-primary) !important;
+}
+
+/* Selected day highlight – use primary background / surface text */
+.mat-datepicker-content .mat-calendar-body-selected .mat-calendar-body-cell-content,
+.mat-datepicker-content .mat-calendar-body-in-range .mat-calendar-body-cell-content {
+  background-color: var(--color-primary) !important;
+  color: var(--color-surface) !important;
 }
 
 /* Ensure Angular CDK / Material overlays (tooltips, menus, select dropdowns) sit above modal and sidebar */

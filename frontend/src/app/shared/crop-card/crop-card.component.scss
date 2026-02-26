@@ -5,6 +5,56 @@
 .crop-card-root {
   border-radius: 1rem;
   background-color: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  height: 440px;
+  min-height: 440px;
+  overflow: hidden;
+
+  .crop-card-root__image {
+    flex-shrink: 0;
+  }
+
+  .mat-mdc-card-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Reserve space for optional description so cards stay aligned */
+  .crop-card-root__description {
+    min-height: 2.5rem;
+    flex-shrink: 0;
+  }
+
+  /* Manage mode: fixed-height block for harvest/expiry so cards align when dates are missing */
+  .crop-card-root__dates {
+    min-height: 3.5rem;
+    flex-shrink: 0;
+  }
+
+  /* Badges row: reserve space when empty */
+  .crop-card-root__badges {
+    min-height: 2rem;
+    flex-shrink: 0;
+  }
+
+  /* Action buttons area: consistent height */
+  .crop-action-container {
+    flex-shrink: 0;
+  }
+
+  .crop-card-root__actions {
+    flex-shrink: 0;
+  }
+
+  /* Browse mode: reserve space for optional extra info */
+  .crop-card-root__browse-extra {
+    min-height: 4rem;
+    flex-shrink: 0;
+  }
 }
 
 .status-chip {
@@ -91,6 +141,14 @@
   padding: 4px 8px;
   font-size: 11px;
   white-space: nowrap;
+}
+
+.crop-card-root {
+  height: auto;
+}
+
+mat-card-content {
+  padding-top: 16px;
 }
 
 

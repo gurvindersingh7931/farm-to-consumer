@@ -1,6 +1,6 @@
 <mat-card class="crop-card-root shadow-soft hover:shadow-soft-lg transition-shadow duration-200" *ngIf="data">
   <!-- Image & top badges -->
-  <div class="relative overflow-hidden rounded-t-[1rem]">
+  <div class="crop-card-root__image relative overflow-hidden rounded-t-[1rem]">
     <img
       [src]="data.imageUrl"
       [alt]="data.name"
@@ -23,10 +23,7 @@
       </div>
     </div>
 
-    <!-- Description -->
-    <p *ngIf="data.description" class="text-xs text-gray-600 line-clamp-2">
-      {{ data.description }}
-    </p>
+
 
     <!-- Price & quantity -->
     <div class="flex items-center justify-between">
@@ -38,9 +35,9 @@
       </div>
     </div>
 
-    <!-- Browse-specific extra info -->
+    <!-- Browse-specific extra info (reserve space for alignment) -->
     <ng-container *ngIf="mode === 'browse'">
-      <div class="space-y-2">
+      <div class="space-y-2 crop-card-root__browse-extra">
         <div *ngIf="data.farmerName" class="flex items-center justify-between text-xs">
           <div class="text-gray-900 font-medium">
             {{ data.farmerName }}
@@ -81,18 +78,18 @@
 
     <!-- Manage-specific extra info -->
     <ng-container *ngIf="mode === 'manage'">
-      <div class="space-y-2 text-[11px] text-gray-600">
-        <div class="flex justify-between" *ngIf="data.harvestDate">
+      <div class="space-y-2 text-[11px] text-gray-600 crop-card-root__dates">
+        <div class="flex justify-between">
           <span class="font-medium">Harvest</span>
-          <span>{{ data.harvestDate | date: 'shortDate' }}</span>
+          <span>{{ data.harvestDate ? (data.harvestDate | date: 'shortDate') : '—' }}</span>
         </div>
-        <div class="flex justify-between" *ngIf="data.expiryDate">
+        <div class="flex justify-between">
           <span class="font-medium">Expires</span>
-          <span>{{ data.expiryDate | date: 'shortDate' }}</span>
+          <span>{{ data.expiryDate ? (data.expiryDate | date: 'shortDate') : '—' }}</span>
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-1 mt-2">
+      <div class="flex flex-wrap gap-1 mt-2 crop-card-root__badges">
         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium organic-chip"
               *ngIf="data.isOrganic">
           🌿 Organic
@@ -151,7 +148,7 @@
   </mat-card-content>
 
   <!-- Browse actions -->
-  <mat-card-actions *ngIf="mode === 'browse'" class="px-4 pb-4 pt-0 flex gap-2">
+  <mat-card-actions *ngIf="mode === 'browse'" class="crop-card-root__actions px-4 pb-4 pt-0 flex gap-2">
     <a
       *ngIf="data.detailLink"
       mat-flat-button

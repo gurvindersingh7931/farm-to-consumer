@@ -124,7 +124,7 @@
           [mode]="'manage'"
           [data]="getCropCardData(crop)"
           (toggleAvailability)="toggleAvailability(crop)"
-          (edit)="editCrop(crop)"
+          (edit)="openCropModal(crop)"
           (delete)="deleteCrop(crop)">
         </app-crop-card>
       </div>
@@ -160,7 +160,7 @@
           <form [formGroup]="cropForm" (ngSubmit)="saveCrop()" class="modal-form">
             <mat-form-field class="crop-form-field">
               <mat-label>Crop Name</mat-label>
-              <input matInput formControlName="name" placeholder="Enter crop name">
+              <input matInput formControlName="name">
               <mat-error *ngIf="name?.invalid && name?.touched">
                 Crop name is required
               </mat-error>
@@ -168,7 +168,7 @@
 
             <mat-form-field appearance="fill" class="crop-form-field">
               <mat-label>Category</mat-label>
-              <mat-select formControlName="category">
+              <mat-select panelClass="crop-select-panel" formControlName="category">
                 <mat-option value="">Select Category</mat-option>
                 <mat-option *ngFor="let category of categoryOptions" [value]="category">
                   {{ category }}
@@ -197,7 +197,7 @@
 
             <mat-form-field appearance="fill" class="crop-form-field">
               <mat-label>Unit</mat-label>
-              <mat-select formControlName="unit">
+              <mat-select panelClass="crop-select-panel" formControlName="unit">
                 <mat-option *ngFor="let unit of unitOptions" [value]="unit">
                   {{ unit }}
                 </mat-option>
@@ -209,17 +209,31 @@
 
             <mat-form-field appearance="fill" class="crop-form-field">
               <mat-label>Harvest Date</mat-label>
-              <input matInput type="date" formControlName="harvestDate">
+              <input
+                matInput
+                [matDatepicker]="harvestPicker"
+                formControlName="harvestDate"
+                readonly
+              >
+              <mat-datepicker-toggle matSuffix [for]="harvestPicker"></mat-datepicker-toggle>
+              <mat-datepicker #harvestPicker></mat-datepicker>
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="crop-form-field">
               <mat-label>Expiry Date</mat-label>
-              <input matInput type="date" formControlName="expiryDate">
+              <input
+                matInput
+                [matDatepicker]="expiryPicker"
+                formControlName="expiryDate"
+                readonly
+              >
+              <mat-datepicker-toggle matSuffix [for]="expiryPicker"></mat-datepicker-toggle>
+              <mat-datepicker #expiryPicker></mat-datepicker>
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="crop-form-field">
               <mat-label>Location</mat-label>
-              <input matInput formControlName="location" placeholder="Enter location">
+              <input matInput formControlName="location">
               <mat-error *ngIf="location?.invalid && location?.touched">
                 Location is required
               </mat-error>
@@ -227,14 +241,15 @@
 
             <mat-form-field appearance="fill" class="crop-form-field form-full-width">
               <mat-label>Description</mat-label>
-              <textarea matInput rows="3" formControlName="description" placeholder="Enter description"></textarea>
+              <textarea matInput rows="3" formControlName="description"></textarea>
             </mat-form-field>
 
-            <mat-checkbox formControlName="organic" class="form-full-width">
+            <mat-checkbox formControlName="organic" color="primary" class="form-full-width">
               This is organic produce
             </mat-checkbox>
 
-            <div *ngIf="!editingCrop" class="file-row form-full-width">
+            <!-- Image upload (add mode + edit mode when no image) -->
+            <div *ngIf="!editingCrop || (editingCrop && !imagePreview)" class="file-row form-full-width">
               <input
                 #cropFileInput
                 type="file"
@@ -251,16 +266,35 @@
               </button>
             </div>
 
+            <!-- Image preview (add + edit) -->
+            <div *ngIf="imagePreview" class="form-full-width mt-4 crop-image-preview-wrapper">
+              <div class="crop-image-preview-container">
+                <button
+                  type="button"
+                  class="crop-image-remove-btn"
+                  (click)="removeImage()"
+                  matTooltip="Remove image"
+                  matTooltipPosition="above">
+                  <span class="material-icons crop-image-remove-icon">close</span>
+                </button>
+                <img
+                  [src]="imagePreview"
+                  [alt]="editingCrop ? editingCrop.name : 'Crop image'"
+                  class="crop-image-preview"
+                  (error)="onImageError($event, cropService.getFallbackImage(editingCrop?.category))"
+                />
+              </div>
+            </div>
+
             <div *ngIf="editingCrop" class="status-settings form-full-width">
-              <h4>Status Settings</h4>
               <div class="status-checkboxes">
-                <mat-checkbox formControlName="isActive" [(ngModel)]="editingCrop.isActive">
+                <mat-checkbox formControlName="isActive" color="primary">
                   Active Listing
                 </mat-checkbox>
-                <mat-checkbox formControlName="isAvailable" [(ngModel)]="editingCrop.isAvailable">
+                <mat-checkbox formControlName="isAvailable" color="primary">
                   Available for Purchase
                 </mat-checkbox>
-                <mat-checkbox formControlName="isPremium">
+                <mat-checkbox formControlName="isPremium" color="primary">
                   Premium Listing
                 </mat-checkbox>
               </div>

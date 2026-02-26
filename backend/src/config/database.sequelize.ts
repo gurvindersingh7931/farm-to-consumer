@@ -27,7 +27,7 @@ console.log('✅ Sequelize instance created successfully');
 
 // Create wrapper functions to avoid circular references
 const authenticateFn = () => sequelize.authenticate();
-const syncFn = (options) => sequelize.sync(options);
+const syncFn = (options?: any) => sequelize.sync(options);
 const closeFn = () => sequelize.close();
 
 // Create a wrapper object instead of adding properties to sequelize

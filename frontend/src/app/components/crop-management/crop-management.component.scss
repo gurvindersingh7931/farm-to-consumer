@@ -579,6 +579,64 @@
   overflow: hidden;
 }
 
+/* Image preview (Add / Edit crop modal) */
+.crop-image-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.crop-image-preview-container {
+  position: relative;
+  max-width: 30%;
+  max-height: 250px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background-color: var(--color-surface-muted);
+}
+
+.crop-image-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 250px;
+  object-fit: cover;
+}
+
+.crop-image-remove-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: none;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.crop-image-remove-btn:hover {
+  background-color: var(--faded-copper-2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.3);
+}
+
+.crop-image-remove-icon {
+  font-size: 18px;
+  line-height: 1;
+  width: 18px;
+  height: 18px;
+  color: inherit;
+}
+
 /* Header: visible background + title left, close button top-right */
 .crop-modal-header {
   display: flex !important;
@@ -732,6 +790,22 @@
   background-color: transparent;
 }
 
+/* Date inputs (Harvest / Expiry) – align placeholder/text color with other fields */
+:host ::ng-deep .crop-form-field input[matinput] {
+  color: var(--faded-copper-2);
+}
+
+:host ::ng-deep .crop-form-field input[matinput]::placeholder {
+  color: var(--faded-copper-2);
+  opacity: 1;
+}
+
+/* Calendar icon in datepicker toggle – use primary color instead of blue */
+:host ::ng-deep .crop-form-field .mat-mdc-form-field-icon-suffix .mat-icon,
+:host ::ng-deep .crop-form-field .mat-mdc-icon-button.mat-datepicker-toggle .mat-icon {
+  color: var(--color-primary);
+}
+
 /* Select displayed value (Category, Unit) – use design system color instead of blue */
 :host ::ng-deep .crop-form-field .mat-mdc-select-value,
 :host ::ng-deep .crop-form-field .mat-mdc-select-value-text {
@@ -774,7 +848,6 @@
 }
 
 .file-picker-btn:hover {
-  background-color: var(--color-primary-soft);
   border-color: var(--faded-copper-2);
 }
 
