@@ -31,7 +31,6 @@
 .crop-management-content {
   padding: 1.5rem;
   max-width: 1120px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -153,25 +152,82 @@
 }
 
 .filters-card {
-  border-radius: 0.75rem;
+  border-radius: 0.9rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-primary-soft);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
 }
 
 .filters-row {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
 .filters-controls {
   display: flex;
-  gap: 1rem;
   align-items: center;
+  gap: 0.75rem;
+}
+
+/* Filters: use design-system colors for toggle + status select */
+.filters-card .mat-mdc-card-content {
+  padding: 0.9rem 1.25rem;
+}
+
+.filters-row mat-checkbox {
+  font-weight: 500;
+  color: var(--faded-copper-2);
+}
+
+::host ::ng-deep .filters-card .mat-mdc-checkbox .mdc-checkbox__background {
+  border-color: var(--color-primary);
+}
+
+::host ::ng-deep .filters-card .mat-mdc-checkbox.mdc-checkbox--selected
+  .mdc-checkbox__background {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.filters-controls .crop-form-field {
+  min-width: 220px;
+}
+
+::host ::ng-deep .filters-card .crop-form-field .mat-mdc-text-field-wrapper {
+  background-color: var(--color-surface-muted);
+  border-radius: 999px;
+}
+
+/* Hide checkbox icons in single-select dropdown panels (status, category) */
+::host ::ng-deep .filters-card .mat-mdc-option .mat-pseudo-checkbox {
+  display: none !important;
+}
+
+::host ::ng-deep .filters-card .mat-mdc-option .mdc-list-item__primary-text {
+  padding-left: 0;
+}
+
+::host ::ng-deep .filters-card .crop-form-field .mdc-floating-label {
+  color: var(--faded-copper-2);
+}
+
+::host ::ng-deep
+  .filters-card
+  .crop-form-field
+  .mdc-floating-label--float-above {
+  color: var(--color-primary);
 }
 
 .pagination-wrapper {
   margin-top: 1.5rem;
+}
+
+/* Empty state message inside grid-crops when filters return no results */
+.grid-empty-state {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 768px) {
@@ -944,6 +1000,14 @@
   padding: 16px !important;
 }
 
-.crop-card-root {
-  height: auto;
+
+.not-found-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.not-found-description {
+  font-size: 16px;
+  color: var(--color-primary);
 }

@@ -109,6 +109,14 @@ export class CropService {
     'ounces'
   ];
 
+  // Status options for crop management filters
+  public statusFilterOptions: string[] = [
+    'available',
+    'sold-out',
+    'inactive',
+    'expired'
+  ];
+
   constructor(private http: HttpClient, private authService: AuthService) { }
 
   private getAuthHeaders(contentType: 'json' | 'formData' = 'json'): HttpHeaders {

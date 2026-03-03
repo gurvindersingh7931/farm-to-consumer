@@ -12,8 +12,8 @@
   </mat-toolbar>
 
   <div class="crop-management-content">
-    <!-- Stats Dashboard -->
-    <div *ngIf="crops.length > 0" class="stats-row">
+    <!-- Stats Dashboard (always visible; values reflect current filters) -->
+    <div class="stats-row">
       <mat-card class="stat-card stat-card--total">
         <mat-card-content class="stat-card__content">
           <div class="stat-card__icon">
@@ -77,39 +77,30 @@
       </mat-card>
     </div>
 
-    <!-- Empty State -->
-    <div *ngIf="!isLoading && crops.length === 0" class="state-wrapper">
-      <mat-card>
-        <mat-card-content class="state-card">
-          <div class="text-6xl mb-4">🌱</div>
-          <h3>No crops yet</h3>
-          <p>Start building your crop inventory by adding your first crop.</p>
-          <button mat-raised-button color="primary" type="button" (click)="openCropModal()">
-            Add Your First Crop
-          </button>
-        </mat-card-content>
-      </mat-card>
-    </div>
-
     <!-- Crops Section -->
-    <ng-container *ngIf="!isLoading && crops.length > 0">
+    <ng-container *ngIf="!isLoading">
       <!-- Filters -->
       <mat-card class="filters-card">
         <mat-card-content>
           <div class="filters-row">
-            <mat-checkbox [(ngModel)]="showFilters">
-              Show filters
-            </mat-checkbox>
-
-            <div *ngIf="showFilters" class="filters-controls">
+            <div class="filters-controls">
               <mat-form-field appearance="fill" class="crop-form-field">
                 <mat-label>Status</mat-label>
                 <mat-select [(ngModel)]="selectedStatus" (selectionChange)="loadCrops()">
-                  <mat-option value="">All Status</mat-option>
-                  <mat-option value="available">Available</mat-option>
-                  <mat-option value="sold-out">Sold Out</mat-option>
-                  <mat-option value="inactive">Inactive</mat-option>
-                  <mat-option value="expired">Expired</mat-option>
+                  <mat-option value="">All status</mat-option>
+                  <mat-option *ngFor="let status of statusOptions" [value]="status">
+                    {{ cropService.getStatusDisplayText(status === 'available' ? 'active' : status) }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="crop-form-field">
+                <mat-label>Category</mat-label>
+                <mat-select [(ngModel)]="selectedCategory" (selectionChange)="onCategoryFilter($event.value)">
+                  <mat-option value="">All categories</mat-option>
+                  @for (category of categoryOptions; track category) {
+                    <mat-option [value]="category">{{category}}</mat-option>
+                  }
                 </mat-select>
               </mat-form-field>
             </div>
@@ -117,16 +108,28 @@
         </mat-card-content>
       </mat-card>
 
-      <!-- Crops Grid -->
+      <!-- Crops Grid (only this area changes with filters) -->
       <div class="grid-crops">
-        <app-crop-card
-          *ngFor="let crop of crops"
-          [mode]="'manage'"
-          [data]="getCropCardData(crop)"
-          (toggleAvailability)="toggleAvailability(crop)"
-          (edit)="openCropModal(crop)"
-          (delete)="deleteCrop(crop)">
-        </app-crop-card>
+        <ng-container *ngIf="crops.length > 0; else noFilteredCrops">
+          <app-crop-card
+            *ngFor="let crop of crops"
+            [mode]="'manage'"
+            [data]="getCropCardData(crop)"
+            (toggleAvailability)="toggleAvailability(crop)"
+            (edit)="openCropModal(crop)"
+            (delete)="deleteCrop(crop)">
+          </app-crop-card>
+        </ng-container>
+        <ng-template #noFilteredCrops>
+          <div class="grid-empty-state">
+            <mat-card>
+              <mat-card-content class="state-card">
+                <p class="not-found-title">No crops found</p>
+                <p class="not-found-description">Try adjusting the status or category filters or add a new crop.</p>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </ng-template>
       </div>
 
       <!-- Pagination -->
@@ -167,12 +170,12 @@
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="crop-form-field">
-              <mat-label>Category</mat-label>
+              <mat-label>Category d</mat-label>
               <mat-select panelClass="crop-select-panel" formControlName="category">
-                <mat-option value="">Select Category</mat-option>
-                <mat-option *ngFor="let category of categoryOptions" [value]="category">
-                  {{ category }}
-                </mat-option>
+                  <mat-option value="">Select Category</mat-option>
+                  @for (category of categoryOptions; track category) {
+                    <mat-option [value]="category">{{category}}</mat-option>
+                  }
               </mat-select>
               <mat-error *ngIf="category?.invalid && category?.touched">
                 Category is required

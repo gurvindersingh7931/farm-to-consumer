@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
 import { Subject, takeUntil } from 'rxjs';
 import { CropBrowseService, CropListing } from '../../services/crop-browse.service';
 import { AuthService } from '../../services/auth.service';
@@ -14,7 +16,7 @@ import { OrderPlacementComponent, CropForOrder } from '../order-placement/order-
 @Component({
   selector: 'app-crop-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, OrderPlacementComponent],
+  imports: [CommonModule, RouterModule, MatIconModule, MatCardModule, MatButtonModule, OrderPlacementComponent],
   templateUrl: './crop-detail.component.html',
   styleUrls: ['./crop-detail.component.scss']
 })

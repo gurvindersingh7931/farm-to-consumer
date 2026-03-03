@@ -441,6 +441,15 @@ $color-surface-muted: #f9fafb;
   .badge-gray {
     @apply bg-gray-100 text-gray-800;
   }
+
+/* Global: hide checkbox icons inside all mat-select options */
+// .mat-mdc-select-panel .mat-mdc-option .mat-pseudo-checkbox {
+//   display: none !important;
+// }
+
+// .cdk-overlay-container .mdc-checkbox {
+//   display: none !important;
+// }
   
   /* Grid Layouts - LocalLine Style */
   .grid-crops {
@@ -704,14 +713,14 @@ $color-surface-muted: #f9fafb;
   stroke: var(--color-surface) !important;
 }
 
-/* Hide checkbox/checkmark in Add New Crop selects only (via panelClass) */
-.cdk-overlay-pane .crop-select-panel .mat-pseudo-checkbox,
-.cdk-overlay-pane .crop-select-panel .mat-pseudo-checkbox-checked,
-.cdk-overlay-pane .crop-select-panel .mat-pseudo-checkbox-indeterminate {
+/* Hide checkbox/checkmark in *all* mat-select panels (including Add New Crop) */
+.cdk-overlay-pane .mat-mdc-select-panel .mat-pseudo-checkbox,
+.cdk-overlay-pane .mat-mdc-select-panel .mat-pseudo-checkbox-checked,
+.cdk-overlay-pane .mat-mdc-select-panel .mat-pseudo-checkbox-indeterminate {
   display: none !important;
 }
 
-.cdk-overlay-pane .crop-select-panel .mdc-list-item__meta {
+.cdk-overlay-pane .mat-mdc-select-panel .mdc-list-item__meta {
   display: none !important;
 }
 

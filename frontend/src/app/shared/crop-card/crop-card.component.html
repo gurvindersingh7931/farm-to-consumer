@@ -35,47 +35,6 @@
       </div>
     </div>
 
-    <!-- Browse-specific extra info (reserve space for alignment) -->
-    <ng-container *ngIf="mode === 'browse'">
-      <div class="space-y-2 crop-card-root__browse-extra">
-        <div class="flex items-center justify-between gap-2 text-xs">
-          <div class="text-gray-900 font-medium min-w-0 truncate" [title]="data.farmerName">
-            {{ data.farmerName || '—' }}
-          </div>
-          <div *ngIf="data.ratingValue != null && data.ratingInfo" class="flex items-center gap-1 flex-shrink-0">
-            <span class="flex items-center text-yellow-500" [attr.aria-label]="'Rating ' + data.ratingValue.toFixed(1)">
-              <span *ngFor="let _ of [].constructor(data.ratingInfo.full)">★</span>
-              <span *ngIf="data.ratingInfo.half">★</span>
-              <span *ngFor="let _ of [].constructor(data.ratingInfo.empty)" class="text-gray-300">★</span>
-            </span>
-            <span class="text-gray-600 font-medium">{{ data.ratingValue.toFixed(1) }}</span>
-          </div>
-          <div *ngIf="(data.ratingValue == null || !data.ratingInfo) && data.farmerName" class="text-gray-400 flex-shrink-0">
-            No rating
-          </div>
-        </div>
-
-        <div class="flex flex-wrap gap-2 text-[11px]">
-          <div *ngIf="data.farmerLocation" class="flex items-center gap-1 text-gray-600">
-            <mat-icon class="!text-base">place</mat-icon>
-            <span>{{ data.farmerLocation }}</span>
-          </div>
-          <div *ngIf="data.distanceText" class="flex items-center gap-1 text-[color:var(--camel)]">
-            <mat-icon class="!text-base">map</mat-icon>
-            <span>{{ data.distanceText }}</span>
-          </div>
-        </div>
-
-        <div *ngIf="data.premiumBadges?.length" class="flex flex-wrap gap-1">
-          <span
-            *ngFor="let badge of data.premiumBadges"
-            class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium badge-chip">
-            {{ badge }}
-          </span>
-        </div>
-      </div>
-    </ng-container>
-
     <!-- Manage-specific extra info -->
     <ng-container>
       <div class="space-y-2 text-[11px] text-gray-600 crop-card-root__dates">
@@ -87,6 +46,25 @@
           <span class="font-medium">Expires</span>
           <span>{{ data.expiryDate ? (data.expiryDate | date: 'shortDate') : '—' }}</span>
         </div>
+        <div class="space-y-2 crop-card-root__browse-extra" *ngIf="mode === 'browse'">
+      <div class="flex items-center justify-between gap-2 text-xs">
+        <div class="font-medium min-w-0 truncate" title="Farmer Trust Score">
+          Farmer Trust Score
+        </div>
+        <div *ngIf="data.ratingValue != null && data.ratingInfo" class="flex items-center gap-1 flex-shrink-0">
+          <span class="flex items-center text-yellow-500" [attr.aria-label]="'Rating ' + data.ratingValue.toFixed(1)">
+            <span *ngFor="let _ of [].constructor(data.ratingInfo.full)">★</span>
+            <span *ngIf="data.ratingInfo.half">★</span>
+            <span *ngFor="let _ of [].constructor(data.ratingInfo.empty)" class="text-gray-300">★</span>
+          </span>
+          <span class="text-gray-600 font-medium">{{ data.ratingValue.toFixed(1) }}</span>
+        </div>
+        <div *ngIf="(data.ratingValue == null || !data.ratingInfo) && data.farmerName"
+          class="text-gray-400 flex-shrink-0">
+          -
+        </div>
+      </div>
+    </div>
       </div>
 
       <div class="flex flex-wrap gap-1 mt-2 crop-card-root__badges">
@@ -105,7 +83,7 @@
         {{ data.statusLabel }}
       </span>
       <span *ngIf="data.freshnessBadge"
-            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium freshness-chip"
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium freshness-chip"
             [ngClass]="data.freshnessBadge.class">
         {{ data.freshnessBadge.text }}
       </span>
@@ -148,19 +126,14 @@
   </mat-card-content>
 
   <!-- Browse actions: View Details & Contact -->
-  <mat-card-actions *ngIf="mode === 'browse'" class="crop-card-root__actions">
-    <a
-      *ngIf="data.detailLink"
-      mat-flat-button
-      color="primary"
-      [routerLink]="data.detailLink">
-      Details
-    </a>
-    <a
-      *ngIf="data.farmerLink"
-      mat-stroked-button
-      [routerLink]="data.farmerLink">
-      Contact
-    </a>
-  </mat-card-actions>
+  <ng-container *ngIf="mode === 'browse'">
+    <mat-card-actions class="crop-card-root__actions">
+      <a *ngIf="data.detailLink" mat-flat-button color="primary" [routerLink]="data.detailLink">
+        Details
+      </a>
+      <a *ngIf="data.farmerLink" mat-stroked-button [routerLink]="data.farmerLink">
+        Contact
+      </a>
+    </mat-card-actions>
+  </ng-container>
 </mat-card>

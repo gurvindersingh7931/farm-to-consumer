@@ -3,6 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatSliderModule } from '@angular/material/slider';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 import { CropCardComponent, CropCardData } from '../../shared/crop-card/crop-card.component';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
@@ -14,7 +22,22 @@ import { MapsService } from '../../services/maps.service';
 @Component({
   selector: 'app-crop-browse',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, MatIconModule, PaginationComponent, CropCardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatIconModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatSliderModule,
+    PaginationComponent,
+    CropCardComponent
+  ],
   templateUrl: './crop-browse.component.html',
   styleUrls: ['./crop-browse.component.scss']
 })
@@ -230,6 +253,7 @@ export class CropBrowseComponent implements OnInit, OnDestroy {
   }
 
   onPriceRangeChange(): void {
+    console.log('onPriceRangeChange', this.minPrice, this.maxPrice);
     this.filters.minPrice = this.minPrice;
     this.filters.maxPrice = this.maxPrice;
     this.onFilterChange();

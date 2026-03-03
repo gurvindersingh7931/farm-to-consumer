@@ -64,11 +64,11 @@ export class CropManagementComponent implements OnInit, OnDestroy {
   pageSize = 10;
   selectedCategory = '';
   selectedStatus = '';
-  showFilters = false;
 
   cropForm: FormGroup;
   categoryOptions: string[] = [];
   unitOptions: string[] = [];
+  statusOptions: string[] = [];
   Math = Math;
   private authSubscription: Subscription | undefined;
 
@@ -98,6 +98,7 @@ export class CropManagementComponent implements OnInit, OnDestroy {
 
     this.categoryOptions = this.cropService.categoryOptions;
     this.unitOptions = this.cropService.unitOptions;
+    this.statusOptions = this.cropService.statusFilterOptions;
   }
 
   ngOnInit(): void {

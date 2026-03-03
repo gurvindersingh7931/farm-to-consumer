@@ -52,7 +52,6 @@
 
   /* Browse mode: reserve space for optional extra info */
   .crop-card-root__browse-extra {
-    min-height: 4rem;
     flex-shrink: 0;
   }
 }
@@ -62,15 +61,11 @@
   color: var(--faded-copper-2);
 }
 
-.organic-chip {
+.organic-chip, .freshness-chip {
   background-color: var(--color-primary-soft);
   color: var(--faded-copper-2);
 }
 
-.freshness-chip {
-  background-color: var(--color-surface-muted);
-  color: var(--color-primary);
-}
 
 .badge-chip {
   background-color: var(--color-surface-muted);
@@ -103,6 +98,7 @@
 
 .crop-action-container {
   display: flex;
+  justify-content: space-around;
   align-items: center;
   gap: 0.5rem;
   margin-top: 1rem;
