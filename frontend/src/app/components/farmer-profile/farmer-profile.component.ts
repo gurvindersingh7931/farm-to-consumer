@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { ToastrService } from 'ngx-toastr';
 import { FarmerService, FarmerProfile, CreateFarmerProfileRequest, UpdateFarmerProfileRequest } from '../../services/farmer.service';
 import { AuthService } from '../../services/auth.service';
@@ -11,7 +12,7 @@ declare var google: any;
 @Component({
   selector: 'app-farmer-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule],
   templateUrl: './farmer-profile.component.html',
   styleUrl: './farmer-profile.component.scss'
 })
@@ -334,6 +335,13 @@ export class FarmerProfileComponent implements OnInit {
   websiteValidator(control: any): { [key: string]: any } | null {
     if (!control.value) return null;
     return this.farmerService.validateWebsite(control.value) ? null : { invalidWebsite: true };
+  }
+
+  getRatingStars(rating: number): { full: number; half: boolean; empty: number } {
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return { full, half, empty };
   }
 
   get phone() { return this.profileForm.get('phone'); }

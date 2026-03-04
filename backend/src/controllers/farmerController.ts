@@ -184,14 +184,29 @@ export const getFarmerProfile = async (req: AuthRequest, res: Response): Promise
       return;
     }
 
-    const farmerJson = farmer.toJSON();
+    const farmerJson = farmer.toJSON() as any;
+
+    // Aggregate rating for this farmer (same logic as getFarmerById)
+    const ratingAgg = await FarmerRating.findAll({
+      where: { farmerId: (farmer as any).userId },
+      attributes: [
+        [Sequelize.fn('AVG', Sequelize.col('rating')), 'avg'],
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+      ],
+      raw: true
+    });
+    const [row] = (ratingAgg as unknown as Array<{ avg: number | string | null; count: number | string | null }>);
+    const avg = row && row.avg != null ? parseFloat(String(row.avg)) : 0;
+    const count = row && row.count != null ? parseInt(String(row.count)) : 0;
     const presignedProfilePhoto = await s3Presign.getPresignedImageUrl(farmerJson.profilePhoto);
 
     res.json({
       message: 'Farmer profile retrieved successfully',
       farmer: {
-        ...farmerJson,
-        profilePhoto: presignedProfilePhoto ?? farmerJson.profilePhoto
+      ...farmerJson,
+      profilePhoto: presignedProfilePhoto ?? farmerJson.profilePhoto,
+      rating: avg,
+      totalRatings: count
       }
     });
   } catch (error) {
