@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { AuthService } from './auth.service';
 
 export interface FarmerProfile {
@@ -87,6 +87,9 @@ export interface UpdatePremiumStatusRequest {
 })
 export class FarmerService {
   private readonly API_URL = 'http://localhost:3000/api';
+
+  private currentFarmerProfileSubject = new BehaviorSubject<FarmerProfile | null>(null);
+  currentFarmerProfile$ = this.currentFarmerProfileSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -207,7 +210,7 @@ export class FarmerService {
   // Helper methods
   getProfilePhotoUrl(profilePhoto?: string): string {
     if (!profilePhoto) {
-      return '/assets/images/default-farmer.png';
+      return '/assets/default-farmer.png';
     }
     // Absolute S3 URL
     if (profilePhoto.startsWith('http://') || profilePhoto.startsWith('https://')) {
@@ -222,6 +225,10 @@ export class FarmerService {
       return `${environment.backendUrl}/${profilePhoto}`;
     }
     return profilePhoto;
+  }
+
+  setCurrentFarmerProfile(profile: FarmerProfile | null): void {
+    this.currentFarmerProfileSubject.next(profile);
   }
 
 

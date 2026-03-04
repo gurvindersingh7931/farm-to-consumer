@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../services/auth.service';
+import { FarmerService } from '../services/farmer.service';
 
 type MenuItem = { label: string; path: string; icon: string };
 
@@ -17,8 +18,12 @@ export class ShellLayoutComponent implements OnInit {
   sidebarOpen = true;
   menuItems: MenuItem[] = [];
   user: any = null;
+  avatarUrl: string | null = null;
 
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private farmerService: FarmerService
+  ) {}
 
   ngOnInit(): void {
     const persisted = localStorage.getItem('sidebarOpen');
@@ -33,6 +38,25 @@ export class ShellLayoutComponent implements OnInit {
     this.user = this.auth.getCurrentUser();
     const role = this.user?.role as 'admin' | 'farmer' | 'consumer' | undefined;
     this.menuItems = this.buildMenu(role);
+
+    if (role === 'farmer') {
+      this.farmerService.currentFarmerProfile$.subscribe(profile => {
+        if (profile?.profilePhoto) {
+          this.avatarUrl = this.farmerService.getProfilePhotoUrl(profile.profilePhoto);
+        } else {
+          this.avatarUrl = null;
+        }
+      });
+
+      this.farmerService.getProfile().subscribe({
+        next: (response) => {
+          this.farmerService.setCurrentFarmerProfile(response.farmer);
+        },
+        error: () => {
+          this.avatarUrl = null;
+        }
+      });
+    }
   }
 
   private buildMenu(role?: 'admin' | 'farmer' | 'consumer'): MenuItem[] {

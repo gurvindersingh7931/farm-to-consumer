@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { FarmerService, FarmerProfile, CreateFarmerProfileRequest, UpdateFarmerProfileRequest } from '../../services/farmer.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -21,7 +22,6 @@ export class FarmerProfileComponent implements OnInit {
   isEditMode = false;
   isLoading = false;
   errorMessage = '';
-  successMessage = '';
   farmerProfile: FarmerProfile | null = null;
   selectedFile: File | null = null;
   profilePhotoPreview: string | null = null;
@@ -34,7 +34,8 @@ export class FarmerProfileComponent implements OnInit {
     private fb: FormBuilder,
     public farmerService: FarmerService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {
     this.profileForm = this.fb.group({
       phone: ['', [Validators.pattern(/^[\+]?[1-9][\d]{0,15}$/)]],
@@ -187,6 +188,7 @@ export class FarmerProfileComponent implements OnInit {
       next: (response) => {
         this.farmerProfile = response.farmer;
         this.populateForm();
+        this.farmerService.setCurrentFarmerProfile(response.farmer);
         this.isEditMode = false;
         this.isLoading = false;
       },
@@ -256,7 +258,6 @@ export class FarmerProfileComponent implements OnInit {
     if (this.profileForm.valid) {
       this.isLoading = true;
       this.errorMessage = '';
-      this.successMessage = '';
 
       const formData = this.profileForm.value;
       const profileData: CreateFarmerProfileRequest | UpdateFarmerProfileRequest = {
@@ -281,13 +282,17 @@ export class FarmerProfileComponent implements OnInit {
       operation.subscribe({
         next: (response) => {
           this.farmerProfile = response.farmer;
-          this.successMessage = response.message;
+          this.profilePhotoPreview = this.farmerService.getProfilePhotoUrl(response.farmer.profilePhoto);
+          this.farmerService.setCurrentFarmerProfile(response.farmer);
+          this.toastr.success(response.message || 'Farmer profile saved successfully', 'Success');
           this.isEditMode = false;
           this.selectedFile = null;
           this.isLoading = false;
         },
         error: (error) => {
-          this.errorMessage = error.error?.message || 'Failed to save farmer profile';
+          const msg = error.error?.message || 'Failed to save farmer profile';
+          this.errorMessage = msg;
+          this.toastr.error(msg, 'Error');
           this.isLoading = false;
         }
       });

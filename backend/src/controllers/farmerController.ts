@@ -8,6 +8,7 @@ import multerS3 from 'multer-s3';
 import { S3Client } from '@aws-sdk/client-s3';
 import path from 'path';
 import fs from 'fs';
+import * as s3Presign from '../services/s3PresignService';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -183,9 +184,15 @@ export const getFarmerProfile = async (req: AuthRequest, res: Response): Promise
       return;
     }
 
+    const farmerJson = farmer.toJSON();
+    const presignedProfilePhoto = await s3Presign.getPresignedImageUrl(farmerJson.profilePhoto);
+
     res.json({
       message: 'Farmer profile retrieved successfully',
-      farmer
+      farmer: {
+        ...farmerJson,
+        profilePhoto: presignedProfilePhoto ?? farmerJson.profilePhoto
+      }
     });
   } catch (error) {
     console.error('Get farmer profile error:', error);
@@ -259,9 +266,20 @@ export const updateFarmerProfile = async (req: AuthRequest, res: Response): Prom
       }]
     });
 
+    if (!updatedFarmer) {
+      res.status(404).json({ message: 'Farmer profile not found after update' });
+      return;
+    }
+
+    const updatedFarmerJson = updatedFarmer.toJSON() as any;
+    const presignedProfilePhoto = await s3Presign.getPresignedImageUrl(updatedFarmerJson.profilePhoto);
+
     res.json({
       message: 'Farmer profile updated successfully',
-      farmer: updatedFarmer
+      farmer: {
+        ...updatedFarmerJson,
+        profilePhoto: presignedProfilePhoto ?? updatedFarmerJson.profilePhoto
+      }
     });
   } catch (error) {
     console.error('Update farmer profile error:', error);

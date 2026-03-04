@@ -15,7 +15,12 @@
           <a routerLink="/" class="navbar-brand" matTooltip="Farm">Farm-to-Consumer</a>
         </div>
         <div class="flex items-center gap-4">
-          <img *ngIf="user" src="/assets/default-farmer.png" alt="user" class="w-8 h-8 rounded-full object-cover" />
+          <img
+            *ngIf="user"
+            [src]="avatarUrl || '/assets/default-farmer.png'"
+            alt="user"
+            class="w-8 h-8 rounded-full object-cover"
+          />
           <button *ngIf="user" class="btn btn-secondary btn-sm" (click)="logout()">Logout</button>
         </div>
       </div>

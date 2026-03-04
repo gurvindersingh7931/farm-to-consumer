@@ -31,14 +31,9 @@
       <p class="text-gray-600">Loading profile...</p>
     </div>
 
-    <!-- Error Message -->
+    <!-- Error Message (kept minimal; main feedback via toasts) -->
     <div class="alert alert-danger" *ngIf="errorMessage">
       {{ errorMessage }}
-    </div>
-
-    <!-- Success Message -->
-    <div class="alert alert-success" *ngIf="successMessage">
-      {{ successMessage }}
     </div>
 
     <!-- Profile Form -->
@@ -52,7 +47,7 @@
           <div class="card-body text-center">
             <div class="mb-6">
               <img 
-                [src]="profilePhotoPreview || '/assets/default-farmer.png'" 
+                [src]="profilePhotoPreview || farmerService.getProfilePhotoUrl(farmerProfile?.profilePhoto)" 
                 alt="Profile Photo"
                 class="w-32 h-32 rounded-full object-cover mx-auto border-4 border-gray-200">
             </div>
