@@ -58,9 +58,16 @@
             <mat-label>Order date</mat-label>
             <input
               matInput
-              type="date"
+              [matDatepicker]="orderDatePicker"
+              placeholder="Choose a date"
+              [(ngModel)]="orderDate"
+              name="orderDate"
               aria-label="Filter by order date"
             />
+            <mat-datepicker-toggle matSuffix [for]="orderDatePicker">
+              <mat-icon matDatepickerToggleIcon>event</mat-icon>
+            </mat-datepicker-toggle>
+            <mat-datepicker #orderDatePicker></mat-datepicker>
           </mat-form-field>
         </div>
       <!-- </mat-card> -->

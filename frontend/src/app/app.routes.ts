@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ShellLayoutComponent } from './layout/shell-layout.component';
-import { AuthGuard, RoleGuard, AdminGuard } from './guards/auth.guard';
+import { AuthGuard } from './guards/auth.guard';
+import { RoleGuard, AdminGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -12,7 +13,7 @@ export const routes: Routes = [
     children: [
       { 
         path: 'farmer-dashboard', 
-        loadComponent: () => import('./components/dashboard/farmer-dashboard/farmer-dashboard.component').then(m => m.FarmerDashboardComponent),
+        loadComponent: () => import('./components/dashboard/farmer-analytics/farmer-analytics.component').then(m => m.FarmerAnalyticsComponent),
         canActivate: [AuthGuard, RoleGuard],
         data: { roles: ['farmer'] }
       },

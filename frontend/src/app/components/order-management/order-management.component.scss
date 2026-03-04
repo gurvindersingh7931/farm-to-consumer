@@ -11,6 +11,16 @@
   padding: 16px 12px 24px;
 }
 
+.om-orders-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.om-orders-table {
+  min-width: 900px;
+}
+
 .om-section {
   display: flex;
   flex-direction: column;

@@ -1,0 +1,57 @@
+<div class="min-h-screen bg-gray-50">
+  <header class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <h1 class="page-title">Sales Analytics</h1>
+        <div></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-8 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <mat-card class="h-80">
+        <mat-card-header>
+          <mat-card-title>Revenue over time</mat-card-title>
+          <mat-card-subtitle>Monthly revenue trend (dummy data)</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="h-64">
+          <canvas #revenueChart></canvas>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="h-80">
+        <mat-card-header>
+          <mat-card-title>Orders by status</mat-card-title>
+          <mat-card-subtitle>Distribution of order lifecycle</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="h-64">
+          <canvas #statusChart></canvas>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <mat-card class="h-80">
+        <mat-card-header>
+          <mat-card-title>Top products by revenue</mat-card-title>
+          <mat-card-subtitle>Share of revenue by product</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="h-64">
+          <canvas #topProductsChart></canvas>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="h-80">
+        <mat-card-header>
+          <mat-card-title>Orders by weekday</mat-card-title>
+          <mat-card-subtitle>When customers place orders most often</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="h-64">
+          <canvas #ordersByDayChart></canvas>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </main>
+</div>
+

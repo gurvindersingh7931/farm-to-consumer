@@ -15,6 +15,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { AuthService } from '../../services/auth.service';
 import {
   OrderService,
@@ -39,6 +41,8 @@ import {
     MatSelectModule,
     MatInputModule,
     MatToolbarModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatTableModule,
     MatPaginatorModule,
     MatChipsModule,
@@ -59,6 +63,7 @@ export class OrderManagementComponent implements OnInit {
   totalPages = 1;
   limit = 10;
   selectedStatus = '';
+  orderDate: Date | null = null;
   selectedOrder: Order | null = null;
   showAcceptModal = false;
   showRejectModal = false;
