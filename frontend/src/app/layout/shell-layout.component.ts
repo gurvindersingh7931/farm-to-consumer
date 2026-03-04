@@ -59,6 +59,14 @@ export class ShellLayoutComponent implements OnInit {
     }
   }
 
+  getHomeLink(): string {
+    const role = this.user?.role as 'admin' | 'farmer' | 'consumer' | undefined;
+    if (role === 'admin') return '/admin-dashboard';
+    if (role === 'farmer') return '/farmer-dashboard';
+    if (role === 'consumer') return '/consumer-dashboard';
+    return '/browse-crops';
+  }
+
   private buildMenu(role?: 'admin' | 'farmer' | 'consumer'): MenuItem[] {
     if (role === 'admin') {
       return [
