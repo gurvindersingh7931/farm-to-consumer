@@ -3,6 +3,7 @@ import {
   createOrder,
   getConsumerOrders,
   getFarmerOrders,
+  getFarmerOrderStats,
   getOrderById,
   updateOrderStatus,
   cancelOrder,
@@ -21,6 +22,7 @@ router.put('/:id/cancel', authorizeRoles('consumer'), cancelOrder);
 
 // Farmer routes
 router.get('/farmer', authorizeRoles('farmer'), getFarmerOrders);
+router.get('/stats', authorizeRoles('farmer'), getFarmerOrderStats);
 router.put('/:id/status', authorizeRoles('farmer'), updateOrderStatus);
 
 // Shared routes (both consumer and farmer can access)

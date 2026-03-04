@@ -81,7 +81,7 @@ const corsOptions = {
   origin: function (origin: string | undefined, callback: Function) {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
       'http://localhost:4200',
       'http://localhost:4201',
@@ -90,8 +90,15 @@ const corsOptions = {
       process.env.FRONTEND_URL,
       process.env.PRODUCTION_FRONTEND_URL
     ].filter(Boolean);
-    
-    if (allowedOrigins.includes(origin)) {
+
+    const isExplicitlyAllowed = allowedOrigins.includes(origin);
+
+    // In non-production, also allow any localhost / 127.0.0.1 origin (any port) for dev convenience
+    const isDevLocalhost =
+      process.env.NODE_ENV !== 'production' &&
+      /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
+    if (isExplicitlyAllowed || isDevLocalhost) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

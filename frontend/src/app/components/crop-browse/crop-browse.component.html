@@ -1,108 +1,142 @@
 <div class="cb-page">
   <div class="cb-shell">
-    <!-- Header -->
-    <header class="cb-header">
-      <div class="cb-header-title">
-        <h1>Browse fresh crops</h1>
-        <p>Find trusted farmers and seasonal produce near you.</p>
-      </div>
-    </header>
-
-    <!-- Search + top controls -->
-    <section class="cb-section">
-      <mat-card class="cb-controls-card">
-        <mat-card-content class="cb-controls-row">
-          <!-- Search -->
-          <div class="cb-search">
-            <mat-form-field appearance="outline" class="cb-search-field">
-              <mat-icon matPrefix>search</mat-icon>
-              <input matInput name="searchTerm" type="text" placeholder="Search for crops, categories, or farmers"
-                [(ngModel)]="searchTerm" (input)="onSearchChange()" />
-            </mat-form-field>
-          </div>
-
-          <!-- Controls -->
-          <div class="cb-controls-actions">
-            <button mat-stroked-button type="button" color="primary" [class.cb-toggle-active]="showFilters"
-              (click)="toggleFilters()">
-              <mat-icon>tune</mat-icon>
-              <span>Filters</span>
-            </button>
-
-            <!-- <button
-              mat-stroked-button
-              type="button"
-              color="primary"
-              [class.cb-toggle-active]="showSortOptions"
-              (click)="toggleSortOptions()"
-            >
-              <mat-icon>sort</mat-icon>
-              <span>{{ getSortDisplayName(selectedSort) }}</span>
-            </button> -->
-
-            <!-- <mat-button-toggle-group
-              name="viewMode"
-              [(ngModel)]="viewMode"
-              class="cb-view-toggle"
-              aria-label="View mode"
-            >
-              <mat-button-toggle value="grid">
-                <mat-icon>grid_view</mat-icon>
-              </mat-button-toggle>
-              <mat-button-toggle value="list">
-                <mat-icon>view_list</mat-icon>
-              </mat-button-toggle>
-            </mat-button-toggle-group> -->
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </section>
-
-    <!-- Filters Panel -->
-    <section class="cb-section" *ngIf="showFilters">
-      <mat-card class="cb-filters-card">
+    <!-- Hero: title, quick stats, search & filters -->
+    <section class="cb-section cb-hero-section">
+      <mat-card class="cb-hero-card">
         <mat-card-content>
-          <div class="cb-filters-grid">
-            <!-- Category -->
-            <mat-form-field appearance="fill" class="cb-filter-field category-filter">
-              <mat-label>Category</mat-label>
-              <mat-select name="category" [(ngModel)]="filters.category" (selectionChange)="onFilterChange()">
-                <mat-option value="">All categories</mat-option>
-                <mat-option *ngFor="let category of categories" [value]="category.name">
-                  {{ category.name }} ({{ category.count }})
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <!-- Organic -->
-            <div class="cb-filter-field">
-              <mat-checkbox color="primary" name="isOrganic" [(ngModel)]="filters.isOrganic"
-                (change)="onFilterChange()">
-                Organic only
-              </mat-checkbox>
+          <div class="cb-hero-top">
+            <div class="cb-header-title">
+              <h1 class="page-title">Browse fresh crops</h1>
             </div>
 
-            <!-- Premium farmers -->
-            <div class="cb-filter-field">
-              <mat-checkbox color="primary" name="farmerPremium" [(ngModel)]="filters.farmerPremium"
-                (change)="onFilterChange()">
-                Premium farmers only
-              </mat-checkbox>
-            </div>
-
-            <!-- Availability -->
-            <div class="cb-filter-field">
-              <mat-checkbox color="primary" name="isAvailable" [(ngModel)]="filters.isAvailable"
-                (change)="onFilterChange()">
-                Available only
-              </mat-checkbox>
+            <div class="cb-hero-meta">
+              <span class="cb-hero-pill">
+                {{ totalCrops }} crops
+              </span>
+              <span class="cb-hero-pill" *ngIf="categories?.length">
+                {{ categories.length }} categories
+              </span>
             </div>
           </div>
 
-          <div class="cb-filters-footer">
-            <button mat-stroked-button type="button" (click)="clearFilters()">
-              Clear all filters
-            </button>
+          <div class="cb-hero-controls">
+            <!-- Search -->
+            <div class="cb-search">
+              <mat-form-field appearance="outline" class="cb-search-field">
+                <mat-icon matPrefix>search</mat-icon>
+                <input
+                  matInput
+                  name="searchTerm"
+                  type="text"
+                  placeholder="Search for crops, categories, or farmers"
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearchChange()"
+                />
+              </mat-form-field>
+            </div>
+
+            <!-- Actions -->
+            <div class="cb-hero-actions">
+              <button
+                mat-stroked-button
+                type="button"
+                color="primary"
+                [class.cb-toggle-active]="showFilters"
+                (click)="toggleFilters()"
+              >
+                <mat-icon>tune</mat-icon>
+                <span>Filters</span>
+              </button>
+
+              <!--
+              <button
+                mat-stroked-button
+                type="button"
+                color="primary"
+                [class.cb-toggle-active]="showSortOptions"
+                (click)="toggleSortOptions()"
+              >
+                <mat-icon>sort</mat-icon>
+                <span>{{ getSortDisplayName(selectedSort) }}</span>
+              </button>
+
+              <mat-button-toggle-group
+                name="viewMode"
+                [(ngModel)]="viewMode"
+                class="cb-view-toggle"
+                aria-label="View mode"
+              >
+                <mat-button-toggle value="grid">
+                  <mat-icon>grid_view</mat-icon>
+                </mat-button-toggle>
+                <mat-button-toggle value="list">
+                  <mat-icon>view_list</mat-icon>
+                </mat-button-toggle>
+              </mat-button-toggle-group>
+              -->
+            </div>
+          </div>
+
+          <!-- Inline filters inside the same card -->
+          <div *ngIf="showFilters" class="cb-filters-inline">
+            <div class="cb-filters-grid">
+              <!-- Category -->
+              <mat-form-field appearance="fill" class="cb-filter-field category-filter">
+                <mat-label>Category</mat-label>
+                <mat-select
+                  name="category"
+                  [(ngModel)]="filters.category"
+                  (selectionChange)="onFilterChange()"
+                >
+                  <mat-option value="">All categories</mat-option>
+                  <mat-option *ngFor="let category of categories" [value]="category.name">
+                    {{ category.name }} ({{ category.count }})
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <!-- Organic -->
+              <div class="cb-filter-field">
+                <mat-checkbox
+                  color="primary"
+                  name="isOrganic"
+                  [(ngModel)]="filters.isOrganic"
+                  (change)="onFilterChange()"
+                >
+                  Organic only
+                </mat-checkbox>
+              </div>
+
+              <!-- Premium farmers -->
+              <div class="cb-filter-field">
+                <mat-checkbox
+                  color="primary"
+                  name="farmerPremium"
+                  [(ngModel)]="filters.farmerPremium"
+                  (change)="onFilterChange()"
+                >
+                  Premium farmers only
+                </mat-checkbox>
+              </div>
+
+              <!-- Availability -->
+              <div class="cb-filter-field">
+                <mat-checkbox
+                  color="primary"
+                  name="isAvailable"
+                  [(ngModel)]="filters.isAvailable"
+                  (change)="onFilterChange()"
+                >
+                  Available only
+                </mat-checkbox>
+              </div>
+            </div>
+
+            <div class="cb-filters-footer">
+              <button mat-stroked-button type="button" (click)="clearFilters()">
+                Clear all filters
+              </button>
+            </div>
           </div>
         </mat-card-content>
       </mat-card>
@@ -122,18 +156,6 @@
           </div>
         </mat-card-content>
       </mat-card>
-    </section>
-
-    <!-- Results summary -->
-    <section class="cb-section">
-      <div class="cb-summary-row">
-        <div class="cb-summary-main">
-          <span class="cb-summary-count">{{ totalCrops }} crops found</span>
-        </div>
-        <div class="cb-summary-meta" *ngIf="totalPages > 1">
-          Page {{ currentPage }} of {{ totalPages }}
-        </div>
-      </div>
     </section>
 
     <!-- Loading State -->

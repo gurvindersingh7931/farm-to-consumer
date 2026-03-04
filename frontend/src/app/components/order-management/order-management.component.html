@@ -1,256 +1,499 @@
-<div class="order-management-container">
-  <header class="page-header">
-    <div class="container">
-      <div class="page-header-inner">
-        <h1 class="text-2xl font-bold text-gray-900">📦 Order Management</h1>
-        <div></div>
-      </div>
-    </div>
-  </header>
-
-  <main class="order-main">
-    <!-- Loading State -->
-    <div class="loading" *ngIf="isLoading">
-      <div class="spinner"></div>
-      <p>Loading orders...</p>
-    </div>
-
-    <!-- Error Message -->
-    <div class="error-message" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
-
-    <!-- Success Message -->
-    <div class="success-message" *ngIf="successMessage">
-      {{ successMessage }}
-    </div>
-
-    <!-- Order Statistics -->
-    <div class="stats-section" *ngIf="stats">
-      <h2>Order Statistics</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value">{{ stats.totalOrders }}</div>
-          <div class="stat-label">Total Orders</div>
+<div class="om-page">
+  <main class="om-main">
+    <!-- Header toolbar -->
+    <section class="om-section header">
+      <mat-toolbar class="om-toolbar" color="primary">
+        <div class="om-toolbar-left">
+          <!-- <mat-icon aria-hidden="true">receipt_long</mat-icon> -->
+          <span class="page-title">Order Management</span>
         </div>
-        <div class="stat-card">
-          <div class="stat-value">{{ formatCurrency(stats.totalRevenue) }}</div>
-          <div class="stat-label">Total Revenue</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">{{ stats.pendingOrders }}</div>
-          <div class="stat-label">Pending Orders</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">{{ getCompletedOrdersCount() }}</div>
-          <div class="stat-label">Completed Orders</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="filters-section">
-      <div class="filter-group">
-        <label for="statusFilter">Filter by Status:</label>
-        <select id="statusFilter" [(ngModel)]="selectedStatus" (change)="onStatusFilterChange()">
-          <option value="">All Orders</option>
-          <option value="pending">Pending</option>
-          <option value="accepted">Accepted</option>
-          <option value="rejected">Rejected</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="completed">Completed</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Orders Table -->
-    <div class="orders-section">
-      <h2>Orders</h2>
-      <div class="orders-table-container">
-        <table class="orders-table">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Consumer</th>
-              <th>Crop</th>
-              <th>Quantity</th>
-              <th>Total Amount</th>
-              <th>Status</th>
-              <th>Order Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let order of orders" class="order-row">
-              <td>#{{ order.id }}</td>
-              <td>
-                <div class="consumer-info">
-                  <div class="consumer-name">{{ order.consumer?.firstName }} {{ order.consumer?.lastName }}</div>
-                  <div class="consumer-email">{{ order.consumer?.email }}</div>
-                </div>
-              </td>
-              <td>
-                <div class="crop-info">
-                  <div class="crop-name">{{ order.crop?.name }}</div>
-                  <div class="crop-price">{{ formatCurrency(order.crop?.pricePerKg || 0) }}/{{ order.crop?.unit }}</div>
-                </div>
-              </td>
-              <td>{{ order.quantity }} {{ order.crop?.unit }}</td>
-              <td class="amount">{{ formatCurrency(order.totalAmount) }}</td>
-              <td>
-                <span class="status-badge" [ngClass]="getStatusClass(order.status)">
-                  {{ getStatusDisplayName(order.status) }}
-                </span>
-              </td>
-              <td>{{ formatDate(order.createdAt) }}</td>
-              <td>
-                <div class="action-buttons">
-                  <button
-                    *ngIf="canAcceptOrder(order)"
-                    class="btn btn-accept"
-                    (click)="openAcceptModal(order)">
-                    Accept
-                  </button>
-                  <button
-                    *ngIf="canRejectOrder(order)"
-                    class="btn btn-reject"
-                    (click)="openRejectModal(order)">
-                    Reject
-                  </button>
-                  <button
-                    *ngIf="canUpdateStatus(order)"
-                    class="btn btn-update"
-                    (click)="openStatusModal(order)">
-                    Update Status
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="pagination" *ngIf="totalPages > 1">
+        <span class="om-toolbar-spacer"></span>
         <button
-          class="page-btn"
-          [disabled]="currentPage === 1"
-          (click)="onPageChange(currentPage - 1)">
-          Previous
+          mat-flat-button
+          color="primary"
+          type="button"
+          class="om-add-btn"
+          aria-label="Add order"
+        >
+          <mat-icon aria-hidden="true">add</mat-icon>
+          <span>Add Order</span>
         </button>
-        <span
-          *ngFor="let page of getPageNumbers()"
-          class="page-number"
-          [class.active]="page === currentPage"
-          (click)="onPageChange(page)">
-          {{ page }}
-        </span>
-        <button
-          class="page-btn"
-          [disabled]="currentPage === totalPages"
-          (click)="onPageChange(currentPage + 1)">
-          Next
-        </button>
+      </mat-toolbar>
+      <!-- <mat-card class="om-filters-card"> -->
+        <div class="om-filters-row p-3">
+          <mat-form-field appearance="outline" class="om-filter-field om-filter-search">
+            <mat-label>Search (consumer, crop…)</mat-label>
+            <input
+              matInput
+              type="text"
+              aria-label="Search orders"
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              aria-label="Search"
+            >
+              <mat-icon aria-hidden="true">search</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="om-filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select
+              name="statusFilter"
+              [(ngModel)]="selectedStatus"
+              (selectionChange)="onStatusFilterChange()"
+            >
+              <mat-option value="">All orders</mat-option>
+              <mat-option value="pending">Pending</mat-option>
+              <mat-option value="accepted">Accepted</mat-option>
+              <mat-option value="rejected">Rejected</mat-option>
+              <mat-option value="cancelled">Cancelled</mat-option>
+              <mat-option value="completed">Completed</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="om-filter-field">
+            <mat-label>Order date</mat-label>
+            <input
+              matInput
+              type="date"
+              aria-label="Filter by order date"
+            />
+          </mat-form-field>
+        </div>
+      <!-- </mat-card> -->
+    </section>
+
+    <!-- Filters row -->
+    <!-- <section class="om-section filters mb-3 mt-3">
+      <mat-card class="om-filters-card">
+        <mat-card-content class="om-filters-row">
+          <mat-form-field appearance="outline" class="om-filter-field om-filter-search">
+            <mat-label>Search (consumer, crop…)</mat-label>
+            <input
+              matInput
+              type="text"
+              aria-label="Search orders"
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              aria-label="Search"
+            >
+              <mat-icon aria-hidden="true">search</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="om-filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select
+              name="statusFilter"
+              [(ngModel)]="selectedStatus"
+              (selectionChange)="onStatusFilterChange()"
+            >
+              <mat-option value="">All orders</mat-option>
+              <mat-option value="pending">Pending</mat-option>
+              <mat-option value="accepted">Accepted</mat-option>
+              <mat-option value="rejected">Rejected</mat-option>
+              <mat-option value="cancelled">Cancelled</mat-option>
+              <mat-option value="completed">Completed</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="om-filter-field">
+            <mat-label>Order date</mat-label>
+            <input
+              matInput
+              type="date"
+              aria-label="Filter by order date"
+            />
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+    </section> -->
+
+    <!-- Loading -->
+    <section *ngIf="isLoading" class="om-section mb-3 loader">
+      <mat-card class="om-loading-card">
+        <mat-card-content class="om-loading-content">
+          <div class="om-spinner" aria-hidden="true"></div>
+          <p>Loading orders…</p>
+        </mat-card-content>
+      </mat-card>
+    </section>
+
+    <!-- Messages -->
+    <section class="om-section messages" *ngIf="!isLoading">
+      <div class="om-messages">
+        <mat-card *ngIf="errorMessage" class="om-message-card om-message-card--error">
+          <mat-card-content>
+            {{ errorMessage }}
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card *ngIf="successMessage" class="om-message-card om-message-card--success">
+          <mat-card-content>
+            {{ successMessage }}
+          </mat-card-content>
+        </mat-card>
       </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="om-section" *ngIf="!isLoading && stats">
+      <div class="om-top-row">
+        <mat-card class="om-stats-card">
+          <mat-card-content>
+            <div class="om-stats-grid">
+              <div class="om-stat">
+                <div class="om-stat-label">Total orders</div>
+                <div class="om-stat-value">{{ stats.totalOrders }}</div>
+              </div>
+              <div class="om-stat">
+                <div class="om-stat-label">Total revenue</div>
+                <div class="om-stat-value">
+                  {{ formatCurrency(stats.totalRevenue) }}
+                </div>
+              </div>
+              <div class="om-stat">
+                <div class="om-stat-label">Pending</div>
+                <div class="om-stat-value">{{ stats.pendingOrders }}</div>
+              </div>
+              <div class="om-stat">
+                <div class="om-stat-label">Completed</div>
+                <div class="om-stat-value">{{ getCompletedOrdersCount() }}</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Orders table -->
+    <section class="om-section">
+      <mat-card class="om-orders-card">
+        <mat-card-header>
+          <mat-card-title>Orders</mat-card-title>
+          <mat-card-subtitle *ngIf="orders?.length">
+            Showing {{ orders.length }} orders (page {{ currentPage }} of {{ totalPages }})
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-content>
+          <div class="om-orders-table-container" *ngIf="orders.length; else omEmptyState">
+            <table
+              mat-table
+              [dataSource]="orders"
+              class="om-orders-table mat-elevation-z0"
+            >
+              <!-- ID -->
+              <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef>ID</th>
+                <td mat-cell *matCellDef="let order" class="om-order-id">
+                  #{{ order.id }}
+                </td>
+              </ng-container>
+
+              <!-- Consumer -->
+              <ng-container matColumnDef="consumer">
+                <th mat-header-cell *matHeaderCellDef>Consumer</th>
+                <td mat-cell *matCellDef="let order">
+                  <div class="om-consumer">
+                    <div class="om-consumer-name">
+                      {{ order.consumer?.firstName }} {{ order.consumer?.lastName }}
+                    </div>
+                    <div class="om-consumer-email">
+                      {{ order.consumer?.email }}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Crop -->
+              <ng-container matColumnDef="crop">
+                <th mat-header-cell *matHeaderCellDef>Crop</th>
+                <td mat-cell *matCellDef="let order">
+                  <div class="om-crop">
+                    <div class="om-crop-name">{{ order.crop?.name }}</div>
+                    <div class="om-crop-price">
+                      {{ formatCurrency(order.crop?.pricePerKg || 0) }}/{{ order.crop?.unit }}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Quantity -->
+              <ng-container matColumnDef="quantity">
+                <th mat-header-cell *matHeaderCellDef>Qty</th>
+                <td mat-cell *matCellDef="let order">
+                  {{ order.quantity }} {{ order.crop?.unit }}
+                </td>
+              </ng-container>
+
+              <!-- Total -->
+              <ng-container matColumnDef="total">
+                <th mat-header-cell *matHeaderCellDef>Total</th>
+                <td mat-cell *matCellDef="let order" class="om-amount">
+                  {{ formatCurrency(order.totalAmount) }}
+                </td>
+              </ng-container>
+
+              <!-- Status -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let order">
+                  <mat-chip
+                    class="om-status-chip"
+                    [ngClass]="getStatusClass(order.status)"
+                    selected
+                    aria-label="Order status {{ getStatusDisplayName(order.status) }}"
+                  >
+                    {{ getStatusDisplayName(order.status) }}
+                  </mat-chip>
+                </td>
+              </ng-container>
+
+              <!-- Date -->
+              <ng-container matColumnDef="createdAt">
+                <th mat-header-cell *matHeaderCellDef>Ordered at</th>
+                <td mat-cell *matCellDef="let order">
+                  {{ formatDate(order.createdAt) }}
+                </td>
+              </ng-container>
+
+              <!-- Actions -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="om-column-actions">
+                  Actions
+                </th>
+                <td mat-cell *matCellDef="let order" class="om-actions-cell">
+                  <div class="om-actions">
+                    <button
+                      mat-icon-button
+                      *ngIf="canAcceptOrder(order)"
+                      (click)="openAcceptModal(order)"
+                      matTooltip="Accept order"
+                      aria-label="Accept order"
+                    >
+                      <mat-icon aria-hidden="true" color="primary">check_circle</mat-icon>
+                    </button>
+
+                    <button
+                      mat-icon-button
+                      *ngIf="canRejectOrder(order)"
+                      (click)="openRejectModal(order)"
+                      matTooltip="Reject order"
+                      aria-label="Reject order"
+                    >
+                      <mat-icon aria-hidden="true" color="warn">cancel</mat-icon>
+                    </button>
+
+                    <button
+                      mat-icon-button
+                      *ngIf="canUpdateStatus(order)"
+                      [matMenuTriggerFor]="rowMenu"
+                      matTooltip="More actions"
+                      aria-label="More actions"
+                    >
+                      <mat-icon aria-hidden="true">more_vert</mat-icon>
+                    </button>
+
+                    <mat-menu #rowMenu="matMenu">
+                      <button mat-menu-item (click)="openStatusModal(order)">
+                        <mat-icon aria-hidden="true">sync</mat-icon>
+                        <span>Update status</span>
+                      </button>
+                    </mat-menu>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns" class="om-order-row"></tr>
+            </table>
+          </div>
+
+          <ng-template #omEmptyState>
+            <div class="om-empty-state">
+              <div class="om-empty-icon" aria-hidden="true">📭</div>
+              <h3>No orders yet</h3>
+              <p>New orders will appear here as consumers place them.</p>
+            </div>
+          </ng-template>
+        </mat-card-content>
+
+        <mat-divider></mat-divider>
+
+        <mat-card-actions *ngIf="totalPages > 1" class="om-pagination">
+          <mat-paginator
+            [length]="stats?.totalOrders || 0"
+            [pageIndex]="currentPage - 1"
+            [pageSize]="limit"
+            [pageSizeOptions]="[5, 10, 20]"
+            (page)="onPageChange($event.pageIndex + 1); limit = $event.pageSize"
+            aria-label="Order list pagination"
+          >
+          </mat-paginator>
+        </mat-card-actions>
+      </mat-card>
+    </section>
+
+    <!-- Accept Order Dialog -->
+    <div class="om-dialog-backdrop" *ngIf="showAcceptModal" (click)="closeModals()">
+      <mat-card class="om-dialog" (click)="$event.stopPropagation()">
+        <mat-card-header>
+          <mat-card-title>Accept order #{{ selectedOrder?.id }}</mat-card-title>
+          <button
+            mat-icon-button
+            type="button"
+            aria-label="Close"
+            (click)="closeModals()"
+          >
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+          <div class="om-dialog-body">
+            <mat-form-field appearance="outline" class="om-dialog-field">
+              <mat-label>Delivery date (optional)</mat-label>
+              <input
+                matInput
+                type="date"
+                [(ngModel)]="acceptForm.deliveryDate"
+                name="acceptDeliveryDate"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="om-dialog-field">
+              <mat-label>Notes (optional)</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                [(ngModel)]="acceptForm.notes"
+                name="acceptNotes"
+              ></textarea>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-stroked-button type="button" (click)="closeModals()">
+            Cancel
+          </button>
+          <button mat-flat-button color="primary" type="button" (click)="acceptOrder()">
+            Accept order
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Reject Order Dialog -->
+    <div class="om-dialog-backdrop" *ngIf="showRejectModal" (click)="closeModals()">
+      <mat-card class="om-dialog" (click)="$event.stopPropagation()">
+        <mat-card-header>
+          <mat-card-title>Reject order #{{ selectedOrder?.id }}</mat-card-title>
+          <button
+            mat-icon-button
+            type="button"
+            aria-label="Close"
+            (click)="closeModals()"
+          >
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+          <div class="om-dialog-body">
+            <mat-form-field appearance="outline" class="om-dialog-field">
+              <mat-label>Reason (optional)</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                [(ngModel)]="rejectForm.reason"
+                name="rejectReason"
+              ></textarea>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-stroked-button type="button" (click)="closeModals()">
+            Cancel
+          </button>
+          <button mat-flat-button color="warn" type="button" (click)="rejectOrder()">
+            Reject order
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Update Status Dialog -->
+    <div class="om-dialog-backdrop" *ngIf="showStatusModal" (click)="closeModals()">
+      <mat-card class="om-dialog" (click)="$event.stopPropagation()">
+        <mat-card-header>
+          <mat-card-title>Update order #{{ selectedOrder?.id }}</mat-card-title>
+          <button
+            mat-icon-button
+            type="button"
+            aria-label="Close"
+            (click)="closeModals()"
+          >
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+          <div class="om-dialog-body">
+            <mat-form-field appearance="outline" class="om-dialog-field">
+              <mat-label>New status</mat-label>
+              <mat-select
+                name="status"
+                [(ngModel)]="statusForm.status"
+              >
+                <mat-option *ngFor="let option of getStatusOptions()" [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field
+              appearance="outline"
+              class="om-dialog-field"
+              *ngIf="statusForm.status === 'completed'"
+            >
+              <mat-label>Delivery date</mat-label>
+              <input
+                matInput
+                type="date"
+                [(ngModel)]="statusForm.deliveryDate"
+                name="statusDeliveryDate"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="om-dialog-field">
+              <mat-label>Notes (optional)</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                [(ngModel)]="statusForm.notes"
+                name="statusNotes"
+              ></textarea>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+        <mat-card-actions align="end">
+          <button mat-stroked-button type="button" (click)="closeModals()">
+            Cancel
+          </button>
+          <button mat-flat-button color="primary" type="button" (click)="updateOrderStatus()">
+            Update status
+          </button>
+        </mat-card-actions>
+      </mat-card>
     </div>
   </main>
-
-  <!-- Accept Order Modal -->
-  <div class="modal-overlay" *ngIf="showAcceptModal" (click)="closeModals()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Accept Order #{{ selectedOrder?.id }}</h3>
-        <button class="close-btn" (click)="closeModals()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="deliveryDate">Delivery Date (Optional)</label>
-          <input
-            type="date"
-            id="deliveryDate"
-            [(ngModel)]="acceptForm.deliveryDate"
-            class="form-control">
-        </div>
-        <div class="form-group">
-          <label for="notes">Notes (Optional)</label>
-          <textarea
-            id="notes"
-            [(ngModel)]="acceptForm.notes"
-            class="form-control"
-            rows="3"
-            placeholder="Add any notes for the consumer..."></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
-        <button class="btn btn-primary" (click)="acceptOrder()">Accept Order</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Reject Order Modal -->
-  <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeModals()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Reject Order #{{ selectedOrder?.id }}</h3>
-        <button class="close-btn" (click)="closeModals()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="reason">Reason for Rejection (Optional)</label>
-          <textarea
-            id="reason"
-            [(ngModel)]="rejectForm.reason"
-            class="form-control"
-            rows="3"
-            placeholder="Provide a reason for rejecting this order..."></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
-        <button class="btn btn-danger" (click)="rejectOrder()">Reject Order</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Update Status Modal -->
-  <div class="modal-overlay" *ngIf="showStatusModal" (click)="closeModals()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Update Order Status #{{ selectedOrder?.id }}</h3>
-        <button class="close-btn" (click)="closeModals()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="status">New Status</label>
-          <select id="status" [(ngModel)]="statusForm.status" class="form-control">
-            <option *ngFor="let option of getStatusOptions()" [value]="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group" *ngIf="statusForm.status === 'completed'">
-          <label for="deliveryDate">Delivery Date</label>
-          <input
-            type="date"
-            id="deliveryDate"
-            [(ngModel)]="statusForm.deliveryDate"
-            class="form-control">
-        </div>
-        <div class="form-group">
-          <label for="notes">Notes (Optional)</label>
-          <textarea
-            id="notes"
-            [(ngModel)]="statusForm.notes"
-            class="form-control"
-            rows="3"
-            placeholder="Add any notes..."></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeModals()">Cancel</button>
-        <button class="btn btn-primary" (click)="updateOrderStatus()">Update Status</button>
-      </div>
-    </div>
-  </div>
 </div>

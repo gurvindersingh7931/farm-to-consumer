@@ -25,6 +25,11 @@ export class ShellLayoutComponent implements OnInit {
     if (persisted !== null) {
       this.sidebarOpen = persisted === 'true';
     }
+    // On small screens, always start with sidebar hidden so it doesn't shrink content
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      this.sidebarOpen = false;
+    }
+
     this.user = this.auth.getCurrentUser();
     const role = this.user?.role as 'admin' | 'farmer' | 'consumer' | undefined;
     this.menuItems = this.buildMenu(role);

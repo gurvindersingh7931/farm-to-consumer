@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Op, fn, col } from 'sequelize';
 import Order, { OrderStatus } from '../models/Order';
 import Crop from '../models/Crop';
 import User from '../models/User';
@@ -218,6 +219,79 @@ export const getFarmerOrders = async (req: AuthenticatedRequest, res: Response):
     });
   } catch (error) {
     console.error('Get farmer orders error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getFarmerOrderStats = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const farmerId = req.user.id;
+
+    // Total orders for this farmer
+    const totalOrders = await Order.count({
+      where: { farmerId }
+    });
+
+    // Count per status
+    const statusRows = await Order.findAll({
+      attributes: ['status', [fn('COUNT', col('id')), 'count']],
+      where: { farmerId },
+      group: ['status']
+    });
+
+    const statusCounts: Record<string, number> = {};
+    for (const row of statusRows as any[]) {
+      const status = row.get('status') as string;
+      const count = Number(row.get('count') ?? 0);
+      statusCounts[status] = count;
+    }
+
+    const pendingOrders = statusCounts[OrderStatus.PENDING] ?? 0;
+    const accepted = statusCounts[OrderStatus.ACCEPTED] ?? 0;
+    const rejected = statusCounts[OrderStatus.REJECTED] ?? 0;
+    const completed = statusCounts[OrderStatus.COMPLETED] ?? 0;
+    const cancelled = statusCounts[OrderStatus.CANCELLED] ?? 0;
+
+    // Build breakdown with percentages
+    const statusBreakdown = Object.values(OrderStatus).map((status) => {
+      const count = statusCounts[status] ?? 0;
+      const percentage = totalOrders > 0 ? (count / totalOrders) * 100 : 0;
+      return {
+        status,
+        count,
+        percentage
+      };
+    });
+
+    // Total revenue from completed orders
+    const totalRevenueRaw = await Order.sum('totalAmount', {
+      where: {
+        farmerId,
+        status: {
+          [Op.in]: [OrderStatus.ACCEPTED, OrderStatus.COMPLETED]
+        }
+      }
+    });
+    const totalRevenue = Number(totalRevenueRaw ?? 0);
+
+    res.status(200).json({
+      message: 'Order stats retrieved successfully',
+      stats: {
+        total: totalOrders,
+        totalOrders,
+        pending: pendingOrders,
+        pendingOrders,
+        accepted,
+        rejected,
+        completed,
+        cancelled,
+        statusBreakdown,
+        recentOrders: totalOrders, // simple placeholder; can refine later
+        totalRevenue
+      }
+    });
+  } catch (error) {
+    console.error('Get farmer order stats error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };

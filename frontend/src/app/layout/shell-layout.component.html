@@ -1,10 +1,15 @@
-<div class="min-h-screen bg-gray-50 text-gray-900">
+<div class="h-screen flex flex-col bg-gray-50 text-gray-900 overflow-hidden">
   <!-- Header -->
   <header class="navbar">
     <div class="w-full">
       <div class="flex items-center justify-between py-3 px-0">
         <div class="flex items-center gap-3">
-          <button class="btn btn-secondary btn-sm focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none flex items-center gap-1" type="button" aria-label="Toggle sidebar" (click)="toggleSidebar()">
+          <button
+            class="btn btn-secondary btn-sm focus:outline-none focus:ring-0 focus-visible:outline-none active:outline-none flex items-center gap-1 md:hidden"
+            type="button"
+            aria-label="Toggle sidebar"
+            (click)="toggleSidebar()"
+          >
             <mat-icon fontIcon="menu"></mat-icon>
           </button>
           <a routerLink="/" class="navbar-brand" matTooltip="Farm">Farm-to-Consumer</a>
@@ -17,9 +22,16 @@
     </div>
   </header>
 
-  <div class="flex">
+  <div class="flex flex-1 overflow-hidden">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-gray-100 min-h-[calc(100vh-64px)]" [ngClass]="sidebarOpen ? 'block md:block' : 'hidden md:hidden'">
+    <aside
+      class="bg-white border-r border-gray-100 transition-transform duration-200 ease-out"
+      [ngClass]="
+        sidebarOpen
+          ? 'block md:block fixed md:static left-0 md:left-auto top-16 md:top-auto z-[10000] w-64 shadow-lg md:shadow-none'
+          : 'hidden md:block md:static md:w-64 md:shadow-none'
+      "
+    >
       <nav class="p-4 space-y-1">
         <a
           *ngFor="let item of menuItems"
@@ -34,7 +46,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1">
+    <main class="flex-1 overflow-y-auto">
       <div class="container py-6">
         <router-outlet></router-outlet>
       </div>
