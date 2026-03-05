@@ -238,6 +238,11 @@
   .stats-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .filters-controls {
+    flex-direction: column;
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1010,4 +1015,8 @@
 .not-found-description {
   font-size: 16px;
   color: var(--color-primary);
+}
+
+:host ::ng-deep .filters-card .crop-form-field .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
 }

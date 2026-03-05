@@ -15,6 +15,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ModalDialogComponent } from '../../shared/modal-dialog/modal-dialog.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { AuthService } from '../../services/auth.service';
@@ -48,7 +49,8 @@ import {
     MatChipsModule,
     MatMenuModule,
     MatDividerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    ModalDialogComponent
   ],
   templateUrl: './order-management.component.html',
   styleUrl: './order-management.component.scss'
@@ -101,13 +103,13 @@ export class OrderManagementComponent implements OnInit {
   ngOnInit(): void {
     this.loadOrders();
     this.loadStats();
-    this.seedDummyData();
   }
 
   loadOrders(): void {
     this.isLoading = true;
     this.errorMessage = '';
     this.seedDummyData();
+    this.isLoading = false;
 
     // this.orderService
     //   .getFarmerOrders(

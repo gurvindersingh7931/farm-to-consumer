@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { OrderService, CreateOrderRequest } from '../../services/order.service';
 import { AuthService } from '../../services/auth.service';
+import { ModalDialogComponent } from '../../shared/modal-dialog/modal-dialog.component';
 
 export interface CropForOrder {
   id: number;
@@ -28,7 +29,7 @@ export interface CropForOrder {
 @Component({
   selector: 'app-order-placement',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ModalDialogComponent],
   templateUrl: './order-placement.component.html',
   styleUrl: './order-placement.component.scss'
 })

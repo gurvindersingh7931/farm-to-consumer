@@ -1,133 +1,131 @@
-<div class="order-modal-overlay" *ngIf="isVisible" (click)="onClose()">
-  <div class="order-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Place Order</h2>
-      <button class="close-btn" (click)="onClose()" type="button">×</button>
+<app-modal-dialog
+  [open]="isVisible"
+  title="Place Order"
+  icon="shopping_basket"
+  (cancel)="onClose()"
+>
+  <div class="modal-body">
+    <!-- Crop Information -->
+    <div class="crop-info" *ngIf="crop">
+      <div class="crop-image">
+        <img [src]="getCropImageUrl()" [alt]="crop.name" />
+      </div>
+      <div class="crop-details">
+        <h3>{{ crop.name }}</h3>
+        <p class="farmer-info">
+          <span class="farmer-name">{{ getFarmerName() }}</span>
+          <span class="farm-name">{{ getFarmName() }}</span>
+        </p>
+        <div class="price-info">
+          <span class="price">{{ formatPrice(crop.pricePerKg) }}</span>
+          <span class="unit">per {{ crop.unit }}</span>
+        </div>
+        <p class="availability">
+          Available: {{ crop.availableQuantity }} {{ crop.unit }}
+        </p>
+      </div>
     </div>
 
-    <div class="modal-body">
-      <!-- Crop Information -->
-      <div class="crop-info" *ngIf="crop">
-        <div class="crop-image">
-          <img [src]="getCropImageUrl()" [alt]="crop.name" />
+    <!-- Order Form -->
+    <form [formGroup]="orderForm" (ngSubmit)="onSubmit()" class="order-form">
+      <!-- Quantity -->
+      <div class="form-group">
+        <label for="quantity">Quantity *</label>
+        <div class="quantity-input">
+          <input
+            type="number"
+            id="quantity"
+            formControlName="quantity"
+            [max]="crop?.availableQuantity || crop?.quantity || 999"
+            min="0.1"
+            step="0.1"
+            (input)="onQuantityChange()"
+            placeholder="Enter quantity"
+            class="form-control"
+            [class.error]="quantity?.invalid && quantity?.touched">
+          <span class="unit-label" *ngIf="crop">{{ crop.unit }}</span>
         </div>
-        <div class="crop-details">
-          <h3>{{ crop.name }}</h3>
-          <p class="farmer-info">
-            <span class="farmer-name">{{ getFarmerName() }}</span>
-            <span class="farm-name">{{ getFarmName() }}</span>
-          </p>
-          <div class="price-info">
-            <span class="price">{{ formatPrice(crop.pricePerKg) }}</span>
-            <span class="unit">per {{ crop.unit }}</span>
-          </div>
-          <p class="availability">
-            Available: {{ crop.availableQuantity }} {{ crop.unit }}
-          </p>
+        <div class="error-message" *ngIf="quantity?.invalid && quantity?.touched">
+          <span *ngIf="quantity?.errors?.['required']">Quantity is required</span>
+          <span *ngIf="quantity?.errors?.['min']">Minimum quantity is 0.1</span>
+          <span *ngIf="quantity?.errors?.['max']">
+            Maximum available quantity is {{ crop?.availableQuantity }} {{ crop?.unit }}
+          </span>
         </div>
       </div>
 
-      <!-- Order Form -->
-      <form [formGroup]="orderForm" (ngSubmit)="onSubmit()" class="order-form">
-        <!-- Quantity -->
-        <div class="form-group">
-          <label for="quantity">Quantity *</label>
-          <div class="quantity-input">
-            <input
-              type="number"
-              id="quantity"
-              formControlName="quantity"
-              [max]="crop?.availableQuantity || crop?.quantity || 999"
-              min="0.1"
-              step="0.1"
-              (input)="onQuantityChange()"
-              placeholder="Enter quantity"
-              class="form-control"
-              [class.error]="quantity?.invalid && quantity?.touched">
-            <span class="unit-label" *ngIf="crop">{{ crop.unit }}</span>
-          </div>
-          <div class="error-message" *ngIf="quantity?.invalid && quantity?.touched">
-            <span *ngIf="quantity?.errors?.['required']">Quantity is required</span>
-            <span *ngIf="quantity?.errors?.['min']">Minimum quantity is 0.1</span>
-            <span *ngIf="quantity?.errors?.['max']">
-              Maximum available quantity is {{ crop?.availableQuantity }} {{ crop?.unit }}
-            </span>
-          </div>
+      <!-- Total Amount -->
+      <div class="total-amount" *ngIf="quantity?.value && crop">
+        <div class="amount-breakdown">
+          <span>{{ quantity?.value }} {{ crop.unit }} × {{ formatPrice(crop.pricePerKg || 0) }}</span>
+          <span class="total">{{ formatPrice(getTotalAmount()) }}</span>
         </div>
+      </div>
 
-        <!-- Total Amount -->
-        <div class="total-amount" *ngIf="quantity?.value && crop">
-          <div class="amount-breakdown">
-            <span>{{ quantity?.value }} {{ crop.unit }} × {{ formatPrice(crop.pricePerKg || 0) }}</span>
-            <span class="total">{{ formatPrice(getTotalAmount()) }}</span>
-          </div>
+      <!-- Delivery Address -->
+      <div class="form-group">
+        <label for="deliveryAddress">Delivery Address *</label>
+        <textarea
+          id="deliveryAddress"
+          formControlName="deliveryAddress"
+          placeholder="Enter your complete delivery address"
+          class="form-control"
+          rows="3"
+          [class.error]="deliveryAddress?.invalid && deliveryAddress?.touched">
+        </textarea>
+        <div class="error-message" *ngIf="deliveryAddress?.invalid && deliveryAddress?.touched">
+          <span *ngIf="deliveryAddress?.errors?.['required']">Delivery address is required</span>
+          <span *ngIf="deliveryAddress?.errors?.['minlength']">Address must be at least 10 characters</span>
         </div>
+      </div>
 
-        <!-- Delivery Address -->
-        <div class="form-group">
-          <label for="deliveryAddress">Delivery Address *</label>
-          <textarea
-            id="deliveryAddress"
-            formControlName="deliveryAddress"
-            placeholder="Enter your complete delivery address"
-            class="form-control"
-            rows="3"
-            [class.error]="deliveryAddress?.invalid && deliveryAddress?.touched">
-          </textarea>
-          <div class="error-message" *ngIf="deliveryAddress?.invalid && deliveryAddress?.touched">
-            <span *ngIf="deliveryAddress?.errors?.['required']">Delivery address is required</span>
-            <span *ngIf="deliveryAddress?.errors?.['minlength']">Address must be at least 10 characters</span>
-          </div>
-        </div>
+      <!-- Delivery Date -->
+      <div class="form-group">
+        <label for="deliveryDate">Preferred Delivery Date</label>
+        <input
+          type="date"
+          id="deliveryDate"
+          formControlName="deliveryDate"
+          class="form-control"
+          [class.error]="deliveryDate?.invalid && deliveryDate?.touched">
+        <small class="form-hint">Leave empty for immediate delivery</small>
+      </div>
 
-        <!-- Delivery Date -->
-        <div class="form-group">
-          <label for="deliveryDate">Preferred Delivery Date</label>
-          <input
-            type="date"
-            id="deliveryDate"
-            formControlName="deliveryDate"
-            class="form-control"
-            [class.error]="deliveryDate?.invalid && deliveryDate?.touched">
-          <small class="form-hint">Leave empty for immediate delivery</small>
-        </div>
+      <!-- Notes -->
+      <div class="form-group">
+        <label for="notes">Additional Notes</label>
+        <textarea
+          id="notes"
+          formControlName="notes"
+          placeholder="Any special instructions or requirements"
+          class="form-control"
+          rows="2">
+        </textarea>
+      </div>
 
-        <!-- Notes -->
-        <div class="form-group">
-          <label for="notes">Additional Notes</label>
-          <textarea
-            id="notes"
-            formControlName="notes"
-            placeholder="Any special instructions or requirements"
-            class="form-control"
-            rows="2">
-          </textarea>
-        </div>
+      <!-- Error Message -->
+      <div class="alert alert-error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
 
-        <!-- Error Message -->
-        <div class="alert alert-error" *ngIf="errorMessage">
-          {{ errorMessage }}
-        </div>
-
-        <!-- Success Message -->
-        <div class="alert alert-success" *ngIf="successMessage">
-          {{ successMessage }}
-        </div>
-
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="onClose()">
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            class="btn btn-primary"
-            [disabled]="orderForm.invalid || isSubmitting || !crop">
-            <span *ngIf="isSubmitting" class="spinner"></span>
-            {{ isSubmitting ? 'Placing Order...' : 'Place Order' }}
-          </button>
-        </div>
-      </form>
-    </div>
+      <!-- Success Message -->
+      <div class="alert alert-success" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+    </form>
   </div>
-</div>
+
+  <div dialog-actions class="form-actions">
+    <button type="button" class="btn btn-secondary" (click)="onClose()">
+      Cancel
+    </button>
+    <button 
+      type="submit" 
+      class="btn btn-primary"
+      [disabled]="orderForm.invalid || isSubmitting || !crop"
+      (click)="onSubmit()">
+      <span *ngIf="isSubmitting" class="spinner"></span>
+      {{ isSubmitting ? 'Placing Order...' : 'Place Order' }}
+    </button>
+  </div>
+</app-modal-dialog>

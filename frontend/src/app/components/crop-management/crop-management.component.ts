@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { ModalDialogComponent } from '../../shared/modal-dialog/modal-dialog.component';
 import { Subscription } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
@@ -39,6 +40,7 @@ import { ToastrService } from 'ngx-toastr';
     MatInputModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    ModalDialogComponent,
   ],
   templateUrl: './crop-management.component.html',
   styleUrls: ['./crop-management.component.scss']
@@ -105,11 +107,10 @@ export class CropManagementComponent implements OnInit, OnDestroy {
     this.loadCrops();
     this.loadCategories();
 
-    this.authSubscription = this.authService.currentUser$.subscribe((user: any) => {
-      if (!user || user.role !== 'farmer') {
-        this.router.navigate(['/login']);
-      }
-    });
+    const user = this.authService.getCurrentUser();
+    if (!user || user.role !== 'farmer') {
+      this.router.navigate(['/login']);
+    }
   }
 
   ngOnDestroy(): void {

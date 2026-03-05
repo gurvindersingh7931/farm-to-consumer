@@ -146,19 +146,13 @@
   </div>
 
   <!-- Modal -->
-  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <mat-card class="crop-modal-card">
-        <mat-card-header class="crop-modal-header">
-          <mat-card-title class="crop-modal-title">
-            {{ editingCrop ? 'Edit Crop' : 'Add New Crop' }}
-          </mat-card-title>
-          <button mat-icon-button class="crop-modal-close" type="button" (click)="closeModal()" aria-label="Close">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-card-header>
-
-        <mat-card-content class="modal-add-new-crop-body">
+  <app-modal-dialog
+    [open]="showModal"
+    [title]="editingCrop ? 'Edit Crop' : 'Add New Crop'"
+    icon="yard"
+    (cancel)="closeModal()"
+  >
+    <div class="modal-add-new-crop-body">
           <form [formGroup]="cropForm" (ngSubmit)="saveCrop()" class="modal-form">
             <mat-form-field class="crop-form-field">
               <mat-label>Crop Name</mat-label>
@@ -302,9 +296,9 @@
               </div>
             </div>
           </form>
-        </mat-card-content>
+        </div>
 
-        <mat-card-actions align="end" class="crop-modal-actions">
+        <div dialog-actions class="crop-modal-actions">
           <button mat-stroked-button type="button" class="crop-modal-cancel" (click)="closeModal()">
             Cancel
           </button>
@@ -319,8 +313,6 @@
             <mat-icon class="crop-modal-save-icon" *ngIf="!isSubmitting">check_circle</mat-icon>
             {{ editingCrop ? 'Update Crop' : 'Save Crop' }}
           </button>
-        </mat-card-actions>
-      </mat-card>
-    </div>
-  </div>
+        </div>
+  </app-modal-dialog>
 </div>
