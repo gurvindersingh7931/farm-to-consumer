@@ -1,0 +1,36 @@
+<div
+  class="app-dialog-backdrop"
+  *ngIf="open"
+  (click)="onBackdropClick()"
+>
+  <mat-card class="app-dialog" (click)="$event.stopPropagation()">
+    <mat-card-header class="app-dialog-header">
+      <div class="app-dialog-header-left">
+        <mat-icon *ngIf="icon" class="app-dialog-icon">{{ icon }}</mat-icon>
+        <div class="app-dialog-titles">
+          <div class="app-dialog-title" *ngIf="title">{{ title }}</div>
+          <div class="app-dialog-subtitle" *ngIf="subtitle">{{ subtitle }}</div>
+        </div>
+      </div>
+
+      <button
+        *ngIf="showClose"
+        mat-icon-button
+        type="button"
+        aria-label="Close dialog"
+        (click)="onCloseClick()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-card-header>
+
+    <mat-card-content class="app-dialog-body">
+      <ng-content></ng-content>
+    </mat-card-content>
+
+    <mat-card-actions class="app-dialog-actions" align="end">
+      <ng-content select="[dialog-actions]"></ng-content>
+    </mat-card-actions>
+  </mat-card>
+</div>
+

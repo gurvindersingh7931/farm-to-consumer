@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { setUser, clearUser } from '../store/auth/auth.actions';
 
 export interface User {
   id: number;
@@ -35,12 +37,11 @@ export interface AuthResponse {
 })
 export class AuthService {
   private readonly API_URL = 'http://localhost:3000/api';
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private store: Store
   ) {
     this.loadUserFromStorage();
   }
@@ -48,9 +49,12 @@ export class AuthService {
   private loadUserFromStorage(): void {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    
+
     if (token && user) {
-      this.currentUserSubject.next(JSON.parse(user));
+      const parsed = JSON.parse(user) as User;
+      this.store.dispatch(setUser({ user: parsed }));
+    } else {
+      this.store.dispatch(clearUser());
     }
   }
 
@@ -60,7 +64,7 @@ export class AuthService {
         tap(response => {
           localStorage.setItem('token', response.token);
           localStorage.setItem('user', JSON.stringify(response.user));
-          this.currentUserSubject.next(response.user);
+          this.store.dispatch(setUser({ user: response.user }));
         })
       );
   }
@@ -71,7 +75,7 @@ export class AuthService {
         tap(response => {
           localStorage.setItem('token', response.token);
           localStorage.setItem('user', JSON.stringify(response.user));
-          this.currentUserSubject.next(response.user);
+          this.store.dispatch(setUser({ user: response.user }));
         })
       );
   }
@@ -79,7 +83,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    this.currentUserSubject.next(null);
+    this.store.dispatch(clearUser());
     this.router.navigate(['/login']);
   }
 
@@ -88,11 +92,31 @@ export class AuthService {
   }
 
   getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+    const user = localStorage.getItem('user');
+    return user ? (JSON.parse(user) as User) : null;
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1] || ''));
+      if (payload && typeof payload.exp === 'number') {
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        if (payload.exp < nowSeconds) {
+          // Token expired: proactively clear session
+          this.logout();
+          return false;
+        }
+      }
+    } catch {
+      // Malformed token: clear and treat as unauthenticated
+      this.logout();
+      return false;
+    }
+
+    return true;
   }
 
   updateProfile(profileData: { firstName?: string; lastName?: string; email?: string }): Observable<AuthResponse> {
@@ -103,7 +127,7 @@ export class AuthService {
     }).pipe(
       tap(response => {
         localStorage.setItem('user', JSON.stringify(response.user));
-        this.currentUserSubject.next(response.user);
+        this.store.dispatch(setUser({ user: response.user }));
       })
     );
   }
