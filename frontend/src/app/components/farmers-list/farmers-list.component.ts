@@ -1,42 +1,76 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { finalize } from 'rxjs';
 import { FarmerService, FarmerProfile, SearchFarmersParams } from '../../services/farmer.service';
 import { MapsService } from '../../services/maps.service';
+import {
+  FARMERS_LIST_DEFAULT_PAGE_SIZE,
+  FARMERS_LIST_DEFAULT_RADIUS_KM,
+  FARMERS_LIST_PAGE_SIZE_OPTIONS,
+  FARMERS_LIST_RADIUS_OPTIONS_KM
+} from '../../constants/farmers-list.constants';
 
 @Component({
   selector: 'app-farmers-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatPaginatorModule,
+    MatProgressSpinnerModule,
+    MatSelectModule,
+    MatTooltipModule
+  ],
   templateUrl: './farmers-list.component.html',
-  styleUrl: './farmers-list.component.scss'
+  styleUrl: './farmers-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FarmersListComponent implements OnInit {
   farmers: FarmerProfile[] = [];
-  filteredFarmers: FarmerProfile[] = [];
   isLoading = false;
   errorMessage = '';
   searchQuery = '';
   locationQuery = '';
   premiumFilter = false;
-  currentPage = 1;
-  itemsPerPage = 12;
   totalItems = 0;
-  
-  // Make Math available in template
-  Math = Math;
-  
+
+  pageIndex = 0;
+  pageSize = FARMERS_LIST_DEFAULT_PAGE_SIZE;
+  readonly pageSizeOptions = [...FARMERS_LIST_PAGE_SIZE_OPTIONS];
+
   // Location and radius filtering
   userLatitude: number | null = null;
   userLongitude: number | null = null;
-  selectedRadius = 10; // Default 10km
-  radiusOptions = [2, 5, 10, 15, 20];
+  selectedRadius = FARMERS_LIST_DEFAULT_RADIUS_KM;
+  readonly radiusOptions = [...FARMERS_LIST_RADIUS_OPTIONS_KM];
   isLocationEnabled = false;
+  isLocationAvailable = false;
 
   constructor(
     private farmerService: FarmerService,
-    private maps: MapsService
+    private maps: MapsService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -47,39 +81,47 @@ export class FarmersListComponent implements OnInit {
   loadFarmers(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
     const params: SearchFarmersParams = {
       q: this.searchQuery || undefined,
       location: this.locationQuery || undefined,
       premium: this.premiumFilter || undefined,
-      limit: this.itemsPerPage,
-      offset: (this.currentPage - 1) * this.itemsPerPage,
+      limit: this.pageSize,
+      offset: this.pageIndex * this.pageSize,
       latitude: this.userLatitude || undefined,
       longitude: this.userLongitude || undefined,
       radius: this.isLocationEnabled ? this.selectedRadius : undefined
     };
 
-    this.farmerService.searchFarmers(params).subscribe({
-      next: (response) => {
-        this.farmers = response.farmers;
-        this.filteredFarmers = response.farmers;
-        this.totalItems = response.total;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to load farmers';
-        this.isLoading = false;
-      }
-    });
+    this.farmerService
+      .searchFarmers(params)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.farmers = response.farmers;
+          this.totalItems = response.total;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.errorMessage = error.error?.message || 'Failed to load farmers';
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   onSearch(): void {
-    this.currentPage = 1;
+    this.pageIndex = 0;
     this.loadFarmers();
   }
 
   onFilterChange(): void {
-    this.currentPage = 1;
+    this.pageIndex = 0;
     this.loadFarmers();
   }
 
@@ -88,26 +130,15 @@ export class FarmersListComponent implements OnInit {
     this.locationQuery = '';
     this.premiumFilter = false;
     this.isLocationEnabled = false;
-    this.selectedRadius = 10;
-    this.currentPage = 1;
+    this.selectedRadius = FARMERS_LIST_DEFAULT_RADIUS_KM;
+    this.pageIndex = 0;
     this.loadFarmers();
   }
 
-  onPageChange(page: number): void {
-    this.currentPage = page;
+  onPage(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
     this.loadFarmers();
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.totalItems / this.itemsPerPage);
-  }
-
-  get pages(): number[] {
-    const pages: number[] = [];
-    for (let i = 1; i <= this.totalPages; i++) {
-      pages.push(i);
-    }
-    return pages;
   }
 
   getProfilePhotoUrl(profilePhoto?: string): string {
@@ -140,29 +171,35 @@ export class FarmersListComponent implements OnInit {
         (position) => {
           this.userLatitude = position.coords.latitude;
           this.userLongitude = position.coords.longitude;
-          this.isLocationEnabled = true;
+          this.isLocationAvailable = true;
         },
         (error) => {
           console.error('Error getting location:', error);
+          this.isLocationAvailable = false;
           this.isLocationEnabled = false;
         }
       );
     } else {
       console.error('Geolocation is not supported by this browser.');
+      this.isLocationAvailable = false;
       this.isLocationEnabled = false;
     }
   }
 
   onRadiusChange(): void {
     if (this.isLocationEnabled) {
-      this.currentPage = 1;
+      this.pageIndex = 0;
       this.loadFarmers();
     }
   }
 
   toggleLocationFilter(): void {
+    if (!this.isLocationAvailable) {
+      this.isLocationEnabled = false;
+      return;
+    }
     this.isLocationEnabled = !this.isLocationEnabled;
-    this.currentPage = 1;
+    this.pageIndex = 0;
     this.loadFarmers();
   }
 

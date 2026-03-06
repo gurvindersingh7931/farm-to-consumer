@@ -11,6 +11,7 @@ import {
   toggleCropAvailability,
   browseCrops,
   getFarmerCropsPublic,
+  getPremiumFeaturedCrops,
 } from '../controllers/cropController';
 
 const router = Router();
@@ -18,6 +19,7 @@ const router = Router();
 // Public routes (no authentication required)
 router.get('/categories', getCropCategories);
 router.get('/browse', browseCrops);
+router.get('/premium-featured', getPremiumFeaturedCrops);
 router.get('/public', getAllCrops);
 router.get('/public/:id', getCropById);
 router.get('/farmer/:farmerId', getFarmerCropsPublic);

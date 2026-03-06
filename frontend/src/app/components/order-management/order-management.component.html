@@ -4,24 +4,13 @@
     <section class="om-section header">
       <mat-toolbar class="om-toolbar" color="primary">
         <div class="om-toolbar-left">
-          <!-- <mat-icon aria-hidden="true">receipt_long</mat-icon> -->
           <span class="page-title">Order Management</span>
         </div>
         <span class="om-toolbar-spacer"></span>
-        <button
-          mat-flat-button
-          color="primary"
-          type="button"
-          class="om-add-btn"
-          aria-label="Add order"
-        >
-          <mat-icon aria-hidden="true">add</mat-icon>
-          <span>Add Order</span>
-        </button>
       </mat-toolbar>
       <!-- <mat-card class="om-filters-card"> -->
         <div class="om-filters-row p-3">
-          <mat-form-field appearance="outline" class="om-filter-field om-filter-search">
+          <mat-form-field appearance="fill" class="om-filter-field om-filter-search">
             <mat-label>Search (consumer, crop…)</mat-label>
             <input
               matInput
@@ -38,7 +27,7 @@
             </button>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="om-filter-field">
+          <mat-form-field appearance="fill" class="om-filter-field">
             <mat-label>Status</mat-label>
             <mat-select
               name="statusFilter"
@@ -54,7 +43,7 @@
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="om-filter-field">
+          <mat-form-field appearance="fill" class="om-filter-field">
             <mat-label>Order date</mat-label>
             <input
               matInput
@@ -312,9 +301,9 @@
                     <button
                       mat-icon-button
                       *ngIf="canAcceptOrder(order)"
-                      (click)="openAcceptModal(order)"
                       matTooltip="Accept order"
                       aria-label="Accept order"
+                      type="button"
                     >
                       <mat-icon aria-hidden="true" color="primary">check_circle</mat-icon>
                     </button>
@@ -322,9 +311,9 @@
                     <button
                       mat-icon-button
                       *ngIf="canRejectOrder(order)"
-                      (click)="openRejectModal(order)"
                       matTooltip="Reject order"
                       aria-label="Reject order"
+                      type="button"
                     >
                       <mat-icon aria-hidden="true" color="warn">cancel</mat-icon>
                     </button>
@@ -332,19 +321,12 @@
                     <button
                       mat-icon-button
                       *ngIf="canUpdateStatus(order)"
-                      [matMenuTriggerFor]="rowMenu"
                       matTooltip="More actions"
                       aria-label="More actions"
+                      type="button"
                     >
                       <mat-icon aria-hidden="true">more_vert</mat-icon>
                     </button>
-
-                    <mat-menu #rowMenu="matMenu">
-                      <button mat-menu-item (click)="openStatusModal(order)">
-                        <mat-icon aria-hidden="true">sync</mat-icon>
-                        <span>Update status</span>
-                      </button>
-                    </mat-menu>
                   </div>
                 </td>
               </ng-container>
@@ -378,129 +360,5 @@
         </mat-card-actions>
       </mat-card>
     </section>
-
-    <!-- Accept Order Dialog -->
-    <app-modal-dialog
-      [open]="showAcceptModal"
-      [title]="'Accept order #' + (selectedOrder?.id || '')"
-      icon="check_circle"
-      (cancel)="closeModals()"
-    >
-      <div class="om-dialog-body">
-        <mat-form-field appearance="outline" class="om-dialog-field">
-          <mat-label>Delivery date (optional)</mat-label>
-          <input
-            matInput
-            type="date"
-            [(ngModel)]="acceptForm.deliveryDate"
-            name="acceptDeliveryDate"
-          />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="om-dialog-field">
-          <mat-label>Notes (optional)</mat-label>
-          <textarea
-            matInput
-            rows="3"
-            [(ngModel)]="acceptForm.notes"
-            name="acceptNotes"
-          ></textarea>
-        </mat-form-field>
-      </div>
-
-      <div dialog-actions>
-        <button mat-stroked-button type="button" (click)="closeModals()">
-          Cancel
-        </button>
-        <button mat-flat-button color="primary" type="button" (click)="acceptOrder()">
-          Accept order
-        </button>
-      </div>
-    </app-modal-dialog>
-
-    <!-- Reject Order Dialog -->
-    <app-modal-dialog
-      [open]="showRejectModal"
-      [title]="'Reject order #' + (selectedOrder?.id || '')"
-      icon="cancel"
-      (cancel)="closeModals()"
-    >
-      <div class="om-dialog-body">
-        <mat-form-field appearance="outline" class="om-dialog-field">
-          <mat-label>Reason (optional)</mat-label>
-          <textarea
-            matInput
-            rows="3"
-            [(ngModel)]="rejectForm.reason"
-            name="rejectReason"
-          ></textarea>
-        </mat-form-field>
-      </div>
-
-      <div dialog-actions>
-        <button mat-stroked-button type="button" (click)="closeModals()">
-          Cancel
-        </button>
-        <button mat-flat-button color="warn" type="button" (click)="rejectOrder()">
-          Reject order
-        </button>
-      </div>
-    </app-modal-dialog>
-
-    <!-- Update Status Dialog -->
-     {{selectedOrder | json}}
-    <app-modal-dialog *ngIf="selectedOrder"
-      [open]="showStatusModal"
-      [title]="'Update order #' + (selectedOrder.id || '')"
-      icon="edit"
-      (cancel)="closeModals()"
-    >
-      <div class="om-dialog-body">
-        <mat-form-field appearance="outline" class="om-dialog-field">
-          <mat-label>New status</mat-label>
-          <mat-select
-            name="status"
-            [(ngModel)]="statusForm.status"
-          >
-            <mat-option *ngFor="let option of getStatusOptions()" [value]="option.value">
-              {{ option.label }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field
-          appearance="outline"
-          class="om-dialog-field"
-          *ngIf="statusForm.status === 'completed'"
-        >
-          <mat-label>Delivery date</mat-label>
-          <input
-            matInput
-            type="date"
-            [(ngModel)]="statusForm.deliveryDate"
-            name="statusDeliveryDate"
-          />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="om-dialog-field">
-          <mat-label>Notes (optional)</mat-label>
-          <textarea
-            matInput
-            rows="3"
-            [(ngModel)]="statusForm.notes"
-            name="statusNotes"
-          ></textarea>
-        </mat-form-field>
-      </div>
-
-      <div dialog-actions>
-        <button mat-stroked-button type="button" (click)="closeModals()">
-          Cancel
-        </button>
-        <button mat-flat-button color="primary" type="button" (click)="updateOrderStatus()">
-          Update status
-        </button>
-      </div>
-    </app-modal-dialog>
   </main>
 </div>

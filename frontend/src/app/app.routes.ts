@@ -35,6 +35,12 @@ export const routes: Routes = [
         canActivate: [AuthGuard, RoleGuard],
         data: { roles: ['farmer'] }
       },
+      {
+        path: 'subscription',
+        loadComponent: () => import('./components/subscription/subscription.component').then(m => m.SubscriptionComponent),
+        canActivate: [AuthGuard, RoleGuard],
+        data: { roles: ['farmer'] }
+      },
       { 
         path: 'consumer-dashboard', 
         loadComponent: () => import('./components/dashboard/consumer-dashboard/consumer-dashboard.component').then(m => m.ConsumerDashboardComponent),

@@ -67,6 +67,14 @@ export class ShellLayoutComponent implements OnInit {
     return '/browse-crops';
   }
 
+  getProfileLink(): string {
+    const role = this.user?.role as 'admin' | 'farmer' | 'consumer' | undefined;
+    if (role === 'farmer') return '/farmer-profile';
+    if (role === 'consumer') return '/consumer-profile';
+    // Admin/public: no profile page in this app yet
+    return this.getHomeLink();
+  }
+
   private buildMenu(role?: 'admin' | 'farmer' | 'consumer'): MenuItem[] {
     if (role === 'admin') {
       return [
@@ -80,16 +88,15 @@ export class ShellLayoutComponent implements OnInit {
     if (role === 'farmer') {
       return [
         { label: 'Dashboard', path: '/farmer-dashboard', icon: 'dashboard' },
-        { label: 'Profile', path: '/farmer-profile', icon: 'person' },
         { label: 'My Crops', path: '/crop-management', icon: 'yard' },
         { label: 'Orders', path: '/order-management', icon: 'receipt_long' },
+        { label: 'Premium', path: '/subscription', icon: 'workspace_premium' },
         { label: 'Browse Crops', path: '/browse-crops', icon: 'shopping_basket' }
       ];
     }
     if (role === 'consumer') {
       return [
         { label: 'Dashboard', path: '/consumer-dashboard', icon: 'dashboard' },
-        { label: 'Profile', path: '/consumer-profile', icon: 'person' },
         { label: 'Browse Crops', path: '/browse-crops', icon: 'shopping_basket' },
         { label: 'Find Farmers', path: '/farmers', icon: 'location_on' }
       ];
@@ -106,6 +113,24 @@ export class ShellLayoutComponent implements OnInit {
   toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen;
     localStorage.setItem('sidebarOpen', String(this.sidebarOpen));
+  }
+
+  getAvatarSrc(): string {
+    const role = this.user?.role as 'admin' | 'farmer' | 'consumer' | undefined;
+
+    if (this.avatarUrl) {
+      return this.avatarUrl;
+    }
+
+    if (role === 'farmer') {
+      return '/assets/default-farmer.png';
+    }
+
+    if (role === 'consumer' || role === 'admin') {
+      return '/assets/default-consumer.png';
+    }
+
+    return '/assets/default-consumer.png';
   }
 
   logout(): void {

@@ -1,19 +1,37 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { SubscriptionService, SubscriptionPlan, SubscriptionStatus } from '../../services/subscription.service';
-import { AuthService } from '../../services/auth.service';
-
-declare var Razorpay: any;
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatChipsModule } from '@angular/material/chips';
+import {
+  SubscriptionService,
+  SubscriptionPlan,
+  SubscriptionStatus,
+} from '../../services/subscription.service';
 
 @Component({
   selector: 'app-subscription',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatDividerModule,
+    MatProgressSpinnerModule,
+    MatChipsModule,
+  ],
   templateUrl: './subscription.component.html',
-  styleUrl: './subscription.component.scss'
+  styleUrl: './subscription.component.scss',
 })
-export class SubscriptionComponent implements OnInit, OnDestroy {
+export class SubscriptionComponent implements OnInit {
   plans: SubscriptionPlan[] = [];
   subscriptionStatus: SubscriptionStatus | null = null;
   isLoading = false;
@@ -24,16 +42,12 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
 
   constructor(
     private subscriptionService: SubscriptionService,
-    private authService: AuthService
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
     this.loadSubscriptionPlans();
     this.loadSubscriptionStatus();
-  }
-
-  ngOnDestroy(): void {
-    // Cleanup if needed
   }
 
   loadSubscriptionPlans(): void {
@@ -46,7 +60,7 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.errorMessage = error.error?.message || 'Failed to load subscription plans';
         this.isLoading = false;
-      }
+      },
     });
   }
 
@@ -55,14 +69,12 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.subscriptionStatus = response;
       },
-      error: (error) => {
-        console.error('Failed to load subscription status:', error);
-      }
+      error: () => {},
     });
   }
 
-  selectPlan(planType: 'monthly' | 'yearly'): void {
-    this.selectedPlan = planType;
+  selectPlan(planType: 'monthly' | 'yearly' | string): void {
+    this.selectedPlan = planType === 'monthly' || planType === 'yearly' ? planType : null;
     this.errorMessage = '';
     this.successMessage = '';
   }
@@ -82,87 +94,81 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.subscriptionService.createOrder(this.selectedPlan).subscribe({
-      next: (response) => {
-        this.openRazorpayCheckout(response);
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to create payment order';
-        this.isProcessingPayment = false;
-      }
-    });
+    const description = `${this.subscriptionService.getPlanDisplayName(this.selectedPlan)} Subscription`;
+
+    this.subscriptionService
+      .createOrderAndOpenCheckout(this.selectedPlan, description)
+      .subscribe({
+        next: ({ orderResponse, paymentSuccess }) => {
+          this.verifyPayment(
+            orderResponse.order.id,
+            paymentSuccess.razorpay_payment_id,
+            paymentSuccess.razorpay_signature
+          );
+        },
+        error: (error) => {
+          this.ngZone.run(() => {
+            this.errorMessage =
+              error?.message || error?.error?.message || 'Payment was cancelled or failed';
+            this.isProcessingPayment = false;
+          });
+        },
+      });
   }
 
-  openRazorpayCheckout(orderResponse: any): void {
-    const options = {
-      key: 'rzp_test_1DP5mmOlF5G5ag', // Replace with your Razorpay key
-      amount: orderResponse.order.amount,
-      currency: orderResponse.order.currency,
-      name: 'Farm-to-Consumer',
-      description: `${this.subscriptionService.getPlanDisplayName(this.selectedPlan!)} Subscription`,
-      order_id: orderResponse.order.id,
-      handler: (response: any) => {
-        this.verifyPayment(response, orderResponse.order.id);
-      },
-      prefill: {
-        name: this.authService.getCurrentUser()?.firstName + ' ' + this.authService.getCurrentUser()?.lastName,
-        email: this.authService.getCurrentUser()?.email,
-      },
-      theme: {
-        color: '#2ecc71'
-      },
-      modal: {
-        ondismiss: () => {
+  verifyPayment(orderId: string, paymentId: string, signature: string): void {
+    this.subscriptionService.verifyPayment(orderId, paymentId, signature).subscribe({
+      next: (response) => {
+        this.ngZone.run(() => {
+          this.successMessage = response.message;
           this.isProcessingPayment = false;
-        }
-      }
-    };
-
-    const rzp = new Razorpay(options);
-    rzp.open();
-  }
-
-  verifyPayment(paymentResponse: any, orderId: string): void {
-    this.subscriptionService.verifyPayment(
-      orderId,
-      paymentResponse.razorpay_payment_id,
-      paymentResponse.razorpay_signature
-    ).subscribe({
-      next: (response) => {
-        this.successMessage = response.message;
-        this.isProcessingPayment = false;
-        this.loadSubscriptionStatus();
-        this.selectedPlan = null;
+          this.selectedPlan = null;
+          this.loadSubscriptionStatus();
+        });
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Payment verification failed';
-        this.isProcessingPayment = false;
-      }
+        this.ngZone.run(() => {
+          this.errorMessage = error.error?.message || 'Payment verification failed';
+          this.isProcessingPayment = false;
+        });
+      },
     });
   }
 
   cancelSubscription(): void {
-    if (!confirm('Are you sure you want to cancel your premium subscription?')) {
+    if (
+      !confirm('Are you sure you want to cancel your premium subscription?')
+    ) {
       return;
     }
 
     this.subscriptionService.cancelSubscription().subscribe({
       next: (response) => {
-        this.successMessage = response.message;
-        this.loadSubscriptionStatus();
+        this.ngZone.run(() => {
+          this.successMessage = response.message;
+          this.errorMessage = '';
+          this.loadSubscriptionStatus();
+        });
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to cancel subscription';
-      }
+        this.ngZone.run(() => {
+          this.errorMessage =
+            error.error?.message || 'Failed to cancel subscription';
+        });
+      },
     });
   }
 
   isPremiumActive(): boolean {
-    return this.subscriptionService.isPremiumActive(this.subscriptionStatus?.premiumExpiresAt);
+    return this.subscriptionService.isPremiumActive(
+      this.subscriptionStatus?.premiumExpiresAt
+    );
   }
 
   getDaysRemaining(): number {
-    return this.subscriptionService.getDaysRemaining(this.subscriptionStatus?.premiumExpiresAt);
+    return this.subscriptionService.getDaysRemaining(
+      this.subscriptionStatus?.premiumExpiresAt
+    );
   }
 
   formatCurrency(amount: number): string {
@@ -174,15 +180,26 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
   }
 
   getYearlySavings(): number {
-    return this.subscriptionService.getYearlySavings();
+    const monthlyPlan = this.plans.find((p) => p.id === 'monthly');
+    const yearlyPlan = this.plans.find((p) => p.id === 'yearly');
+    return this.subscriptionService.getYearlySavings(
+      monthlyPlan?.amount,
+      yearlyPlan?.amount
+    );
   }
 
   getPlanDisplayName(planType: 'monthly' | 'yearly'): string {
     return this.subscriptionService.getPlanDisplayName(planType);
   }
 
-  isPlanSelected(planType: 'monthly' | 'yearly'): boolean {
+  isPlanSelected(planType: 'monthly' | 'yearly' | string): boolean {
     return this.selectedPlan === planType;
+  }
+
+  getSelectedPlanAmount(): number {
+    if (!this.selectedPlan) return 0;
+    const plan = this.plans.find((p) => p.id === this.selectedPlan);
+    return plan?.amount ?? 0;
   }
 
   getPlanFeatures(): string[] {
@@ -192,7 +209,18 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
       'Advanced analytics dashboard',
       'Featured listing placement',
       'Direct farmer-consumer messaging',
-      'Seasonal crop recommendations'
+      'Seasonal crop recommendations',
+    ];
+  }
+
+  getComparisonRows(): { feature: string; free: string; premium: string }[] {
+    return [
+      { feature: 'Crop listings', free: 'Up to 10 active', premium: 'Unlimited' },
+      { feature: 'Support', free: 'Basic', premium: 'Priority' },
+      { feature: 'Analytics', free: 'Basic', premium: 'Advanced' },
+      { feature: 'Placement', free: 'Standard', premium: 'Featured' },
+      { feature: 'Messaging', free: 'Limited', premium: 'Unlimited' },
+      { feature: 'Recommendations', free: 'Basic', premium: 'AI-powered' },
     ];
   }
 }

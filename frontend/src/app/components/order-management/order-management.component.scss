@@ -84,15 +84,68 @@
   flex: 2 1 260px;
 }
 
+/* Match crop-management filter field styling (crop-form-field) */
+.om-page ::ng-deep .om-filter-field {
+  --mdc-filled-text-field-focus-label-text-color: var(--color-primary);
+  --mdc-filled-text-field-hover-label-text-color: var(--faded-copper-2);
+  --mdc-filled-text-field-label-text-color: var(--faded-copper-2);
+  --mdc-filled-text-field-focus-active-indicator-color: var(--color-primary);
+  --mdc-filled-text-field-hover-active-indicator-color: var(--color-primary-soft);
+}
+
+.om-page ::ng-deep .om-filter-field .mat-mdc-text-field-wrapper.mdc-text-field--filled {
+  background-color: var(--color-surface);
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-primary-soft);
+}
+
+.om-page ::ng-deep .om-filter-field .mdc-line-ripple {
+  display: none;
+}
+
+.om-page ::ng-deep .om-filter-field .mdc-floating-label {
+  color: var(--faded-copper-2);
+}
+
+.om-page ::ng-deep .om-filter-field .mdc-floating-label--float-above,
+.om-page ::ng-deep .om-filter-field .mdc-text-field--focused .mdc-floating-label,
+.om-page ::ng-deep .om-filter-field .mdc-text-field--filled.mdc-text-field--focused .mdc-floating-label {
+  color: var(--color-primary) !important;
+}
+
+.om-page ::ng-deep .om-filter-field .mat-mdc-form-field-focus-overlay {
+  background-color: transparent;
+}
+
+.om-page ::ng-deep .om-filter-field .mat-mdc-select-value,
+.om-page ::ng-deep .om-filter-field .mat-mdc-select-value-text {
+  color: var(--faded-copper-2) !important;
+}
+
+.om-page ::ng-deep .om-filter-field .mat-mdc-select.mat-mdc-select-focused .mat-mdc-select-value-text,
+.om-page ::ng-deep .om-filter-field .mat-mdc-select.mat-mdc-select-focused .mat-mdc-select-value {
+  color: var(--color-primary) !important;
+}
+
 /* Remove inner vertical divider before suffix icons in all fields on this page */
+.om-page ::ng-deep .mat-mdc-form-field-prefix,
+.om-page ::ng-deep .mat-mdc-form-field-icon-prefix,
 .om-page ::ng-deep .mat-mdc-form-field-suffix,
 .om-page ::ng-deep .mat-mdc-form-field-icon-suffix {
   border-left: none !important;
+  border-right: none !important;
 }
 
+.om-page ::ng-deep .mat-mdc-form-field-prefix::before,
+.om-page ::ng-deep .mat-mdc-form-field-icon-prefix::before,
+.om-page ::ng-deep .mat-mdc-form-field-prefix::after,
+.om-page ::ng-deep .mat-mdc-form-field-icon-prefix::after,
 .om-page ::ng-deep .mat-mdc-form-field-suffix::before,
-.om-page ::ng-deep .mat-mdc-form-field-icon-suffix::before {
+.om-page ::ng-deep .mat-mdc-form-field-icon-suffix::before,
+.om-page ::ng-deep .mat-mdc-form-field-suffix::after,
+.om-page ::ng-deep .mat-mdc-form-field-icon-suffix::after {
   border-left: none !important;
+  border-right: none !important;
   box-shadow: none !important;
 }
 
@@ -668,11 +721,5 @@
     width: calc(100% - 2rem);
   }
 }
-::ng-deep .mat-mdc-notch-piece {
-  border-right: none;
-}
-
-::ng-deep .mat-mdc-text-field-wrapper, ::ng-deep .mat-mdc-text-field-wrapper:focus {
-  border-right: 1px;
-  border-radius: 5px;
-}
+/* NOTE: Avoid overriding MDC outline notch pieces globally via ::ng-deep.
+   Those rules can remove the right outline border on form-fields. */

@@ -1,184 +1,204 @@
-<div class="farmers-list-container">
-  <header class="list-header">
-    <div class="header-content">
-      <h1>🌾 Find Local Farmers</h1>
-      <p>Discover premium farmers in your area with verified badges and boosted visibility</p>
-    </div>
-  </header>
-
-  <main class="list-main">
-    <!-- Search and Filters -->
-    <div class="search-filters">
-      <div class="search-bar">
-        <input 
-          type="text" 
-          [(ngModel)]="searchQuery"
-          placeholder="Search farmers, farms, or products..."
-          class="search-input">
-        <button (click)="onSearch()" class="search-btn">Search</button>
+<section class="farmers-page">
+  <div class="page-header">
+    <div class="page-header-inner container">
+      <div class="title-block">
+        <div class="page-title">Find Farmers</div>
+        <div class="page-subtitle">Browse farms near you, with premium and verified highlights.</div>
       </div>
+    </div>
+  </div>
 
-      <div class="filters">
-        <div class="filter-group">
-          <input 
-            type="text" 
+  <div class="container content">
+    <mat-card class="filters-card farmers-filters-card" appearance="outlined">
+      <div class="filters-grid">
+        <mat-form-field appearance="fill" class="field field--search farmers-form-field">
+          <mat-label>Search</mat-label>
+          <input
+            matInput
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="onSearch()"
+            placeholder="Farm name, products…"
+            autocomplete="off"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            aria-label="Search"
+            (click)="onSearch()"
+          >
+            <mat-icon>search</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="field field--location farmers-form-field">
+          <mat-label>Location</mat-label>
+          <input
+            matInput
             [(ngModel)]="locationQuery"
-            placeholder="Location (city, state)"
-            class="filter-input">
-        </div>
+            (keyup.enter)="onSearch()"
+            placeholder="City, state"
+            autocomplete="off"
+          />
+          <mat-icon matSuffix>location_on</mat-icon>
+        </mat-form-field>
 
-        <div class="filter-group">
-          <label class="checkbox-label">
-            <input 
-              type="checkbox" 
-              [(ngModel)]="premiumFilter"
-              (change)="onFilterChange()">
-            <span class="checkmark"></span>
-            Premium Farmers Only
-          </label>
-        </div>
+        <div class="toggles">
+          <mat-checkbox [(ngModel)]="premiumFilter" (change)="onFilterChange()">
+            Premium only
+          </mat-checkbox>
 
-        <div class="filter-group location-filter">
-          <label class="checkbox-label">
-            <input 
-              type="checkbox" 
+          <div class="distance-toggle">
+            <mat-checkbox
               [(ngModel)]="isLocationEnabled"
-              (change)="toggleLocationFilter()">
-            <span class="checkmark"></span>
-            Filter by Distance
-          </label>
-          
-          <div class="radius-selector" *ngIf="isLocationEnabled">
-            <label for="radius-select">Within:</label>
-            <select 
-              id="radius-select"
-              [(ngModel)]="selectedRadius"
-              (change)="onRadiusChange()"
-              class="radius-select">
-              <option *ngFor="let radius of radiusOptions" [value]="radius">
-                {{ radius }}km
-              </option>
-            </select>
+              (change)="toggleLocationFilter()"
+              [disabled]="!isLocationAvailable"
+              matTooltip="Enable location permission to use distance filtering."
+            >
+              Filter by distance
+            </mat-checkbox>
           </div>
         </div>
 
-        <button (click)="clearFilters()" class="clear-btn">Clear Filters</button>
+        <mat-form-field appearance="fill" class="field field--radius farmers-form-field">
+          <mat-label>Radius</mat-label>
+          <mat-select
+            [(ngModel)]="selectedRadius"
+            (selectionChange)="onRadiusChange()"
+            [disabled]="!isLocationEnabled"
+          >
+            <mat-option *ngFor="let radius of radiusOptions" [value]="radius">
+              {{ radius }} km
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="!isLocationAvailable">Location permission required</mat-hint>
+        </mat-form-field>
+
+        <div class="actions">
+          <button mat-flat-button color="primary" type="button" (click)="onSearch()">
+            Search
+          </button>
+          <button mat-stroked-button color="primary" type="button" (click)="clearFilters()">
+            Clear
+          </button>
+        </div>
       </div>
-    </div>
+    </mat-card>
 
-    <!-- Loading State -->
-    <div class="loading" *ngIf="isLoading">
-      <div class="spinner"></div>
-      <p>Loading farmers...</p>
-    </div>
-
-    <!-- Error Message -->
-    <div class="error-message" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
-
-    <!-- Results Summary -->
-    <div class="results-summary" *ngIf="!isLoading && !errorMessage">
-      <p>{{ totalItems }} farmers found</p>
-      <div class="sort-info">
-        <span class="sort-badge">Premium farmers appear first</span>
+    <div class="results-row" *ngIf="!isLoading && !errorMessage">
+      <div class="results-count">
+        {{ totalItems }} farmers found
       </div>
+      <mat-chip-set aria-label="Sort info" class="results-chips">
+        <mat-chip class="info-chip" disabled>
+          Premium farmers appear first
+        </mat-chip>
+      </mat-chip-set>
     </div>
 
-    <!-- Farmers Grid -->
+    <mat-card class="state-card" *ngIf="isLoading" appearance="outlined">
+      <div class="state state--loading">
+        <mat-progress-spinner diameter="32" mode="indeterminate"></mat-progress-spinner>
+        <div>Loading farmers…</div>
+      </div>
+    </mat-card>
+
+    <mat-card class="state-card" *ngIf="!isLoading && errorMessage" appearance="outlined">
+      <div class="state state--error">
+        <mat-icon class="state-icon">error_outline</mat-icon>
+        <div class="state-title">Couldn’t load farmers</div>
+        <div class="state-subtitle">{{ errorMessage }}</div>
+        <button mat-stroked-button color="primary" type="button" (click)="loadFarmers()">Retry</button>
+      </div>
+    </mat-card>
+
     <div class="farmers-grid" *ngIf="!isLoading && !errorMessage && farmers.length > 0">
-      <div 
-        *ngFor="let farmer of farmers" 
-        class="farmer-card"
-        [class.premium-card]="isPremiumFarmer(farmer)"
-        [class.boosted-card]="isBoosted(farmer)">
-        
-        <div class="card-header">
-          <img 
-            [src]="getProfilePhotoUrl(farmer.profilePhoto)" 
-            [alt]="farmer.farmName"
-            class="farmer-photo">
-          
-          <div class="farmer-badges">
-            <span 
-              *ngFor="let badge of getPremiumBadges(farmer)" 
-              class="badge"
-              [ngClass]="getPremiumBadgeClass(badge)">
+      <mat-card
+        *ngFor="let farmer of farmers"
+        class="farmer-tile"
+        appearance="outlined"
+        [class.is-premium]="isPremiumFarmer(farmer)"
+        [class.is-boosted]="isBoosted(farmer)"
+      >
+        <mat-card-header>
+          <div mat-card-avatar class="avatar">
+            <img
+              [src]="getProfilePhotoUrl(farmer.profilePhoto)"
+              [alt]="farmer.farmName || 'Farmer'"
+              class="avatar-img"
+            />
+          </div>
+          <mat-card-title class="tile-title">{{ farmer.farmName || 'Farm' }}</mat-card-title>
+          <mat-card-subtitle class="tile-subtitle">
+            <mat-icon class="meta-icon">place</mat-icon>
+            <span>{{ farmer.farmLocation || 'Location not provided' }}</span>
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <mat-chip-set class="badges" *ngIf="getPremiumBadges(farmer).length > 0" aria-label="Badges">
+            <mat-chip *ngFor="let badge of getPremiumBadges(farmer)" [ngClass]="getPremiumBadgeClass(badge)">
               {{ badge }}
-            </span>
-          </div>
-        </div>
+            </mat-chip>
+          </mat-chip-set>
 
-        <div class="card-content">
-          <h3 class="farmer-name">{{ farmer.farmName }}</h3>
-          <p class="farmer-location">{{ farmer.farmLocation }}</p>
-          
-          <div class="distance-info" *ngIf="isLocationEnabled && calculateDistance(farmer) !== null">
-            <span class="distance-badge">
-              📍 {{ formatDistance(calculateDistance(farmer)!) }} away
-            </span>
-          </div>
-          
-          <div class="farmer-description" *ngIf="farmer.farmDescription">
-            <p>{{ farmer.farmDescription | slice:0:120 }}{{ farmer.farmDescription.length > 120 ? '...' : '' }}</p>
+          <mat-chip-set
+            class="distance"
+            *ngIf="isLocationEnabled && calculateDistance(farmer) !== null"
+            aria-label="Distance"
+          >
+            <mat-chip class="distance-chip">
+              <mat-icon class="chip-icon">near_me</mat-icon>
+              {{ formatDistance(calculateDistance(farmer)!) }} away
+            </mat-chip>
+          </mat-chip-set>
+
+          <div class="description" *ngIf="farmer.farmDescription">
+            {{ farmer.farmDescription | slice:0:120 }}{{ farmer.farmDescription.length > 120 ? '…' : '' }}
           </div>
 
-          <div class="farmer-contact" *ngIf="farmer.phone || farmer.website">
-            <p *ngIf="farmer.phone" class="contact-item">
-              <span class="contact-icon">📞</span>
-              {{ farmer.phone }}
-            </p>
-            <p *ngIf="farmer.website" class="contact-item">
-              <span class="contact-icon">🌐</span>
-              <a [href]="farmer.website" target="_blank" class="website-link">Visit Website</a>
-            </p>
+          <div class="contact" *ngIf="farmer.phone || farmer.website">
+            <div class="contact-row" *ngIf="farmer.phone">
+              <mat-icon class="meta-icon">call</mat-icon>
+              <span>{{ farmer.phone }}</span>
+            </div>
+            <div class="contact-row" *ngIf="farmer.website">
+              <mat-icon class="meta-icon">language</mat-icon>
+              <a class="link" [href]="farmer.website" target="_blank" rel="noopener noreferrer">
+                Website
+              </a>
+            </div>
           </div>
-        </div>
+        </mat-card-content>
 
-        <div class="card-footer">
-          <a 
-            class="view-profile-btn"
-            [routerLink]="['/farmer-detail', farmer.userId]">
-            View Profile
+        <mat-card-actions align="end">
+          <a mat-stroked-button color="primary" [routerLink]="['/farmer-detail', farmer.userId]">
+            View profile
           </a>
-        </div>
-      </div>
+        </mat-card-actions>
+      </mat-card>
     </div>
 
-    <!-- No Results -->
-    <div class="no-results" *ngIf="!isLoading && !errorMessage && farmers.length === 0">
-      <div class="no-results-content">
-        <h3>No farmers found</h3>
-        <p>Try adjusting your search criteria or filters</p>
-        <button (click)="clearFilters()" class="clear-btn">Clear All Filters</button>
-      </div>
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination" *ngIf="!isLoading && !errorMessage && totalPages > 1">
-      <button 
-        class="page-btn"
-        [disabled]="currentPage === 1"
-        (click)="onPageChange(currentPage - 1)">
-        Previous
-      </button>
-      
-      <div class="page-numbers">
-        <button 
-          *ngFor="let page of pages.slice(Math.max(0, currentPage - 3), currentPage + 3)"
-          class="page-number"
-          [class.active]="page === currentPage"
-          (click)="onPageChange(page)">
-          {{ page }}
+    <mat-card class="state-card" *ngIf="!isLoading && !errorMessage && farmers.length === 0" appearance="outlined">
+      <div class="state state--empty">
+        <mat-icon class="state-icon">search_off</mat-icon>
+        <div class="state-title">No farmers found</div>
+        <div class="state-subtitle">Try adjusting your search or filters.</div>
+        <button mat-flat-button color="primary" type="button" (click)="clearFilters()">
+          Clear filters
         </button>
       </div>
-      
-      <button 
-        class="page-btn"
-        [disabled]="currentPage === totalPages"
-        (click)="onPageChange(currentPage + 1)">
-        Next
-      </button>
-    </div>
-  </main>
-</div>
+    </mat-card>
+
+    <mat-paginator
+      *ngIf="!isLoading && !errorMessage && totalItems > pageSize"
+      class="paginator"
+      [length]="totalItems"
+      [pageIndex]="pageIndex"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="onPage($event)"
+      aria-label="Farmers pagination"
+    ></mat-paginator>
+  </div>
+</section>

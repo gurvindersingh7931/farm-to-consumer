@@ -13,7 +13,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSliderModule } from '@angular/material/slider';
 import { PaginationComponent } from '../../shared/pagination/pagination.component';
 import { CropCardComponent, CropCardData } from '../../shared/crop-card/crop-card.component';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { CropBrowseService, CropListing, CropFilters, CropSortOptions, CropCategory } from '../../services/crop-browse.service';
 import { CropService } from '../../services/crop.service';
@@ -43,8 +43,10 @@ import { MapsService } from '../../services/maps.service';
 })
 export class CropBrowseComponent implements OnInit, OnDestroy {
   crops: CropListing[] = [];
+  premiumCrops: CropListing[] = [];
   categories: CropCategory[] = [];
   isLoading = false;
+  isLoadingPremium = false;
   errorMessage = '';
   
   // View mode
@@ -126,15 +128,16 @@ export class CropBrowseComponent implements OnInit, OnDestroy {
 
   async initializeComponent(): Promise<void> {
     this.isLoading = true;
-    
+
     try {
-      // Load categories and initial data in parallel
+      // Load categories, premium featured crops, and main crops in parallel
       await Promise.all([
         this.loadCategories(),
         this.getUserLocation(),
-        this.loadCrops()
+        this.loadPremiumCrops(),
+        this.loadCrops(),
       ]);
-      
+
       this.sortOptions = this.cropBrowseService.getDefaultSortOptions();
     } catch (error) {
       this.errorMessage = 'Failed to initialize crop browser';
@@ -142,6 +145,21 @@ export class CropBrowseComponent implements OnInit, OnDestroy {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  loadPremiumCrops(): Promise<void> {
+    this.isLoadingPremium = true;
+    return firstValueFrom(this.cropBrowseService.getPremiumFeaturedCrops(4))
+      .then((response) => {
+        this.premiumCrops = response?.crops ?? [];
+      })
+      .catch((err) => {
+        console.warn('Failed to load premium crops:', err);
+        this.premiumCrops = [];
+      })
+      .finally(() => {
+        this.isLoadingPremium = false;
+      });
   }
 
   async loadCategories(): Promise<void> {
@@ -274,6 +292,12 @@ export class CropBrowseComponent implements OnInit, OnDestroy {
   }
 
   // Helper methods
+  getDisplayCrops(): CropListing[] {
+    if (this.premiumCrops.length === 0) return this.crops;
+    const premiumIds = new Set(this.premiumCrops.map((p) => p.id));
+    return this.crops.filter((c) => !premiumIds.has(c.id));
+  }
+
   getPageNumbers(): number[] {
     const pages: number[] = [];
     const startPage = Math.max(1, this.currentPage - 2);

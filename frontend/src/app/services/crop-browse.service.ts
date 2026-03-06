@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface CropListing {
   id: number;
@@ -114,9 +115,18 @@ export interface CropCategory {
   providedIn: 'root'
 })
 export class CropBrowseService {
-  private readonly API_URL = 'http://localhost:3000/api';
+  private readonly API_URL = `${environment.backendUrl}/api`;
 
   constructor(private http: HttpClient) {}
+
+  // Get 4 random premium crops for featured section
+  getPremiumFeaturedCrops(limit = 4): Observable<{ message: string; crops: CropListing[] }> {
+    const params = new HttpParams().set('limit', limit.toString());
+    return this.http.get<{ message: string; crops: CropListing[] }>(
+      `${this.API_URL}/crop/premium-featured`,
+      { params }
+    );
+  }
 
   // Browse crops with filters and sorting
   browseCrops(params: CropBrowseParams): Observable<CropBrowseResponse> {

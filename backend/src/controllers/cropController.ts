@@ -237,6 +237,7 @@ export const updateCrop = async (req: AuthenticatedRequest, res: Response): Prom
         organic,
         isActive,
         isAvailable,
+        isPremium,
         removeImage,
       } = req.body;
 
@@ -285,6 +286,7 @@ export const updateCrop = async (req: AuthenticatedRequest, res: Response): Prom
         organic: organic !== undefined ? (organic === 'true' || organic === true) : crop.organic,
         isActive: isActive !== undefined ? (isActive === 'true' || isActive === true) : crop.isActive,
         isAvailable: isAvailable !== undefined ? (isAvailable === 'true' || isAvailable === true) : crop.isAvailable,
+        isPremium: isPremium !== undefined ? (isPremium === 'true' || isPremium === true) : crop.isPremium,
       });
 
       const cropData = await s3Presign.withPresignedCropImageUrl(crop);
@@ -709,6 +711,78 @@ export const browseCrops = async (req: Request, res: Response): Promise<void> =>
     });
   } catch (error) {
     console.error('Error browsing crops:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+/** Get 4 random premium crops for featured section. Premium = crops marked as premium listing (isPremium). */
+export const getPremiumFeaturedCrops = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const limit = Math.min(parseInt((req.query.limit as string) || '4', 10) || 4, 10);
+
+    const crops = await Crop.findAll({
+      where: { isActive: true, isAvailable: true, isPremium: true },
+      include: [
+        {
+          model: User,
+          as: 'farmer',
+          required: true,
+          attributes: ['id', 'firstName', 'lastName', 'email', 'isPremium'],
+          include: [
+            {
+              model: Farmer,
+              as: 'farmerProfile',
+              attributes: ['farmName', 'city', 'state', 'latitude', 'longitude', 'hasVerifiedBadge', 'isBoosted'],
+              required: false,
+            },
+          ],
+        },
+      ],
+      order: Sequelize.literal('RANDOM()'),
+      limit,
+    });
+
+    const cropsData = await s3Presign.withPresignedCropImageUrls(crops);
+    const farmerIds = [...new Set((cropsData as any[]).map((c: any) => c.farmer?.id).filter(Boolean))] as number[];
+
+    if (farmerIds.length > 0) {
+      const ratingRows = await FarmerRating.findAll({
+        attributes: [
+          'farmerId',
+          [Sequelize.fn('AVG', Sequelize.col('rating')), 'avg'],
+          [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
+        ],
+        where: { farmerId: { [Op.in]: farmerIds } },
+        group: ['farmerId'],
+        raw: true,
+      }) as unknown as Array<{ farmerId: number; avg: number | string; count: number | string }>;
+      const ratingByFarmer: Record<number, { rating: number; totalRatings: number }> = {};
+      ratingRows.forEach((r: { farmerId: number; avg: number | string; count: number | string }) => {
+        ratingByFarmer[r.farmerId] = {
+          rating: r.avg != null ? parseFloat(String(r.avg)) : 0,
+          totalRatings: r.count != null ? parseInt(String(r.count), 10) : 0,
+        };
+      });
+      (cropsData as any[]).forEach((crop: any) => {
+        if (crop.farmer?.id == null) return;
+        const { rating, totalRatings } = ratingByFarmer[crop.farmer.id] ?? { rating: 0, totalRatings: 0 };
+        crop.farmer.rating = rating;
+        crop.farmer.totalRatings = totalRatings;
+        if (crop.farmer.farmerProfile && typeof crop.farmer.farmerProfile === 'object') {
+          crop.farmer.farmerProfile.rating = rating;
+          crop.farmer.farmerProfile.totalRatings = totalRatings;
+        } else {
+          crop.farmer.farmerProfile = { ...(crop.farmer.farmerProfile || {}), rating, totalRatings };
+        }
+      });
+    }
+
+    res.status(200).json({
+      message: 'Premium featured crops retrieved',
+      crops: cropsData,
+    });
+  } catch (error) {
+    console.error('Error fetching premium featured crops:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };

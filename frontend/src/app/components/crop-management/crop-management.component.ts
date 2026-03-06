@@ -209,7 +209,9 @@ export class CropManagementComponent implements OnInit, OnDestroy {
     this.cropForm.reset({
       unit: 'kg',
       organic: false,
-      isActive: true
+      isActive: true,
+      isAvailable: true,
+      isPremium: false
     });
     this.selectedFile = null;
     this.imagePreview = null;
@@ -226,8 +228,10 @@ export class CropManagementComponent implements OnInit, OnDestroy {
       harvestDate: crop.harvestDate ? crop.harvestDate.split('T')[0] : '',
       expiryDate: crop.expiryDate ? crop.expiryDate.split('T')[0] : '',
       location: crop.location || '',
-      organic: crop.organic,
-      isActive: crop.isActive
+      organic: crop.organic ?? crop.isOrganic ?? false,
+      isActive: crop.isActive,
+      isAvailable: crop.isAvailable ?? true,
+      isPremium: crop.isPremium ?? false
     });
 
     if (crop.imageUrl) {

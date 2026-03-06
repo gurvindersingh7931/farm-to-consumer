@@ -1,8 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
+import {
+  RazorpayPaymentService,
+  RazorpayOrderResponse,
+  RazorpayPaymentSuccess,
+} from './razorpay-payment.service';
+
+export const SUBSCRIPTION_PAYMENT_CONTEXT = 'subscription_farmer';
 
 export interface SubscriptionPlan {
   id: string;
@@ -28,10 +36,6 @@ export interface SubscriptionStatus {
   subscriptions: Subscription[];
 }
 
-export interface CreateOrderRequest {
-  planType: 'monthly' | 'yearly';
-}
-
 export interface CreateOrderResponse {
   message: string;
   order: {
@@ -47,12 +51,7 @@ export interface CreateOrderResponse {
     startDate: string;
     endDate: string;
   };
-}
-
-export interface VerifyPaymentRequest {
-  orderId: string;
-  paymentId: string;
-  signature: string;
+  razorpayKeyId?: string;
 }
 
 export interface VerifyPaymentResponse {
@@ -68,47 +67,54 @@ export interface VerifyPaymentResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SubscriptionService {
   private apiUrl = `${environment.backendUrl}/api/payment`;
 
-  constructor(private http: HttpClient, private authService: AuthService) { }
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+    private razorpayPayment: RazorpayPaymentService
+  ) {}
 
   private getAuthHeaders(): HttpHeaders {
     const token = this.authService.getToken();
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: token ? `Bearer ${token}` : '',
     });
   }
 
-  // Get available subscription plans
   getSubscriptionPlans(): Observable<{ plans: SubscriptionPlan[] }> {
-    return this.http.get<{ plans: SubscriptionPlan[] }>(`${this.apiUrl}/plans`);
+    return this.http.get<{ plans: SubscriptionPlan[] }>(
+      `${this.apiUrl}/plans?context=${SUBSCRIPTION_PAYMENT_CONTEXT}`
+    );
   }
 
-  // Create Razorpay order
-  createOrder(planType: 'monthly' | 'yearly'): Observable<CreateOrderResponse> {
-    const request: CreateOrderRequest = { planType };
+  createOrder(planId: 'monthly' | 'yearly'): Observable<CreateOrderResponse> {
     return this.http.post<CreateOrderResponse>(
       `${this.apiUrl}/create-order`,
-      request,
+      {
+        paymentContext: SUBSCRIPTION_PAYMENT_CONTEXT,
+        planId,
+      },
       { headers: this.getAuthHeaders() }
     );
   }
 
-  // Verify payment
-  verifyPayment(orderId: string, paymentId: string, signature: string): Observable<VerifyPaymentResponse> {
-    const request: VerifyPaymentRequest = { orderId, paymentId, signature };
+  verifyPayment(
+    orderId: string,
+    paymentId: string,
+    signature: string
+  ): Observable<VerifyPaymentResponse> {
     return this.http.post<VerifyPaymentResponse>(
       `${this.apiUrl}/verify-payment`,
-      request,
+      { orderId, paymentId, signature },
       { headers: this.getAuthHeaders() }
     );
   }
 
-  // Get subscription status
   getSubscriptionStatus(): Observable<SubscriptionStatus> {
     return this.http.get<SubscriptionStatus>(
       `${this.apiUrl}/subscription-status`,
@@ -116,7 +122,6 @@ export class SubscriptionService {
     );
   }
 
-  // Cancel subscription
   cancelSubscription(): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
       `${this.apiUrl}/cancel-subscription`,
@@ -125,13 +130,40 @@ export class SubscriptionService {
     );
   }
 
-  // Check if user has active premium subscription
+  /**
+   * Create order, open Razorpay checkout, and return success payload for verification.
+   * Uses backend-provided key (secure). Rejects if user cancels or payment fails.
+   */
+  createOrderAndOpenCheckout(
+    planId: 'monthly' | 'yearly',
+    description: string
+  ): Observable<{ orderResponse: CreateOrderResponse; paymentSuccess: RazorpayPaymentSuccess }> {
+    return this.createOrder(planId).pipe(
+      switchMap((orderResponse) => {
+        const keyId = orderResponse.razorpayKeyId;
+        if (!keyId) {
+          throw new Error('Payment key not available');
+        }
+        const user = this.authService.getCurrentUser();
+        return this.razorpayPayment.openCheckout({
+          order: orderResponse.order,
+          keyId,
+          description,
+          userName: user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() : undefined,
+          userEmail: user?.email,
+          themeColor: '#a0835c',
+        }).pipe(
+          map((paymentSuccess) => ({ orderResponse, paymentSuccess }))
+        );
+      })
+    );
+  }
+
   isPremiumActive(premiumExpiresAt?: string): boolean {
     if (!premiumExpiresAt) return false;
     return new Date(premiumExpiresAt) > new Date();
   }
 
-  // Get days remaining for premium subscription
   getDaysRemaining(premiumExpiresAt?: string): number {
     if (!premiumExpiresAt) return 0;
     const expiryDate = new Date(premiumExpiresAt);
@@ -141,32 +173,28 @@ export class SubscriptionService {
     return Math.max(0, diffDays);
   }
 
-  // Format currency
-  formatCurrency(amount: number, currency: string = 'INR'): string {
+  formatCurrency(amount: number, currency = 'INR'): string {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: currency
+      currency,
     }).format(amount);
   }
 
-  // Format date
   formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   }
 
-  // Get plan display name
   getPlanDisplayName(planType: 'monthly' | 'yearly'): string {
     return planType === 'monthly' ? 'Monthly Premium' : 'Yearly Premium';
   }
 
-  // Get plan savings (yearly vs monthly)
-  getYearlySavings(): number {
-    const monthlyCost = 999 * 12; // ₹9.99 * 12 months
-    const yearlyCost = 9999; // ₹99.99
-    return monthlyCost - yearlyCost;
+  getYearlySavings(monthlyAmount?: number, yearlyAmount?: number): number {
+    const monthly = monthlyAmount ?? 1;
+    const yearly = yearlyAmount ?? 10;
+    return monthly * 12 - yearly;
   }
 }

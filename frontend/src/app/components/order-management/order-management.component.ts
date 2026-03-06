@@ -12,20 +12,15 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ModalDialogComponent } from '../../shared/modal-dialog/modal-dialog.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { AuthService } from '../../services/auth.service';
 import {
   OrderService,
   Order,
   OrderStatus,
   OrderStats,
-  AcceptOrderRequest,
-  RejectOrderRequest
 } from '../../services/order.service';
 
 @Component({
@@ -47,10 +42,8 @@ import {
     MatTableModule,
     MatPaginatorModule,
     MatChipsModule,
-    MatMenuModule,
     MatDividerModule,
     MatTooltipModule,
-    ModalDialogComponent
   ],
   templateUrl: './order-management.component.html',
   styleUrl: './order-management.component.scss'
@@ -66,22 +59,6 @@ export class OrderManagementComponent implements OnInit {
   limit = 10;
   selectedStatus = '';
   orderDate: Date | null = null;
-  selectedOrder: Order | null = null;
-  showAcceptModal = false;
-  showRejectModal = false;
-  showStatusModal = false;
-  acceptForm = {
-    deliveryDate: '',
-    notes: ''
-  };
-  rejectForm = {
-    reason: ''
-  };
-  statusForm = {
-    status: OrderStatus.COMPLETED,
-    deliveryDate: '',
-    notes: ''
-  };
 
   // Columns for Material table
   displayedColumns: string[] = [
@@ -96,7 +73,6 @@ export class OrderManagementComponent implements OnInit {
   ];
 
   constructor(
-    private authService: AuthService,
     private orderService: OrderService
   ) {}
 
@@ -153,113 +129,6 @@ export class OrderManagementComponent implements OnInit {
     this.loadOrders();
   }
 
-  openAcceptModal(order: Order): void {
-    this.selectedOrder = order;
-    this.acceptForm = {
-      deliveryDate: '',
-      notes: ''
-    };
-    this.showAcceptModal = true;
-  }
-
-  openRejectModal(order: Order): void {
-    this.selectedOrder = order;
-    this.rejectForm = {
-      reason: ''
-    };
-    this.showRejectModal = true;
-  }
-
-  openStatusModal(order: Order): void {
-    this.selectedOrder = order;
-    this.statusForm = {
-      status: OrderStatus.COMPLETED,
-      deliveryDate: '',
-      notes: ''
-    };
-    this.showStatusModal = true;
-  }
-
-  closeModals(): void {
-    this.showAcceptModal = false;
-    this.showRejectModal = false;
-    this.showStatusModal = false;
-    this.selectedOrder = null;
-  }
-
-  acceptOrder(): void {
-    if (!this.selectedOrder) return;
-
-    const data: AcceptOrderRequest = {
-      deliveryDate: this.acceptForm.deliveryDate || undefined,
-      notes: this.acceptForm.notes || undefined
-    };
-
-    this.orderService.acceptOrder(this.selectedOrder.id, data).subscribe({
-      next: (response) => {
-        this.successMessage = 'Order accepted successfully';
-        this.closeModals();
-        this.loadOrders();
-        this.loadStats();
-        setTimeout(() => this.successMessage = '', 3000);
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to accept order';
-        setTimeout(() => this.errorMessage = '', 5000);
-      }
-    });
-  }
-
-  rejectOrder(): void {
-    if (!this.selectedOrder) return;
-
-    const data: RejectOrderRequest = {
-      reason: this.rejectForm.reason || undefined
-    };
-
-    this.orderService.rejectOrder(this.selectedOrder.id, data).subscribe({
-      next: (response) => {
-        this.successMessage = 'Order rejected successfully';
-        this.closeModals();
-        this.loadOrders();
-        this.loadStats();
-        setTimeout(() => this.successMessage = '', 3000);
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to reject order';
-        setTimeout(() => this.errorMessage = '', 5000);
-      }
-    });
-  }
-
-  updateOrderStatus(): void {
-    if (!this.selectedOrder) return;
-
-    const data = {
-      status: this.statusForm.status,
-      deliveryDate: this.statusForm.deliveryDate || undefined,
-      notes: this.statusForm.notes || undefined
-    };
-
-    this.orderService.updateOrderStatus(this.selectedOrder.id, data).subscribe({
-      next: (response) => {
-        this.successMessage = 'Order status updated successfully';
-        this.closeModals();
-        this.loadOrders();
-        this.loadStats();
-        setTimeout(() => this.successMessage = '', 3000);
-      },
-      error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to update order status';
-        setTimeout(() => this.errorMessage = '', 5000);
-      }
-    });
-  }
-
-  logout(): void {
-    this.authService.logout();
-  }
-
   // Helper methods
   getStatusDisplayName(status: OrderStatus): string {
     return this.orderService.getStatusDisplayName(status);
@@ -295,14 +164,6 @@ export class OrderManagementComponent implements OnInit {
 
   formatDateTime(dateString: string): string {
     return this.orderService.formatDateTime(dateString);
-  }
-
-  getStatusOptions(): Array<{ value: OrderStatus; label: string }> {
-    return [
-      { value: OrderStatus.ACCEPTED, label: 'Accepted' },
-      { value: OrderStatus.COMPLETED, label: 'Completed' },
-      { value: OrderStatus.CANCELLED, label: 'Cancelled' }
-    ];
   }
 
   getPageNumbers(): number[] {

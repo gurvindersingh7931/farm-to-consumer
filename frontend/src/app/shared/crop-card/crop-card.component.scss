@@ -56,6 +56,16 @@
   }
 }
 
+/* Premium crop: golden/copper border to differentiate */
+.crop-card-root.crop-card--premium {
+  border: 2px solid var(--faded-copper);
+  box-shadow: 0 4px 12px rgba(160, 131, 92, 0.15);
+}
+
+.crop-card-root.crop-card--premium:hover {
+  box-shadow: 0 8px 24px rgba(160, 131, 92, 0.2);
+}
+
 .status-chip {
   background-color: var(--color-primary-soft);
   color: var(--faded-copper-2);
@@ -66,13 +76,7 @@
   color: var(--faded-copper-2);
 }
 
-
 .badge-chip {
-  background-color: var(--color-surface-muted);
-  color: var(--color-primary);
-}
-
-.premium-chip {
   background-color: var(--color-surface-muted);
   color: var(--color-primary);
 }

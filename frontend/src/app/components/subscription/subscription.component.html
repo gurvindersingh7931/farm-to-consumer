@@ -1,178 +1,174 @@
-<div class="subscription-container">
-  <header class="subscription-header">
-    <div class="header-content">
-      <h1>🚀 Premium Subscription</h1>
-      <p>Unlock unlimited features and grow your farm business</p>
-      <button class="back-to-dashboard-btn" routerLink="/farmer-dashboard">Back to Dashboard</button>
-    </div>
-  </header>
-
-  <main class="subscription-main">
-    <!-- Error Message -->
-    <div class="error-message" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
-
-    <!-- Success Message -->
-    <div class="success-message" *ngIf="successMessage">
-      {{ successMessage }}
-    </div>
-
-    <!-- Current Subscription Status -->
-    <div class="current-status" *ngIf="subscriptionStatus">
-      <div class="status-card" [ngClass]="isPremiumActive() ? 'premium-active' : 'premium-inactive'">
-        <div class="status-icon">
-          {{ isPremiumActive() ? '👑' : '📋' }}
-        </div>
-        <div class="status-info">
-          <h3>{{ isPremiumActive() ? 'Premium Active' : 'Free Plan' }}</h3>
-          <p *ngIf="isPremiumActive()">
-            Expires on {{ formatDate(subscriptionStatus.premiumExpiresAt!) }}
-            ({{ getDaysRemaining() }} days remaining)
-          </p>
-          <p *ngIf="!isPremiumActive()">
-            Upgrade to premium for unlimited features
-          </p>
-        </div>
-        <div class="status-actions" *ngIf="isPremiumActive()">
-          <button class="cancel-btn" (click)="cancelSubscription()">Cancel Subscription</button>
-        </div>
+<div class="sub-page">
+  <!-- Header toolbar (same pattern as Order Management / My Crops) -->
+  <section class="sub-section header">
+    <mat-toolbar class="sub-toolbar" color="primary">
+      <div class="sub-toolbar-left">
+        <span class="page-title">Premium</span>
       </div>
-    </div>
+      <span class="sub-toolbar-spacer"></span>
+    </mat-toolbar>
+  </section>
 
-    <!-- Loading State -->
-    <div class="loading" *ngIf="isLoading">
-      <div class="spinner"></div>
-      <p>Loading subscription plans...</p>
-    </div>
+  <main class="sub-main">
+    <!-- Alerts -->
+    <mat-card *ngIf="errorMessage" class="sub-alert sub-alert--error">
+      <mat-card-content class="sub-alert-content">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </mat-card-content>
+    </mat-card>
+    <mat-card *ngIf="successMessage" class="sub-alert sub-alert--success">
+      <mat-card-content class="sub-alert-content">
+        <mat-icon>check_circle_outline</mat-icon>
+        <span>{{ successMessage }}</span>
+      </mat-card-content>
+    </mat-card>
 
-    <!-- Subscription Plans -->
-    <div class="plans-section" *ngIf="!isLoading && plans.length > 0">
-      <h2>Choose Your Plan</h2>
-      <div class="plans-grid">
-        <div class="plan-card" 
-             *ngFor="let plan of plans" 
-             [ngClass]="{ 'selected': isPlanSelected(plan.id as 'monthly' | 'yearly'), 'popular': plan.id === 'yearly' }"
-             (click)="selectPlan(plan.id as 'monthly' | 'yearly')">
-          
-          <div class="plan-header">
-            <div class="plan-badge" *ngIf="plan.id === 'yearly'">Most Popular</div>
-            <h3>{{ plan.name }}</h3>
-            <div class="plan-price">
-              <span class="currency">₹</span>
-              <span class="amount">{{ plan.amount }}</span>
-              <span class="period">/{{ plan.id === 'monthly' ? 'month' : 'year' }}</span>
+    <!-- Current status card -->
+    <mat-card *ngIf="subscriptionStatus" class="sub-status-card animate-slide-up">
+      <mat-card-content class="sub-status-content">
+        <div class="sub-status-icon" [class.sub-status-icon--active]="isPremiumActive()">
+          <mat-icon>{{ isPremiumActive() ? 'workspace_premium' : 'info' }}</mat-icon>
+        </div>
+        <div class="sub-status-body">
+          <h2 class="sub-status-title">{{ isPremiumActive() ? 'Premium active' : 'Free plan' }}</h2>
+          <p class="sub-status-desc" *ngIf="isPremiumActive()">
+            Expires {{ formatDate(subscriptionStatus.premiumExpiresAt!) }} · {{ getDaysRemaining() }} days left
+          </p>
+          <p class="sub-status-desc" *ngIf="!isPremiumActive()">
+            Upgrade for unlimited crop listings and more.
+          </p>
+          <button
+            *ngIf="isPremiumActive()"
+            mat-stroked-button
+            color="warn"
+            class="sub-cancel-btn"
+            (click)="cancelSubscription()">
+            Cancel subscription
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Loading -->
+    <mat-card *ngIf="isLoading" class="sub-loading-card">
+      <mat-card-content class="sub-loading-content">
+        <mat-progress-spinner mode="indeterminate" diameter="40" color="primary"></mat-progress-spinner>
+        <p>Loading plans…</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Plan cards -->
+    <section *ngIf="!isLoading && plans.length > 0" class="sub-plans-section">
+      <h2 class="sub-section-title">Choose your plan</h2>
+      <div class="sub-plans-grid">
+        <mat-card
+          *ngFor="let plan of plans"
+          class="sub-plan-card"
+          [class.sub-plan-card--selected]="isPlanSelected(plan.id)"
+          [class.sub-plan-card--popular]="plan.id === 'yearly'"
+          (click)="selectPlan(plan.id)">
+          <mat-card-content>
+            <span *ngIf="plan.id === 'yearly'" class="sub-plan-badge">Most popular</span>
+            <h3 class="sub-plan-name">{{ plan.name }}</h3>
+            <div class="sub-plan-price">
+              <span class="sub-plan-currency">₹</span>
+              <span class="sub-plan-amount">{{ plan.amount }}</span>
+              <span class="sub-plan-period">/{{ plan.id === 'monthly' ? 'month' : 'year' }}</span>
             </div>
-            <div class="plan-savings" *ngIf="plan.id === 'yearly'">
-              Save ₹{{ getYearlySavings() }} compared to monthly
-            </div>
-          </div>
-
-          <div class="plan-features">
-            <h4>What's included:</h4>
-            <ul>
+            <p *ngIf="plan.id === 'yearly'" class="sub-plan-savings">
+              Save ₹{{ getYearlySavings() }} vs monthly
+            </p>
+            <mat-divider class="sub-plan-divider"></mat-divider>
+            <ul class="sub-plan-features">
               <li *ngFor="let feature of getPlanFeatures()">
-                <span class="feature-icon">✅</span>
+                <mat-icon class="sub-plan-feature-icon">check_circle</mat-icon>
                 {{ feature }}
               </li>
             </ul>
-          </div>
-
-          <div class="plan-action">
-            <button class="select-plan-btn" 
-                    [disabled]="isProcessingPayment || isPremiumActive()"
-                    (click)="selectPlan(plan.id as 'monthly' | 'yearly')">
-              {{ isPremiumActive() ? 'Current Plan' : 'Select Plan' }}
+            <button
+              mat-flat-button
+              color="primary"
+              class="sub-plan-cta"
+              [disabled]="isProcessingPayment || isPremiumActive()"
+              (click)="selectPlan(plan.id); $event.stopPropagation()">
+              {{ isPremiumActive() ? 'Current plan' : 'Select plan' }}
             </button>
-          </div>
-        </div>
+          </mat-card-content>
+        </mat-card>
       </div>
-    </div>
+    </section>
 
-    <!-- Purchase Button -->
-    <div class="purchase-section" *ngIf="selectedPlan && !isPremiumActive()">
-      <div class="purchase-summary">
-        <h3>Order Summary</h3>
-        <div class="summary-item">
-          <span>Plan:</span>
+    <!-- Order summary & purchase -->
+    <mat-card *ngIf="selectedPlan && !isPremiumActive()" class="sub-summary-card animate-slide-up">
+      <mat-card-header>
+        <mat-card-title>Order summary</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="sub-summary-row">
+          <span>Plan</span>
           <span>{{ getPlanDisplayName(selectedPlan) }}</span>
         </div>
-        <div class="summary-item">
-          <span>Amount:</span>
-          <span>{{ formatCurrency(plans.find(p => p.id === selectedPlan)?.amount || 0) }}</span>
+        <div class="sub-summary-row sub-summary-row--total">
+          <span>Total</span>
+          <span>{{ formatCurrency(getSelectedPlanAmount()) }}</span>
         </div>
-        <div class="summary-total">
-          <span>Total:</span>
-          <span>{{ formatCurrency(plans.find(p => p.id === selectedPlan)?.amount || 0) }}</span>
-        </div>
-      </div>
+      </mat-card-content>
+      <mat-card-actions class="sub-summary-actions">
+        <button
+          mat-flat-button
+          color="primary"
+          class="sub-purchase-btn"
+          [disabled]="isProcessingPayment"
+          (click)="purchaseSubscription()">
+          <mat-progress-spinner *ngIf="isProcessingPayment" mode="indeterminate" diameter="20" class="sub-purchase-spinner"></mat-progress-spinner>
+          <mat-icon *ngIf="!isProcessingPayment">payment</mat-icon>
+          {{ isProcessingPayment ? 'Processing…' : 'Pay with Razorpay' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
 
-      <button class="purchase-btn" 
-              [disabled]="isProcessingPayment"
-              (click)="purchaseSubscription()">
-        <span *ngIf="isProcessingPayment" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-        {{ isProcessingPayment ? 'Processing...' : 'Purchase Premium' }}
-      </button>
-    </div>
-
-    <!-- Subscription History -->
-    <div class="subscription-history" *ngIf="subscriptionStatus?.subscriptions && subscriptionStatus.subscriptions.length > 0">
-      <h3>Subscription History</h3>
-      <div class="history-list">
-        <div class="history-item" *ngFor="let subscription of subscriptionStatus.subscriptions">
-          <div class="history-info">
-            <h4>{{ getPlanDisplayName(subscription.planType) }}</h4>
-            <p>{{ formatCurrency(subscription.amount) }} • {{ formatDate(subscription.createdAt) }}</p>
+    <!-- History -->
+    <mat-card *ngIf="subscriptionStatus?.subscriptions?.length" class="sub-history-card">
+      <mat-card-header>
+        <mat-card-title>Subscription history</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div
+          *ngFor="let subscription of (subscriptionStatus?.subscriptions ?? [])"
+          class="sub-history-item">
+          <div class="sub-history-info">
+            <span class="sub-history-plan">{{ getPlanDisplayName(subscription.planType) }}</span>
+            <span class="sub-history-meta">{{ formatCurrency(subscription.amount) }} · {{ formatDate(subscription.createdAt) }}</span>
           </div>
-          <div class="history-status">
-            <span class="status-badge" [ngClass]="'status-' + subscription.status">
-              {{ subscription.status | titlecase }}
-            </span>
+          <mat-chip-set>
+            <mat-chip [class]="'sub-history-chip sub-history-chip--' + subscription.status">
+              {{ subscription.status }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Comparison -->
+    <mat-card class="sub-compare-card">
+      <mat-card-header>
+        <mat-card-title>Free vs Premium</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="sub-compare-table">
+          <div class="sub-compare-row sub-compare-row--head">
+            <span>Feature</span>
+            <span>Free</span>
+            <span>Premium</span>
+          </div>
+          <div class="sub-compare-row" *ngFor="let row of getComparisonRows()">
+            <span>{{ row.feature }}</span>
+            <span>{{ row.free }}</span>
+            <span class="sub-compare-premium">{{ row.premium }}</span>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Features Comparison -->
-    <div class="features-comparison">
-      <h3>Free vs Premium Features</h3>
-      <div class="comparison-table">
-        <div class="comparison-header">
-          <div class="feature-column">Feature</div>
-          <div class="free-column">Free</div>
-          <div class="premium-column">Premium</div>
-        </div>
-        <div class="comparison-row">
-          <div class="feature-column">Crop Listings</div>
-          <div class="free-column">3 active</div>
-          <div class="premium-column">Unlimited</div>
-        </div>
-        <div class="comparison-row">
-          <div class="feature-column">Customer Support</div>
-          <div class="free-column">Basic</div>
-          <div class="premium-column">Priority</div>
-        </div>
-        <div class="comparison-row">
-          <div class="feature-column">Analytics</div>
-          <div class="free-column">Basic</div>
-          <div class="premium-column">Advanced</div>
-        </div>
-        <div class="comparison-row">
-          <div class="feature-column">Listing Placement</div>
-          <div class="free-column">Standard</div>
-          <div class="premium-column">Featured</div>
-        </div>
-        <div class="comparison-row">
-          <div class="feature-column">Messaging</div>
-          <div class="free-column">Limited</div>
-          <div class="premium-column">Unlimited</div>
-        </div>
-        <div class="comparison-row">
-          <div class="feature-column">Recommendations</div>
-          <div class="free-column">Basic</div>
-          <div class="premium-column">AI-Powered</div>
-        </div>
-      </div>
-    </div>
+      </mat-card-content>
+    </mat-card>
   </main>
 </div>

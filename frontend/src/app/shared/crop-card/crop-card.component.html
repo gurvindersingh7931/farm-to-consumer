@@ -1,5 +1,6 @@
-<mat-card class="crop-card-root shadow-soft hover:shadow-soft-lg transition-shadow duration-200" *ngIf="data">
-  <!-- Image & top badges -->
+<mat-card class="crop-card-root shadow-soft hover:shadow-soft-lg transition-shadow duration-200"
+          [class.crop-card--premium]="data.isPremium" *ngIf="data">
+  <!-- Image -->
   <div class="crop-card-root__image relative overflow-hidden rounded-t-[1rem]">
     <img
       [src]="data.imageUrl"
@@ -71,10 +72,6 @@
         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium organic-chip"
               *ngIf="data.isOrganic">
           🌿 Organic
-        </span>
-        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium premium-chip"
-              *ngIf="data.isPremium">
-          ⭐ Premium
         </span>
         <span *ngIf="data.statusLabel"
             class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium status-chip"

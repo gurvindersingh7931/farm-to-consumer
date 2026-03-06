@@ -15,12 +15,19 @@
           <a [routerLink]="getHomeLink()" class="navbar-brand" matTooltip="Farm">Farm-to-Consumer</a>
         </div>
         <div class="flex items-center gap-4">
-          <img
+          <a
             *ngIf="user"
-            [src]="avatarUrl || '/assets/default-farmer.png'"
-            alt="user"
-            class="w-8 h-8 rounded-full object-cover"
-          />
+            [routerLink]="getProfileLink()"
+            aria-label="Open profile"
+            class="inline-flex items-center"
+            matTooltip="Profile"
+          >
+            <img
+              [src]="getAvatarSrc()"
+              alt="user"
+              class="w-8 h-8 rounded-full object-cover cursor-pointer"
+            />
+          </a>
           <button *ngIf="user" class="btn btn-secondary btn-sm" (click)="logout()">Logout</button>
         </div>
       </div>

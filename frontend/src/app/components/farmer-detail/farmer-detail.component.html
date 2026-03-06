@@ -1,14 +1,17 @@
-<div class="min-h-screen bg-gray-50">
+<div class="farmer-detail-page">
   <!-- Header -->
   <header class="page-header">
     <div class="container">
-      <div class="page-header-inner">
-        <div class="flex items-center gap-4">
-          <a (click)="goBack()" class="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
+      <div class="page-header-inner farmer-detail-header">
+        <div class="flex items-center gap-3">
+          <a
+            (click)="goBack()"
+            class="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
+          >
             <mat-icon fontIcon="arrow_back" class="!text-sm !leading-none"></mat-icon>
             <span>Back</span>
           </a>
-          <h1 class="text-2xl font-bold text-gray-900">👤 Farmer Details</h1>
+          <h1 class="page-title">Farmer details</h1>
         </div>
       </div>
     </div>
@@ -16,117 +19,122 @@
 
   <main class="container py-8">
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="text-center py-12">
-      <p class="text-gray-600">Loading farmer information...</p>
-    </div>
+    <mat-card *ngIf="isLoading" class="state-card" appearance="outlined">
+      <div class="state state--loading">
+        <div class="spinner"></div>
+        <div class="state-title">Loading farmer information…</div>
+      </div>
+    </mat-card>
 
     <!-- Error State -->
-    <div *ngIf="errorMessage && !isLoading" class="text-center py-12">
-      <div class="text-6xl mb-4">⚠️</div>
-      <h3 class="text-xl font-semibold text-gray-900 mb-2">Error</h3>
-      <p class="text-gray-600 mb-6">{{ errorMessage }}</p>
-      <a (click)="goBack()" class="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
-        <mat-icon fontIcon="arrow_back" class="!text-sm !leading-none"></mat-icon>
-        <span>Back</span>
-      </a>
-    </div>
+    <mat-card *ngIf="errorMessage && !isLoading" class="state-card" appearance="outlined">
+      <div class="state state--error">
+        <mat-icon class="state-icon">error_outline</mat-icon>
+        <div class="state-title">Couldn’t load farmer</div>
+        <div class="state-subtitle">{{ errorMessage }}</div>
+        <button mat-stroked-button color="primary" type="button" (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Back
+        </button>
+      </div>
+    </mat-card>
 
     <!-- Farmer Information -->
     <div *ngIf="farmerProfile && !isLoading" class="max-w-4xl mx-auto">
-      <div class="farmer-card rounded-2xl ring-1 ring-gray-200 bg-white shadow-sm p-6">
+      <mat-card class="farmer-detail-card" appearance="outlined">
+        <mat-card-content>
         <div class="farmer-header flex items-center gap-4 mb-6">
           <img 
             [src]="getFarmerImageUrl(farmerProfile.profilePhoto)"
             (error)="onImageError($event, '/assets/default-farmer.png')" 
             [alt]="getFarmerName()"
-            class="farmer-avatar w-20 h-20 rounded-full object-cover ring-2 ring-blue-100">
+            class="farmer-avatar">
 
           <div class="farmer-info min-w-0 flex-1">
-            <h3 class="text-2xl font-semibold text-gray-900 truncate mb-1">{{ getFarmerName() }}</h3>
-            <p class="farmer-location text-sm text-gray-600 flex items-center gap-1">
-              <mat-icon fontIcon="place" class="!text-base !text-blue-600"></mat-icon>
+            <h3 class="farmer-name truncate mb-1">{{ getFarmerName() }}</h3>
+            <p class="farmer-location text-sm flex items-center gap-1">
+              <mat-icon fontIcon="place" class="location-icon"></mat-icon>
               {{ getFarmerLocation() || 'Location not provided' }}
             </p>
 
             <!-- Premium Badges -->
-            <div class="farmer-badges mt-2 flex flex-wrap gap-2" *ngIf="getPremiumBadges().length > 0">
-              <span 
-                *ngFor="let badge of getPremiumBadges()" 
-                class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset"
+            <mat-chip-set *ngIf="getPremiumBadges().length > 0" aria-label="Farmer badges" class="farmer-badges">
+              <mat-chip
+                *ngFor="let badge of getPremiumBadges()"
                 [ngClass]="{
-                  'bg-yellow-50 text-yellow-800 ring-yellow-200': badge.toLowerCase() === 'premium',
-                  'bg-green-50 text-green-800 ring-green-200': badge.toLowerCase() === 'verified',
-                  'bg-purple-50 text-purple-800 ring-purple-200': badge.toLowerCase() === 'boosted'
-                }">
-                <mat-icon [fontIcon]="badge.toLowerCase() === 'premium' ? 'workspace_premium' : (badge.toLowerCase() === 'verified' ? 'verified' : 'bolt')" class="!text-base"></mat-icon>
+                  'badge-premium': badge.toLowerCase() === 'premium',
+                  'badge-verified': badge.toLowerCase() === 'verified',
+                  'badge-boosted': badge.toLowerCase() === 'boosted'
+                }"
+              >
+                <mat-icon
+                  [fontIcon]="badge.toLowerCase() === 'premium' ? 'workspace_premium' : (badge.toLowerCase() === 'verified' ? 'verified' : 'bolt')"
+                  class="badge-icon"
+                ></mat-icon>
                 {{ badge }}
-              </span>
-            </div>
+              </mat-chip>
+            </mat-chip-set>
           </div>
         </div>
 
         <div class="farmer-description mb-6" *ngIf="farmerProfile.farmDescription">
-          <p class="text-gray-700 leading-relaxed">{{ farmerProfile.farmDescription }}</p>
+          <p>{{ farmerProfile.farmDescription }}</p>
         </div>
 
-        <div class="contact-info mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <a *ngIf="farmerProfile.phone"
-             class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 px-4 py-2 ring-1 ring-inset ring-blue-200 transition"
-             [href]="'tel:' + farmerProfile.phone">
-            <mat-icon fontIcon="call" class="!text-blue-600"></mat-icon>
+        <div class="contact-info mb-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <a
+            *ngIf="farmerProfile.phone"
+            mat-stroked-button
+            color="primary"
+            class="action-btn action-btn--call"
+            [href]="'tel:' + farmerProfile.phone"
+          >
+            <mat-icon fontIcon="call" class="action-icon"></mat-icon>
             Call
           </a>
-          
-          <!-- Farm Location on Map - right side of Call button -->
-          <div *ngIf="farmerProfile.latitude && farmerProfile.longitude" class="map-container rounded-2xl ring-1 ring-gray-200 bg-white shadow-sm p-3">
-            <div id="farmerMap" style="width: 100%; height: 260px; border-radius: 12px; overflow: hidden; background: #eef2f3"></div>
-            <p class="map-address text-sm text-gray-700 mt-2 flex items-center gap-1">
-              <mat-icon fontIcon="place" class="!text-base !text-blue-600"></mat-icon>
-              {{ getFullAddress() }}
-            </p>
-            <p class="map-coordinates text-xs text-gray-500">
-              {{ farmerProfile.latitude }}, {{ farmerProfile.longitude }}
-            </p>
-          </div>
 
-          <!-- Location info when no map available - right side of Call button -->
-          <div *ngIf="!farmerProfile.latitude || !farmerProfile.longitude" class="location-text rounded-2xl ring-1 ring-gray-200 bg-white shadow-sm p-4">
-            <p class="farm-address text-sm text-gray-700 flex items-start gap-2">
-              <mat-icon fontIcon="place" class="!text-base !text-blue-600 mt-0.5"></mat-icon>
-              <span>{{ getFullAddress() || 'Address not provided' }}</span>
-            </p>
-          </div>
-
-          <a *ngIf="farmerProfile.website && (!farmerProfile.latitude || !farmerProfile.longitude)"
-             class="inline-flex items-center justify-center gap-2 rounded-xl bg-green-50 hover:bg-green-100 text-green-800 px-4 py-2 ring-1 ring-inset ring-green-200 transition"
-             [href]="farmerProfile.website" target="_blank">
-            <mat-icon fontIcon="language" class="!text-green-600"></mat-icon>
-            Visit Website
+          <a
+            *ngIf="farmerProfile.website && (!farmerProfile.latitude || !farmerProfile.longitude)"
+            mat-stroked-button
+            color="primary"
+            class="action-btn action-btn--website"
+            [href]="farmerProfile.website"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <mat-icon fontIcon="language" class="action-icon"></mat-icon>
+            Visit website
           </a>
         </div>
 
         <!-- Visit Website button below when map is available -->
         <div class="mb-6" *ngIf="farmerProfile.website && farmerProfile.latitude && farmerProfile.longitude">
-          <a class="inline-flex items-center justify-center gap-2 rounded-xl bg-green-50 hover:bg-green-100 text-green-800 px-4 py-2 ring-1 ring-inset ring-green-200 transition"
-             [href]="farmerProfile.website" target="_blank">
-            <mat-icon fontIcon="language" class="!text-green-600"></mat-icon>
-            Visit Website
+          <a
+            mat-stroked-button
+            color="primary"
+            class="action-btn action-btn--website"
+            [href]="farmerProfile.website"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <mat-icon fontIcon="language" class="action-icon"></mat-icon>
+            Visit website
           </a>
         </div>
 
         <!-- Farmer Rating Section -->
         <div class="rating-section pt-6 border-t border-gray-200">
-          <h3 class="text-base font-semibold text-gray-900 mb-3">Farmer Trust Score</h3>
+          <h3 class="rating-title">Farmer trust score</h3>
           <div class="flex items-center gap-3 mb-3">
-            <div class="flex items-center text-yellow-500">
+            <div class="rating-stars flex items-center">
               <ng-container *ngIf="getRatingStars(currentRating || 0) as rs">
                 <mat-icon *ngFor="let _ of [].constructor(rs.full)" fontIcon="star"></mat-icon>
                 <mat-icon *ngIf="rs.half" fontIcon="star_half"></mat-icon>
                 <mat-icon *ngFor="let _ of [].constructor(rs.empty)" fontIcon="star_border"></mat-icon>
               </ng-container>
             </div>
-            <span class="text-base text-gray-800 font-medium">{{ (currentRating || 0).toFixed(1) }}/5</span>
-            <span class="text-sm text-gray-500" *ngIf="totalRatings">({{ totalRatings }} reviews)</span>
+            <span class="rating-value">{{ (currentRating || 0).toFixed(1) }}/5</span>
+            <span class="rating-count" *ngIf="totalRatings">({{ totalRatings }} reviews)</span>
           </div>
 
           <!-- User Rating Interface -->
@@ -135,15 +143,16 @@
             <div class="flex items-center gap-1">
               <button type="button"
                 *ngFor="let star of [1,2,3,4,5]"
-                class="p-1 rounded hover:bg-yellow-50"
-                [class.bg-yellow-50]="star <= userRating"
+                class="rating-input"
+                [class.rating-input--active]="star <= userRating"
                 (click)="onStarClick(star)">
-                <mat-icon [fontIcon]="star <= userRating ? 'star' : 'star_border'" class="!text-yellow-500"></mat-icon>
+                <mat-icon [fontIcon]="star <= userRating ? 'star' : 'star_border'"></mat-icon>
               </button>
             </div>
           </div>
         </div>
-      </div>
+        </mat-card-content>
+      </mat-card>
     </div>
   </main>
 </div>

@@ -158,6 +158,27 @@
       </mat-card>
     </section>
 
+    <!-- Premium Featured Crops (random 4 on each load) -->
+    <section class="cb-section cb-premium-section" *ngIf="premiumCrops.length > 0">
+      <mat-card class="cb-premium-card">
+        <mat-card-header class="cb-premium-header">
+          <mat-icon class="cb-premium-icon">workspace_premium</mat-icon>
+          <mat-card-title class="cb-premium-title">Premium Picks</mat-card-title>
+          <mat-card-subtitle class="cb-premium-subtitle">Featured premium listings · Refreshes with new picks</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="cb-premium-grid">
+            <app-crop-card
+              *ngFor="let crop of premiumCrops"
+              [mode]="'browse'"
+              [data]="getCropCardData(crop)"
+              class="cb-premium-crop-card">
+            </app-crop-card>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </section>
+
     <!-- Loading State -->
     <section class="cb-section" *ngIf="isLoading">
       <div class="cb-loading">
@@ -176,15 +197,15 @@
     </section>
 
     <!-- Crops Grid -->
-    <section class="cb-section" *ngIf="!isLoading && crops.length > 0">
+    <section class="cb-section" *ngIf="!isLoading && getDisplayCrops().length > 0">
       <div class="grid-crops" [ngClass]="{ 'grid-crops--list': viewMode === 'list' }">
-        <app-crop-card *ngFor="let crop of crops" [mode]="'browse'" [data]="getCropCardData(crop)">
+        <app-crop-card *ngFor="let crop of getDisplayCrops()" [mode]="'browse'" [data]="getCropCardData(crop)">
         </app-crop-card>
       </div>
     </section>
 
     <!-- No Results -->
-    <section class="cb-section" *ngIf="!isLoading && !errorMessage && crops.length === 0">
+    <section class="cb-section" *ngIf="!isLoading && !errorMessage && getDisplayCrops().length === 0">
       <div class="cb-empty">
         <mat-card class="cb-empty-card">
           <mat-card-content>

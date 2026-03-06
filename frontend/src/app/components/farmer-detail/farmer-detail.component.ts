@@ -2,6 +2,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { Subject, takeUntil } from 'rxjs';
 import { FarmerService, FarmerProfile } from '../../services/farmer.service';
 import { AuthService } from '../../services/auth.service';
@@ -11,7 +14,7 @@ import { MapsService } from '../../services/maps.service';
 @Component({
   selector: 'app-farmer-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule],
+  imports: [CommonModule, RouterModule, MatIconModule, MatCardModule, MatButtonModule, MatChipsModule],
   templateUrl: './farmer-detail.component.html',
   styleUrls: ['./farmer-detail.component.scss']
 })

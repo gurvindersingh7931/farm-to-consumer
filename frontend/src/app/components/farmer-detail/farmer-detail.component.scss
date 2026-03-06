@@ -1,3 +1,254 @@
-// Farmer Detail styles
-// Reuse common styles from other components
+// Farmer Detail styles, aligned with design system palette
+
+.farmer-detail-page {
+  min-height: 100vh;
+  background-color: var(--color-surface-muted);
+}
+
+.farmer-detail-header {
+  align-items: center;
+}
+
+.farmer-detail-header .page-title {
+  font-size: 1.3rem;
+}
+
+.state-card {
+  margin-top: 1.25rem;
+  border-radius: 1rem;
+}
+
+.state {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+
+.state-icon {
+  font-size: 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--color-primary);
+}
+
+.state--error .state-icon {
+  color: rgba(220, 38, 38, 0.9);
+}
+
+.state-title {
+  font-weight: 600;
+  color: rgba(17, 24, 39, 0.9);
+}
+
+.state-subtitle {
+  font-size: 0.9rem;
+  color: rgba(17, 24, 39, 0.7);
+  max-width: 40rem;
+}
+
+.farmer-detail-card {
+  border-radius: 1.25rem;
+  background-color: var(--color-surface);
+  border-color: var(--color-primary-soft);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+
+.farmer-detail-card .mat-mdc-card-content {
+  padding: 16px;
+}
+
+.farmer-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  padding-bottom: 1.25rem;
+  align-items: flex-start;
+}
+
+.farmer-avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid rgba(197, 184, 157, 0.6); /* khaki-beige */
+  background-color: var(--color-surface-muted);
+}
+
+.farmer-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgba(17, 24, 39, 0.96);
+  text-align: left;
+}
+
+.farmer-location {
+  color: rgba(17, 24, 39, 0.7);
+}
+
+.location-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+
+.farmer-badges {
+  margin-top: 0.35rem;
+}
+
+.badge-icon {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+.badge-premium {
+  --mdc-chip-elevated-container-color: rgba(197, 184, 157, 0.4); /* khaki-beige */
+  --mdc-chip-label-text-color: var(--color-primary);
+}
+
+.badge-verified {
+  --mdc-chip-elevated-container-color: rgba(167, 143, 110, 0.25); /* camel */
+  --mdc-chip-label-text-color: var(--faded-copper-2);
+}
+
+.badge-boosted {
+  --mdc-chip-elevated-container-color: rgba(155, 135, 111, 0.25); /* dusty-taupe */
+  --mdc-chip-label-text-color: var(--faded-copper-2);
+}
+
+.farmer-description p {
+  color: rgba(17, 24, 39, 0.8);
+  line-height: 1.6;
+}
+
+.contact-info {
+  align-items: flex-start;
+}
+
+.action-btn {
+  border-radius: 999px;
+  padding-left: 1.1rem !important;
+  padding-right: 1.1rem !important;
+}
+
+.action-btn--call {
+  border-color: var(--color-primary-soft);
+  background-color: var(--color-surface);
+}
+
+.action-btn--website {
+  border-color: var(--dusty-taupe);
+  background-color: var(--color-surface);
+}
+
+.action-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+
+.map-container {
+  border-radius: 1rem;
+  background-color: var(--color-surface);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+  padding: 0.75rem;
+}
+
+.map {
+  width: 100%;
+  height: 260px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #eef2f3;
+}
+
+.map-address {
+  color: rgba(17, 24, 39, 0.8);
+}
+
+.map-coordinates {
+  color: rgba(17, 24, 39, 0.55);
+}
+
+.location-text {
+  border-radius: 1rem;
+  background-color: var(--color-surface);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  padding: 1rem;
+}
+
+.farm-address {
+  color: rgba(17, 24, 39, 0.8);
+}
+
+.rating-section {
+  margin-top: 0.75rem;
+}
+
+.rating-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(17, 24, 39, 0.92);
+  margin-bottom: 0.35rem;
+}
+
+.rating-stars mat-icon {
+  color: #fbbf24; /* warm amber for stars */
+}
+
+.rating-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(17, 24, 39, 0.9);
+}
+
+.rating-count {
+  font-size: 0.85rem;
+  color: rgba(17, 24, 39, 0.6);
+}
+
+.rating-input {
+  padding: 0.1rem;
+  border-radius: 999px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.rating-input mat-icon {
+  color: #fbbf24;
+}
+
+.rating-input--active,
+.rating-input:hover {
+  background-color: rgba(197, 184, 157, 0.25); /* khaki-beige soft */
+}
+
+@media (max-width: 768px) {
+  .farmer-detail-card {
+    border-radius: 1rem;
+  }
+
+  .farmer-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .farmer-avatar {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+
+  .contact-info {
+    grid-template-columns: 1fr;
+  }
+
+  .map {
+    height: 220px;
+  }
+}
 
