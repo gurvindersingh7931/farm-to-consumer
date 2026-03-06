@@ -128,10 +128,19 @@
               class="avatar-img"
             />
           </div>
-          <mat-card-title class="tile-title">{{ farmer.farmName || 'Farm' }}</mat-card-title>
+          <mat-card-title class="tile-title">
+            <a
+              class="tile-title-link"
+              [routerLink]="['/farmer-detail', farmer.userId]"
+            >
+              {{ farmer.farmName || 'Farm' }}
+            </a>
+          </mat-card-title>
           <mat-card-subtitle class="tile-subtitle">
             <mat-icon class="meta-icon">place</mat-icon>
-            <span>{{ farmer.farmLocation || 'Location not provided' }}</span>
+            <span>
+              {{ getFarmerLocationDisplay(farmer) }}
+            </span>
           </mat-card-subtitle>
         </mat-card-header>
 
@@ -152,16 +161,8 @@
               {{ formatDistance(calculateDistance(farmer)!) }} away
             </mat-chip>
           </mat-chip-set>
-
-          <div class="description" *ngIf="farmer.farmDescription">
-            {{ farmer.farmDescription | slice:0:120 }}{{ farmer.farmDescription.length > 120 ? '…' : '' }}
-          </div>
-
-          <div class="contact" *ngIf="farmer.phone || farmer.website">
-            <div class="contact-row" *ngIf="farmer.phone">
-              <mat-icon class="meta-icon">call</mat-icon>
-              <span>{{ farmer.phone }}</span>
-            </div>
+          
+          <div class="contact" *ngIf="farmer.website">
             <div class="contact-row" *ngIf="farmer.website">
               <mat-icon class="meta-icon">language</mat-icon>
               <a class="link" [href]="farmer.website" target="_blank" rel="noopener noreferrer">
@@ -169,13 +170,31 @@
               </a>
             </div>
           </div>
+
+          <div class="trust-score">
+            <div class="trust-score-header">
+              <span class="trust-score-label">Farmer trust score</span>
+            </div>
+            <div class="trust-score-row">
+              <div class="trust-score-stars" *ngIf="getRatingStars(farmer.rating) as rs">
+                <mat-icon *ngFor="let _ of [].constructor(rs.full)">star</mat-icon>
+                <mat-icon *ngIf="rs.half">star_half</mat-icon>
+                <mat-icon *ngFor="let _ of [].constructor(rs.empty)">star_border</mat-icon>
+              </div>
+              <span class="trust-score-value">
+                {{ (farmer.rating || 0).toFixed(1) }}/5
+              </span>
+              <span class="trust-score-count">
+                {{
+                  farmer.totalRatings && farmer.totalRatings > 0
+                    ? '(' + farmer.totalRatings + ' reviews)'
+                    : '(No reviews yet)'
+                }}
+              </span>
+            </div>
+          </div>
         </mat-card-content>
 
-        <mat-card-actions align="end">
-          <a mat-stroked-button color="primary" [routerLink]="['/farmer-detail', farmer.userId]">
-            View profile
-          </a>
-        </mat-card-actions>
       </mat-card>
     </div>
 
@@ -190,15 +209,14 @@
       </div>
     </mat-card>
 
-    <mat-paginator
-      *ngIf="!isLoading && !errorMessage && totalItems > pageSize"
-      class="paginator"
-      [length]="totalItems"
-      [pageIndex]="pageIndex"
-      [pageSize]="pageSize"
-      [pageSizeOptions]="pageSizeOptions"
-      (page)="onPage($event)"
-      aria-label="Farmers pagination"
-    ></mat-paginator>
+    <div class="pagination-wrapper" *ngIf="!isLoading && !errorMessage && totalPages > 1">
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalItems]="totalItems"
+        [pageSize]="pageSize"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
   </div>
 </section>

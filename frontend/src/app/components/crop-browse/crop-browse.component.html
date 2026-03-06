@@ -89,7 +89,7 @@
                   (selectionChange)="onFilterChange()"
                 >
                   <mat-option value="">All categories</mat-option>
-                  <mat-option *ngFor="let category of categories" [value]="category.name">
+                  <mat-option *ngFor="let category of categories" [value]="category.value ?? category.name">
                     {{ category.name }} ({{ category.count }})
                   </mat-option>
                 </mat-select>
@@ -162,7 +162,7 @@
     <section class="cb-section cb-premium-section" *ngIf="premiumCrops.length > 0">
       <mat-card class="cb-premium-card">
         <mat-card-header class="cb-premium-header">
-          <mat-icon class="cb-premium-icon">workspace_premium</mat-icon>
+          <!-- <mat-icon class="cb-premium-icon">workspace_premium</mat-icon> -->
           <mat-card-title class="cb-premium-title">Premium Picks</mat-card-title>
           <mat-card-subtitle class="cb-premium-subtitle">Featured premium listings · Refreshes with new picks</mat-card-subtitle>
         </mat-card-header>

@@ -183,7 +183,7 @@ export const authRateLimit = (req: Request, res: Response, next: NextFunction): 
     const timeDiff = now.getTime() - attempts.lastAttempt.getTime();
     const resetTime = 15 * 60 * 1000; // 15 minutes
     
-    if (attempts.count >= 5 && timeDiff < resetTime) {
+    if (attempts.count >= 10 && timeDiff < resetTime) {
       res.status(429).json({
         message: 'Too many failed login attempts. Please try again later.',
         code: 'RATE_LIMITED',

@@ -108,6 +108,7 @@ export interface CropBrowseResponse {
 
 export interface CropCategory {
   name: string;
+  value?: string;  // lowercase key for filtering; falls back to name if absent
   count: number;
 }
 

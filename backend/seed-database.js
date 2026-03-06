@@ -10,7 +10,8 @@
  */
 
 require('dotenv').config();
-const { sequelize } = require('./dist/config/database');
+const db = require('./dist/config/database').default || require('./dist/config/database');
+const sequelize = db.sequelize;
 const seeder = require('./dist/seeders/dummy-data');
 
 async function runSeeder() {

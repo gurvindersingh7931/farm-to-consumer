@@ -86,6 +86,35 @@ You can also create users manually through the registration system:
 2. Navigate to `/signup`
 3. Create accounts with different roles
 
+### **Punjab Bulk Data (50 Farmers, 2000 Consumers)**
+For load testing, demos, or richer development data across Punjab:
+
+```bash
+cd backend
+npm run build
+npm run seed:punjab-large
+```
+
+**What it creates:**
+- **50 farmer profiles** across 22 Punjab cities (Chandigarh, Ludhiana, Amritsar, Jalandhar, Mohali, Patiala, Bathinda, etc.)
+- **2000 consumer profiles** distributed across Punjab
+- **5–20 crops per farmer** (vegetables, fruits, grains, herbs, other) — mixed premium/organic, no images
+- **Farmer ratings** — each farmer receives ~20–80 ratings from the newly added consumers
+
+**Test credentials (bulk data):**
+- Farmers: `farmer001.punjab@example.com` … `farmer050.punjab@example.com` / `farmer123`
+- Consumers: `consumer0001.punjab@example.com` … `consumer2000.punjab@example.com` / `consumer123`
+
+**Reusable JSON data** (edit to add more cities, names, or crop templates):
+- `src/seeders/data/punjab-name-pools.json` — farmer/consumer name pools
+- `src/seeders/data/punjab-locations.json` — Punjab cities with lat/long, zip prefixes
+- `src/seeders/data/punjab-crop-templates.json` — crop definitions by category
+
+**Environment safety:**
+- **Development**: Safe to run after migrations. Re-running is idempotent for existing emails (reuses users, adds missing crops/ratings).
+- **Staging**: Use a dedicated staging DB. Consider running once after deploy or via a one-off job.
+- **Production**: Do **not** run — this is dummy/seed data only.
+
 ## 🏗️ Database Schema
 
 ### **Users Table**
@@ -154,11 +183,10 @@ You can also create users manually through the registration system:
 ## 🌍 Geographic Coverage
 
 All dummy data is focused on **Punjab, India** for realistic testing:
-- **Chandigarh** (2 farms)
-- **Ludhiana** (1 farm) 
-- **Amritsar** (1 farm)
-- **Jalandhar** (1 farm)
-- **Mohali** (1 farm)
+
+**Base seed (5 farmers):** Chandigarh, Ludhiana, Amritsar, Jalandhar, Mohali
+
+**Punjab bulk seed (50 farmers):** 22 cities including Chandigarh, Ludhiana, Amritsar, Jalandhar, Mohali, Patiala, Bathinda, Hoshiarpur, Moga, Firozpur, Pathankot, Gurdaspur, Sangrur, Barnala, Fazilka, Mansa, Kapurthala, Faridkot, Sri Muktsar Sahib, Rupnagar, Fatehgarh Sahib, Tarn Taran
 
 ## 📱 Frontend URLs
 

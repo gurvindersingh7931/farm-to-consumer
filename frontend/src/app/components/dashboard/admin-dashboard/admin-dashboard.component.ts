@@ -1,16 +1,32 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
-import { AdminService, DashboardStats, User, ChartData, Activity } from '../../../services/admin.service';
+import { AdminService, DashboardStats, User, ChartData, Activity, TopFarmer } from '../../../services/admin.service';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatChipsModule } from '@angular/material/chips';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    NgxChartsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatChipsModule,
+    RouterModule
+  ],
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.scss']
+  styleUrls: ['./admin-dashboard.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
   user: any = null;
@@ -21,33 +37,18 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   selectedPeriod: '7d' | '30d' | '90d' = '7d';
-  
-  // User Management
-  selectedTab: 'overview' | 'farmers' | 'consumers' | 'verification' | 'listings' = 'overview';
-  farmers: User[] = [];
-  consumers: User[] = [];
-  farmersForVerification: any[] = [];
-  searchQuery = '';
-  selectedRole = '';
-  selectedStatus = '';
-  currentPage = 1;
-  totalPages = 1;
-  userStats: any = {};
-  
-  // Listings Management
-  listings: any[] = [];
-  listingsPage = 1;
-  listingsTotalPages = 1;
-  listingSearch = '';
-  listingStatus: '' | 'approved' | 'pending' = '';
-  listingSponsored: '' | 'true' | 'false' = '';
-  listingFlagged: '' | 'true' | 'false' = '';
+  cropsChartData: { name: string; series: { name: string; value: number }[] }[] = [];
+  consumersChartData: { name: string; series: { name: string; value: number }[] }[] = [];
+  farmersChartData: { name: string; series: { name: string; value: number }[] }[] = [];
+  topFarmersChartData: { name: string; value: number }[] = [];
+  topFarmers: TopFarmer[] = [];
   
   private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
-    private adminService: AdminService
+    private adminService: AdminService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -77,12 +78,15 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.chartData = response.chartData.data;
         this.activities = response.activities.activities;
         this.users = response.users.users.slice(0, 5); // Show only first 5 users
+        this.buildChartSeries();
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.errorMessage = error.error?.message || 'Failed to load dashboard data';
         this.isLoading = false;
         console.error('Dashboard data error:', error);
+        this.cdr.markForCheck();
       }
     });
   }
@@ -122,6 +126,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.chartData = response.data;
+          this.buildChartSeries();
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Chart data error:', error);
@@ -145,542 +151,64 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  getGrowthPercentage(current: number, previous: number): number {
-    if (previous === 0) return current > 0 ? 100 : 0;
-    return Math.round(((current - previous) / previous) * 100);
+  /** Map activity type from backend to Material icon name */
+  getActivityIcon(activity: Activity): string {
+    const iconMap: Record<string, string> = {
+      user_registration: 'person_add',
+      order: 'shopping_cart',
+      subscription: 'card_membership',
+      crop: 'grass'
+    };
+    return iconMap[activity.type] ?? 'info';
   }
 
-  getActivityIcon(type: string): string {
-    switch (type) {
-      case 'user_registration': return '👤';
-      case 'order': return '🛒';
-      case 'subscription': return '💳';
-      case 'crop': return '🌾';
-      default: return '📊';
-    }
-  }
+  /** Chart color scheme from styles.scss design system (faded-copper, camel, dusty-taupe, etc.) */
+  readonly chartColors: { domain: string[] } = { domain: ['#a0835c', '#a78f6e', '#9b876f', '#987749', '#c5b89d'] };
 
-  // User Management Methods
-  switchTab(tab: 'overview' | 'farmers' | 'consumers' | 'verification' | 'listings'): void {
-    this.selectedTab = tab;
-    this.currentPage = 1;
-    
-    switch (tab) {
-      case 'farmers':
-        this.loadFarmers();
-        this.loadUserStats('farmer');
-        break;
-      case 'consumers':
-        this.loadConsumers();
-        this.loadUserStats('consumer');
-        break;
-      case 'verification':
-        this.loadFarmersForVerification();
-        break;
-      case 'listings':
-        this.loadListings();
-        break;
-    }
-  }
+  private buildChartSeries(): void {
+    if (!this.chartData?.timeline?.labels?.length) {
+      this.cropsChartData = [];
+      this.consumersChartData = [];
+      this.farmersChartData = [];
+    } else {
+      const labels = this.chartData.timeline.labels;
 
-  loadFarmers(): void {
-    this.isLoading = true;
-    this.adminService.getUsersByRole('farmer', this.selectedStatus as any, this.currentPage)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.farmers = response.users;
-          this.totalPages = response.totalPages;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          this.errorMessage = error.error?.message || 'Failed to load farmers';
-          this.isLoading = false;
-        }
-      });
-  }
+      this.cropsChartData = this.chartData.timeline.cropsListed
+        ? [{
+            name: 'Crops Listed',
+            series: labels.map((label, i) => ({
+              name: label,
+              value: this.chartData!.timeline.cropsListed![i] ?? 0
+            }))
+          }]
+        : [];
 
-  loadConsumers(): void {
-    this.isLoading = true;
-    this.adminService.getUsersByRole('consumer', this.selectedStatus as any, this.currentPage)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.consumers = response.users;
-          this.totalPages = response.totalPages;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          this.errorMessage = error.error?.message || 'Failed to load consumers';
-          this.isLoading = false;
-        }
-      });
-  }
+      this.consumersChartData = this.chartData.timeline.newConsumers
+        ? [{
+            name: 'New Consumers',
+            series: labels.map((label, i) => ({
+              name: label,
+              value: this.chartData!.timeline.newConsumers![i] ?? 0
+            }))
+          }]
+        : [];
 
-  loadFarmersForVerification(): void {
-    this.isLoading = true;
-    this.adminService.getFarmersForVerification('pending')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.farmersForVerification = response.farmers;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          this.errorMessage = error.error?.message || 'Failed to load farmers for verification';
-          this.isLoading = false;
-        }
-      });
-  }
-
-  loadUserStats(role?: 'farmer' | 'consumer'): void {
-    if (!role) {
-      // Load both roles if no role provided
-      this.adminService.getUserStats('farmer')
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => { this.userStats['farmer'] = response.stats; },
-          error: (error) => { console.error('Failed to load farmer stats:', error); }
-        });
-      this.adminService.getUserStats('consumer')
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => { this.userStats['consumer'] = response.stats; },
-          error: (error) => { console.error('Failed to load consumer stats:', error); }
-        });
-      return;
-    }
-    this.adminService.getUserStats(role)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.userStats[role] = response.stats;
-        },
-        error: (error) => {
-          console.error(`Failed to load ${role} stats:`, error);
-        }
-      });
-  }
-
-  blockUser(user: User): void {
-    if (confirm(`Are you sure you want to block ${user.firstName} ${user.lastName}?`)) {
-      this.adminService.blockUser(user.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            // Update user in the current list
-            this.updateUserInList(response.user);
-            alert('User blocked successfully');
-          },
-          error: (error) => {
-            alert(error.error?.message || 'Failed to block user');
-          }
-        });
-    }
-  }
-
-  unblockUser(user: User): void {
-    if (confirm(`Are you sure you want to unblock ${user.firstName} ${user.lastName}?`)) {
-      this.adminService.unblockUser(user.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            // Update user in the current list
-            this.updateUserInList(response.user);
-            alert('User unblocked successfully');
-          },
-          error: (error) => {
-            alert(error.error?.message || 'Failed to unblock user');
-          }
-        });
-    }
-  }
-
-  verifyFarmer(farmer: any, verified: boolean): void {
-    const action = verified ? 'verify' : 'unverify';
-    if (confirm(`Are you sure you want to ${action} ${farmer.user.firstName} ${farmer.user.lastName}?`)) {
-      this.adminService.verifyFarmer(farmer.user.id, verified, verified)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            // Update farmer in the list
-            const index = this.farmersForVerification.findIndex(f => f.user.id === farmer.user.id);
-            if (index !== -1) {
-              this.farmersForVerification[index] = { ...farmer, ...response.farmer };
-            }
-            alert(`Farmer ${action}ed successfully`);
-            
-            // Reload the list if we're showing pending farmers and this farmer was verified
-            if (verified) {
-              this.loadFarmersForVerification();
-            }
-          },
-          error: (error) => {
-            alert(error.error?.message || `Failed to ${action} farmer`);
-          }
-        });
-    }
-  }
-
-  deleteUser(user: User): void {
-    if (confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}? This action cannot be undone.`)) {
-      this.adminService.deleteUser(user.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            // Remove user from the current list
-            this.removeUserFromList(user.id);
-            alert('User deleted successfully');
-          },
-          error: (error) => {
-            alert(error.error?.message || 'Failed to delete user');
-          }
-        });
-    }
-  }
-
-  searchUsers(): void {
-    if (!this.searchQuery.trim()) {
-      // Reload current tab data
-      this.switchTab(this.selectedTab);
-      return;
+      this.farmersChartData = this.chartData.timeline.newFarmers
+        ? [{
+            name: 'New Farmers',
+            series: labels.map((label, i) => ({
+              name: label,
+              value: this.chartData!.timeline.newFarmers![i] ?? 0
+            }))
+          }]
+        : [];
     }
 
-    this.isLoading = true;
-    this.adminService.searchUsers(this.searchQuery, this.selectedRole, this.selectedStatus)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          // Update the appropriate list based on current tab
-          if (this.selectedTab === 'farmers') {
-            this.farmers = response.users.filter(u => u.role === 'farmer');
-          } else if (this.selectedTab === 'consumers') {
-            this.consumers = response.users.filter(u => u.role === 'consumer');
-          }
-          this.isLoading = false;
-        },
-        error: (error) => {
-          this.errorMessage = error.error?.message || 'Search failed';
-          this.isLoading = false;
-        }
-      });
-  }
-
-  onPageChange(page: number): void {
-    this.currentPage = page;
-    this.switchTab(this.selectedTab);
-  }
-
-  onStatusFilterChange(): void {
-    this.currentPage = 1;
-    this.switchTab(this.selectedTab);
-  }
-
-  // Listings Management
-  loadListings(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.adminService.getListings({
-      page: this.listingsPage,
-      status: this.listingStatus || undefined,
-      sponsored: this.listingSponsored ? this.listingSponsored === 'true' : undefined,
-      flagged: this.listingFlagged ? this.listingFlagged === 'true' : undefined,
-      search: this.listingSearch || undefined
-    })
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (res) => {
-        this.listings = res.listings;
-        this.listingsTotalPages = res.totalPages;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        this.errorMessage = err.error?.message || 'Failed to load listings';
-        this.isLoading = false;
-      }
-    });
-  }
-
-  onListingPageChange(page: number): void {
-    this.listingsPage = page;
-    this.loadListings();
-  }
-
-  onListingFilterChange(): void {
-    this.listingsPage = 1;
-    this.loadListings();
-  }
-
-  searchListings(): void {
-    this.listingsPage = 1;
-    this.loadListings();
-  }
-
-  approveListing(crop: any): void {
-    if (!confirm(`Approve listing "${crop.name}"?`)) return;
-    this.adminService.approveListing(crop.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          alert(res.message);
-          this.loadListings();
-        },
-        error: (err) => alert(err.error?.message || 'Failed to approve listing')
-      });
-  }
-
-  flagListing(crop: any): void {
-    const reason = prompt('Enter reason to flag this listing (e.g., inappropriate content):');
-    if (reason === null) return;
-    this.adminService.flagListing(crop.id, reason || undefined)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          alert(res.message);
-          this.loadListings();
-        },
-        error: (err) => alert(err.error?.message || 'Failed to flag listing')
-      });
-  }
-
-  sponsorListing(crop: any): void {
-    const daysStr = prompt('Enter sponsorship duration in days (default 30):', '30');
-    const days = daysStr ? parseInt(daysStr) : 30;
-    if (!Number.isFinite(days) || days <= 0) {
-      alert('Invalid duration');
-      return;
-    }
-    this.adminService.sponsorListing(crop.id, days)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          alert(res.message);
-          this.loadListings();
-        },
-        error: (err) => alert(err.error?.message || 'Failed to sponsor listing')
-      });
-  }
-
-  unsponsorListing(crop: any): void {
-    if (!confirm(`Remove sponsorship from "${crop.name}"?`)) return;
-    this.adminService.unsponsorListing(crop.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          alert(res.message);
-          this.loadListings();
-        },
-        error: (err) => alert(err.error?.message || 'Failed to remove sponsorship')
-      });
-  }
-
-  private updateUserInList(updatedUser: User): void {
-    // Update in farmers list
-    const farmerIndex = this.farmers.findIndex(u => u.id === updatedUser.id);
-    if (farmerIndex !== -1) {
-      this.farmers[farmerIndex] = updatedUser;
-    }
-
-    // Update in consumers list
-    const consumerIndex = this.consumers.findIndex(u => u.id === updatedUser.id);
-    if (consumerIndex !== -1) {
-      this.consumers[consumerIndex] = updatedUser;
-    }
-
-    // Update in users list (overview)
-    const userIndex = this.users.findIndex(u => u.id === updatedUser.id);
-    if (userIndex !== -1) {
-      this.users[userIndex] = updatedUser;
-    }
-  }
-
-  private removeUserFromList(userId: number): void {
-    this.farmers = this.farmers.filter(u => u.id !== userId);
-    this.consumers = this.consumers.filter(u => u.id !== userId);
-    this.users = this.users.filter(u => u.id !== userId);
-    this.farmersForVerification = this.farmersForVerification.filter(f => f.user.id !== userId);
-  }
-
-  // Enhanced User Management Methods
-  
-  /**
-   * Approve and verify a farmer
-   */
-  approveFarmer(userId: number): void {
-    if (confirm('Are you sure you want to approve and verify this farmer?')) {
-      this.adminService.approveFarmer(userId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            alert(response.message);
-            // Reload verification data
-            this.loadFarmersForVerification();
-            // Reload farmers list to show updated verification status
-            this.loadFarmers();
-            // Reload user stats
-            this.loadUserStats();
-          },
-          error: (error) => {
-            alert(error.error?.message || 'Failed to approve farmer');
-          }
-        });
-    }
-  }
-
-  /**
-   * Reject farmer verification
-   */
-  rejectFarmer(userId: number): void {
-    const reason = prompt('Enter reason for rejection (optional):');
-    if (reason !== null) { // User didn't cancel
-      this.adminService.rejectFarmer(userId, reason)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            alert(response.message);
-            this.loadFarmersForVerification();
-            this.loadFarmers();
-            this.loadUserStats();
-          },
-          error: (error) => {
-            alert(error.error?.message || 'Failed to reject farmer');
-          }
-        });
-    }
-  }
-
-  /**
-   * Suspend/Block a user
-   */
-  suspendUser(userId: number): void {
-    const reason = prompt('Enter reason for suspension:');
-    if (!reason?.trim()) {
-      alert('Suspension reason is required');
-      return;
-    }
-
-    const durationStr = prompt('Enter suspension duration in days (leave empty for permanent):');
-    const duration = durationStr ? parseInt(durationStr) : undefined;
-
-    if (confirm(`Suspend user for ${duration ? duration + ' days' : 'permanently'}?\nReason: ${reason}`)) {
-      this.adminService.suspendUser(userId, reason, duration)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            alert(response.message);
-            // Reload current tab data
-            this.switchTab(this.selectedTab);
-            this.loadUserStats();
-          },
-          error: (error) => {
-            alert(error.error?.message || 'Failed to suspend user');
-          }
-        });
-    }
-  }
-
-  /**
-   * Restore/Unblock a user
-   */
-  restoreUser(userId: number): void {
-    if (confirm('Are you sure you want to restore this user?')) {
-      this.adminService.restoreUser(userId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            alert(response.message);
-            this.switchTab(this.selectedTab);
-            this.loadUserStats();
-          },
-          error: (error) => {
-            alert(error.error?.message || 'Failed to restore user');
-          }
-        });
-    }
-  }
-
-  /**
-   * Delete user account permanently
-   */
-  deleteUserAccount(userId: number, userName: string): void {
-    const confirmationMessage = `Are you sure you want to delete the user account for "${userName}"?\n\nThis action will:\n- Deactivate the account\n- Anonymize the email\n- Remove personal information\n\nThis action cannot be undone.`;
-     
-    if (confirm(confirmationMessage)) {
-      const doubleConfirm = confirm('This is your final warning. Confirm deletion:');
-      if (doubleConfirm) {
-        this.adminService.deleteUserAccount(userId)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: (response) => {
-              alert(response.message);
-              // Remove user from current list
-              this.removeUserFromList(userId);
-              this.loadUserStats();
-            },
-            error: (error) => {
-              alert(error.error?.message || 'Failed to delete user account');
-            }
-          });
-      }
-    }
-  }
-
-  /**
-   * Check if user is currently suspended
-   */
-  isUserSuspended(user: User): boolean {
-    if (!user.suspendedUntil) return false;
-    return new Date(user.suspendedUntil) > new Date();
-  }
-
-  /**
-   * Get suspension info for display
-   */
-  getSuspensionInfo(user: User): string {
-    if (!user.suspendedUntil) return '';
-    
-    const suspendedDate = new Date(user.suspendedUntil);
-    const now = new Date();
-    
-    if (suspendedDate > now) {
-      const daysLeft = Math.ceil((suspendedDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      return `Suspended (${daysLeft} days left)`;
-    }
-    
-    return 'Suspension expired';
-  }
-
-  /**
-   * Get user status display text
-   */
-  getUserStatusText(user: User): string {
-    if (user.isActive === false) {
-      return 'Blocked';
-    }
-    
-    if (this.isUserSuspended(user)) {
-      return this.getSuspensionInfo(user);
-    }
-    
-    if (user.deletedAt) {
-      return 'Deleted';
-    }
-    
-    return 'Active';
-  }
-
-  /**
-   * Get user status class for styling
-   */
-  getUserStatusClass(user: User): string {
-    if (user.isActive === false || user.deletedAt) {
-      return 'status-danger';
-    }
-    
-    if (this.isUserSuspended(user)) {
-      return 'status-warning';
-    }
-    
-    return 'status-active';
+    const top = this.chartData?.topFarmers ?? [];
+    this.topFarmers = top;
+    this.topFarmersChartData = top.map(f => ({
+      name: f.name || f.email || 'Unknown',
+      value: f.cropCount
+    }));
   }
 }

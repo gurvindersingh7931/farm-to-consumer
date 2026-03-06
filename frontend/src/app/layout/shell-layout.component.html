@@ -49,8 +49,8 @@
           *ngFor="let item of menuItems"
           [routerLink]="item.path"
           routerLinkActive="!bg-[color:var(--color-primary-soft)] !text-[color:var(--color-primary)]"
-          (click)="onNavClick()"
-          class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+          (click)="navigateTo($event, item.path)"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer">
           <mat-icon [fontIcon]="item.icon" class="!text-base"></mat-icon>
           <span>{{ item.label }}</span>
         </a>

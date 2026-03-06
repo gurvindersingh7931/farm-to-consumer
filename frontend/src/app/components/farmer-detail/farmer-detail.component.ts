@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -34,12 +34,13 @@ export class FarmerDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
-    private farmerService: FarmerService,
-    private authService: AuthService,
-    private cropBrowseService: CropBrowseService,
-    private maps: MapsService
-  ) {}
+      private router: Router,
+      private farmerService: FarmerService,
+      private authService: AuthService,
+      private cropBrowseService: CropBrowseService,
+      private maps: MapsService,
+      private locationS: Location
+    ) {}
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -216,7 +217,7 @@ export class FarmerDetailComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/browse-crops']);
+    this.locationS.back();
   }
 }
 

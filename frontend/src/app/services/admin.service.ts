@@ -101,12 +101,22 @@ export interface DashboardStats {
   };
 }
 
+export interface TopFarmer {
+  farmerId: number;
+  name: string;
+  email: string;
+  cropCount: number;
+}
+
 export interface ChartData {
   timeline: {
     labels: string[];
     userRegistrations: number[];
     orderCounts: number[];
     revenues: number[];
+    cropsListed?: number[];
+    newConsumers?: number[];
+    newFarmers?: number[];
   };
   roleDistribution: {
     farmers: number;
@@ -120,6 +130,7 @@ export interface ChartData {
     rejected: number;
     cancelled: number;
   };
+  topFarmers?: TopFarmer[];
 }
 
 export interface Activity {

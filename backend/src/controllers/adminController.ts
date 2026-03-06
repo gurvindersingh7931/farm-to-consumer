@@ -305,11 +305,14 @@ export const getChartData: RequestHandler = async (req, res) => {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     
-    // Generate date labels
-    const labels = [];
-    const userRegistrations = [];
-    const orderCounts = [];
-    const revenues = [];
+    // Generate date labels and day-wise counts
+    const labels: string[] = [];
+    const userRegistrations: number[] = [];
+    const orderCounts: number[] = [];
+    const revenues: number[] = [];
+    const cropsListed: number[] = [];
+    const newConsumers: number[] = [];
+    const newFarmers: number[] = [];
     
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
@@ -332,6 +335,38 @@ export const getChartData: RequestHandler = async (req, res) => {
       });
       userRegistrations.push(dailyUsers);
       
+      // Count new consumers for this day
+      const dailyConsumers = await User.count({
+        where: {
+          role: 'consumer',
+          createdAt: {
+            [Op.between]: [dayStart, dayEnd]
+          }
+        }
+      });
+      newConsumers.push(dailyConsumers);
+      
+      // Count new farmers for this day
+      const dailyFarmers = await User.count({
+        where: {
+          role: 'farmer',
+          createdAt: {
+            [Op.between]: [dayStart, dayEnd]
+          }
+        }
+      });
+      newFarmers.push(dailyFarmers);
+      
+      // Count crops listed for this day
+      const dailyCrops = await Crop.count({
+        where: {
+          createdAt: {
+            [Op.between]: [dayStart, dayEnd]
+          }
+        }
+      });
+      cropsListed.push(dailyCrops);
+      
       // Count orders for this day
       const dailyOrders = await Order.count({
         where: {
@@ -353,6 +388,27 @@ export const getChartData: RequestHandler = async (req, res) => {
       }) || 0;
       revenues.push(dailyRevenue);
     }
+    
+    // Top 5 farmers by crop count
+    const db = require('../config/database').default;
+    const { QueryTypes } = require('sequelize');
+    const topFarmersRows = await db.sequelize.query(
+      `SELECT u.id as "farmerId", u."firstName", u."lastName", u.email, COUNT(c.id)::int as "cropCount"
+       FROM users u
+       INNER JOIN crops c ON c."farmerId" = u.id
+       WHERE u.role = 'farmer'
+       GROUP BY u.id, u."firstName", u."lastName", u.email
+       ORDER BY "cropCount" DESC
+       LIMIT 5`,
+      { type: QueryTypes.SELECT }
+    );
+    
+    const topFarmers = (Array.isArray(topFarmersRows) ? topFarmersRows : []).map((row: any) => ({
+      farmerId: row.farmerId,
+      name: `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'Unknown',
+      email: row.email || '',
+      cropCount: Number(row.cropCount) || 0
+    }));
     
     // User role distribution
     const roleDistribution = {
@@ -377,10 +433,14 @@ export const getChartData: RequestHandler = async (req, res) => {
           labels,
           userRegistrations,
           orderCounts,
-          revenues
+          revenues,
+          cropsListed,
+          newConsumers,
+          newFarmers
         },
         roleDistribution,
-        orderStatusDistribution
+        orderStatusDistribution,
+        topFarmers
       }
     });
   } catch (error) {
@@ -421,7 +481,7 @@ export const getRecentActivities: RequestHandler = async (req, res) => {
     
     // Recent subscriptions
     const recentSubscriptions = await Subscription.findAll({
-      attributes: ['id', 'amount', 'plan', 'createdAt'],
+      attributes: ['id', 'amount', 'planType', 'createdAt'],
       include: [
         {
           model: User,
@@ -646,7 +706,7 @@ export const getFarmersForVerification: RequestHandler = async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'firstName', 'lastName', 'email', 'isActive', 'createdAt'],
+          attributes: ['id', 'firstName', 'lastName', 'email', 'isActive', 'createdAt', 'suspendedUntil'],
           where: { role: 'farmer' }
         }
       ],

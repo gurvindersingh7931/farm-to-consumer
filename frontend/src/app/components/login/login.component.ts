@@ -23,7 +23,7 @@ export class LoginComponent {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(8)]]
     });
   }
 
@@ -41,7 +41,7 @@ export class LoginComponent {
           if (response.user.role === 'farmer') {
             this.router.navigate(['/farmer-dashboard']);
           } else if (response.user.role === 'consumer') {
-            this.router.navigate(['/consumer-dashboard']);
+            this.router.navigate(['/browse-crops']);
           } else {
             this.router.navigate(['/admin-dashboard']);
           }

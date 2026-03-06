@@ -1,0 +1,80 @@
+<section class="user-management-section">
+  <div class="section-header">
+    <h2><mat-icon>shopping_cart</mat-icon> Consumers Management</h2>
+    <div class="controls">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search consumers</mat-label>
+        <input matInput [(ngModel)]="searchQuery" (keyup.enter)="searchUsers()" placeholder="Name or email...">
+        <button mat-icon-button matSuffix (click)="searchUsers()" aria-label="Search">
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onStatusFilterChange()">
+          <mat-option value="">All</mat-option>
+          <mat-option value="active">Active</mat-option>
+          <mat-option value="blocked">Blocked</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="stats-row" *ngIf="userStats">
+    <div class="stat-item">
+      <span class="stat-label">Total</span>
+      <span class="stat-value">{{ userStats.total ?? 0 }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Active</span>
+      <span class="stat-value">{{ userStats.active ?? 0 }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Blocked</span>
+      <span class="stat-value">{{ userStats.blocked ?? 0 }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Premium</span>
+      <span class="stat-value">{{ userStats.premium ?? 0 }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Total Orders</span>
+      <span class="stat-value">{{ userStats.totalOrders ?? 0 }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+
+  <div class="users-table">
+    <div class="table-header consumers-header">
+      <span>Name</span>
+      <span>Email</span>
+      <span>Status</span>
+      <span>Premium</span>
+      <span>Joined</span>
+      <span>Actions</span>
+    </div>
+    <div class="table-row consumers-row" *ngFor="let consumer of consumers">
+      <span class="user-name">{{ consumer.firstName }} {{ consumer.lastName }}</span>
+      <span class="user-email">{{ consumer.email }}</span>
+      <span class="user-status" [ngClass]="getUserStatusClass(consumer)">{{ getUserStatusText(consumer) }}</span>
+      <span class="premium-status">
+        <span *ngIf="consumer.isPremium" class="premium">Premium</span>
+        <span *ngIf="!consumer.isPremium" class="regular">Regular</span>
+      </span>
+      <span class="user-date">{{ formatDate(consumer.createdAt) }}</span>
+      <span class="actions">
+        <button *ngIf="consumer.isActive && !isUserSuspended(consumer)" class="action-btn suspend-btn" (click)="suspendUser(consumer.id)">Suspend</button>
+        <button *ngIf="!consumer.isActive && !consumer.deletedAt" class="action-btn block-btn" (click)="blockUser(consumer)">Block</button>
+        <button *ngIf="!consumer.isActive || isUserSuspended(consumer)" class="action-btn restore-btn" (click)="restoreUser(consumer.id)">Restore</button>
+        <button class="action-btn delete-btn" (click)="deleteUserAccount(consumer.id, consumer.firstName + ' ' + consumer.lastName)">Delete</button>
+      </span>
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button *ngFor="let p of [].constructor(totalPages); let i = index" class="page-btn" [class.active]="currentPage === i + 1" (click)="onPageChange(i + 1)">
+      {{ i + 1 }}
+    </button>
+  </div>
+</section>

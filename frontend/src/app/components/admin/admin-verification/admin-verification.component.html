@@ -1,0 +1,56 @@
+<section class="user-management-section">
+  <div class="section-header">
+    <h2><mat-icon>verified</mat-icon> Farmer Verification</h2>
+    <div class="controls">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="statusFilter" (selectionChange)="onStatusFilterChange()">
+          <mat-option value="pending">Pending</mat-option>
+          <mat-option value="verified">Verified</mat-option>
+          <mat-option value="all">All</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+
+  <div class="users-table">
+    <div class="table-header">
+      <span>Name</span>
+      <span>Email</span>
+      <span>Farm</span>
+      <span>Status</span>
+      <span>Verified</span>
+      <span>Joined</span>
+      <span>Actions</span>
+    </div>
+    <div class="table-row" *ngFor="let farmer of farmers">
+      <span class="user-name">{{ getFarmerName(farmer) }}</span>
+      <span class="user-email">{{ farmer.user?.email ?? farmer.email }}</span>
+      <span class="user-email">{{ farmer.farmName || farmer.farmerProfile?.farmName || '–' }}</span>
+      <span class="user-status" [ngClass]="(farmer.user?.isActive ?? farmer.isActive) && !isUserSuspended(farmer) ? 'status-active' : 'status-warning'">
+        {{ (farmer.user?.isActive ?? farmer.isActive) && !isUserSuspended(farmer) ? 'Active' : ((farmer.user?.suspendedUntil ?? farmer.suspendedUntil) ? 'Suspended' : 'Inactive') }}
+      </span>
+      <span class="verification-status">
+        <span *ngIf="farmer.isVerified ?? farmer.farmerProfile?.isVerified" class="verified">Verified</span>
+        <span *ngIf="!(farmer.isVerified ?? farmer.farmerProfile?.isVerified)" class="unverified">Unverified</span>
+      </span>
+      <span class="user-date">{{ formatDate(farmer.user?.createdAt ?? farmer.createdAt) }}</span>
+      <span class="actions">
+        <button *ngIf="!(farmer.isVerified ?? farmer.farmerProfile?.isVerified)" class="action-btn verify-btn" (click)="verifyFarmer(farmer)">Verify</button>
+        <button *ngIf="farmer.isVerified ?? farmer.farmerProfile?.isVerified" class="action-btn unverify-btn" (click)="unverifyFarmer(farmer)">Unverify</button>
+        <button *ngIf="!(farmer.isVerified ?? farmer.farmerProfile?.isVerified)" class="action-btn approve-btn" (click)="approveFarmer(farmer)">Approve</button>
+        <button *ngIf="!(farmer.isVerified ?? farmer.farmerProfile?.isVerified)" class="action-btn suspend-btn" (click)="rejectFarmer(farmer)">Reject</button>
+        <button *ngIf="(farmer.user?.isActive ?? farmer.isActive) && !isUserSuspended(farmer)" class="action-btn suspend-btn" (click)="suspendUser(farmer)">Suspend</button>
+        <button *ngIf="!(farmer.user?.isActive ?? farmer.isActive) || isUserSuspended(farmer)" class="action-btn restore-btn" (click)="restoreUser(farmer)">Restore</button>
+        <button class="action-btn delete-btn" (click)="deleteUserAccount(farmer)">Delete</button>
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="farmers.length === 0 && !isLoading" class="empty-state">
+    <mat-icon>verified_user</mat-icon>
+    <p>No farmers match the selected status.</p>
+  </div>
+</section>

@@ -1,0 +1,78 @@
+<section class="user-management-section">
+  <div class="section-header">
+    <h2><mat-icon>inventory_2</mat-icon> Listings Moderation</h2>
+    <div class="controls">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search</mat-label>
+        <input matInput [(ngModel)]="search" (keyup.enter)="onFilterChange()" placeholder="Name or category...">
+        <button mat-icon-button matSuffix (click)="onFilterChange()" aria-label="Search">
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="status" (selectionChange)="onFilterChange()">
+          <mat-option value="">All</mat-option>
+          <mat-option value="approved">Approved</mat-option>
+          <mat-option value="pending">Pending</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Sponsored</mat-label>
+        <mat-select [(ngModel)]="sponsored" (selectionChange)="onFilterChange()">
+          <mat-option value="">All</mat-option>
+          <mat-option value="true">Yes</mat-option>
+          <mat-option value="false">No</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Flagged</mat-label>
+        <mat-select [(ngModel)]="flagged" (selectionChange)="onFilterChange()">
+          <mat-option value="">All</mat-option>
+          <mat-option value="true">Yes</mat-option>
+          <mat-option value="false">No</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+
+  <div class="users-table listings-table">
+    <div class="table-header listings-header">
+      <span>Crop</span>
+      <span>Farmer</span>
+      <span>Status</span>
+      <span>Sponsored</span>
+      <span>Price</span>
+      <span>Created</span>
+      <span>Actions</span>
+    </div>
+    <div class="table-row listings-row" *ngFor="let crop of listings">
+      <span class="user-name">{{ crop.name }} <small>({{ crop.category }})</small></span>
+      <span class="user-email">{{ crop.farmer?.firstName }} {{ crop.farmer?.lastName }}</span>
+      <span class="user-status" [ngClass]="crop.isApproved ? 'status-active' : 'status-warning'">
+        {{ crop.isApproved ? 'Approved' : (crop.flaggedReason ? 'Flagged' : 'Pending') }}
+        <span *ngIf="crop.flaggedReason" title="Flag reason"> – {{ crop.flaggedReason }}</span>
+      </span>
+      <span class="premium-status">
+        <span *ngIf="crop.isSponsored" class="premium">Until {{ crop.sponsoredUntil | date:'mediumDate' }}</span>
+        <span *ngIf="!crop.isSponsored" class="regular">No</span>
+      </span>
+      <span class="user-date">{{ crop.pricePerKg | currency:'INR':'symbol-narrow':'1.0-0':'en-IN' }}</span>
+      <span class="user-date">{{ formatDate(crop.createdAt) }}</span>
+      <span class="actions">
+        <button class="action-btn verify-btn" (click)="approveListing(crop)" [disabled]="crop.isApproved">Approve</button>
+        <button class="action-btn suspend-btn" (click)="flagListing(crop)">Flag</button>
+        <button class="action-btn approve-btn" (click)="sponsorListing(crop)">Sponsor</button>
+        <button class="action-btn delete-btn" (click)="unsponsorListing(crop)" [disabled]="!crop.isSponsored">Unsponsor</button>
+      </span>
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button *ngFor="let p of [].constructor(totalPages); let i = index" class="page-btn" [class.active]="page === i + 1" (click)="onPageChange(i + 1)">
+      {{ i + 1 }}
+    </button>
+  </div>
+</section>

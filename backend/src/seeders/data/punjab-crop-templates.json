@@ -1,0 +1,164 @@
+{
+  "vegetables": [
+    {
+      "name": "Desi Tomatoes",
+      "basePricePerKg": 35,
+      "category": "vegetables",
+      "description": "Locally grown tomatoes ideal for everyday cooking.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Green Chillies",
+      "basePricePerKg": 80,
+      "category": "vegetables",
+      "description": "Spicy green chillies used in Punjabi tadka.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Potatoes",
+      "basePricePerKg": 28,
+      "category": "vegetables",
+      "description": "Multi-purpose potatoes for sabzi and snacks.",
+      "defaultPremium": false,
+      "defaultOrganic": false
+    },
+    {
+      "name": "Cauliflower",
+      "basePricePerKg": 45,
+      "category": "vegetables",
+      "description": "Fresh phool gobhi for classic Punjabi dishes.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Organic Spinach",
+      "basePricePerKg": 60,
+      "category": "vegetables",
+      "description": "Clean and pesticide-free palak leaves.",
+      "defaultPremium": true,
+      "defaultOrganic": true
+    }
+  ],
+  "fruits": [
+    {
+      "name": "Kinnow Oranges",
+      "basePricePerKg": 70,
+      "category": "fruits",
+      "description": "Seasonal kinnow from Punjab orchards.",
+      "defaultPremium": true,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Table Grapes",
+      "basePricePerKg": 90,
+      "category": "fruits",
+      "description": "Sweet seedless grapes for snacking.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Bananas",
+      "basePricePerKg": 50,
+      "category": "fruits",
+      "description": "Daily use bananas for households.",
+      "defaultPremium": false,
+      "defaultOrganic": false
+    },
+    {
+      "name": "Pomegranates",
+      "basePricePerKg": 140,
+      "category": "fruits",
+      "description": "High quality anar rich in antioxidants.",
+      "defaultPremium": true,
+      "defaultOrganic": true
+    }
+  ],
+  "grains": [
+    {
+      "name": "Basmati Rice",
+      "basePricePerKg": 110,
+      "category": "grains",
+      "description": "Long grain aromatic basmati rice.",
+      "defaultPremium": true,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Sharbati Wheat",
+      "basePricePerKg": 32,
+      "category": "grains",
+      "description": "Soft wheat ideal for chapatis.",
+      "defaultPremium": false,
+      "defaultOrganic": false
+    },
+    {
+      "name": "Maize Grain",
+      "basePricePerKg": 26,
+      "category": "grains",
+      "description": "Makki da dana for flour and feed.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Barley",
+      "basePricePerKg": 30,
+      "category": "grains",
+      "description": "Jaun used for health-focused recipes.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    }
+  ],
+  "herbs": [
+    {
+      "name": "Fresh Coriander",
+      "basePricePerKg": 150,
+      "category": "herbs",
+      "description": "Dhaniya for garnishing and flavour.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Mint Leaves",
+      "basePricePerKg": 180,
+      "category": "herbs",
+      "description": "Pudina for chutneys and beverages.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Holy Basil (Tulsi)",
+      "basePricePerKg": 220,
+      "category": "herbs",
+      "description": "Tulsi leaves for medicinal and religious use.",
+      "defaultPremium": true,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Curry Leaves",
+      "basePricePerKg": 200,
+      "category": "herbs",
+      "description": "Curry patta for tempering Indian dishes.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    }
+  ],
+  "others": [
+    {
+      "name": "Organic Jaggery",
+      "basePricePerKg": 90,
+      "category": "other",
+      "description": "Chemical-free gud from sugarcane.",
+      "defaultPremium": true,
+      "defaultOrganic": true
+    },
+    {
+      "name": "Mustard Oil Seeds",
+      "basePricePerKg": 75,
+      "category": "other",
+      "description": "Sarson ke beej for oil extraction.",
+      "defaultPremium": false,
+      "defaultOrganic": true
+    }
+  ]
+}

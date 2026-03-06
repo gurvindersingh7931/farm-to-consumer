@@ -111,12 +111,15 @@
               id="password"
               formControlName="password"
               class="form-input"
-              [class.border-red-300]="password?.invalid && password?.touched"
+              [class.border-red-300]="password?.invalid && (password?.touched || submitted)"
               placeholder="Create a password"
             />
-            <div class="form-error" *ngIf="password?.invalid && password?.touched">
+            <div class="form-error" *ngIf="password?.invalid && (password?.touched || submitted)">
               <span *ngIf="password?.errors?.['required']">Password is required</span>
-              <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
+              <span *ngIf="password?.errors?.['minlength']">Password must be at least 8 characters</span>
+              <span *ngIf="password?.errors?.['weakPassword']">
+                Password must include uppercase, lowercase, number and special character (&#64;$!%*?&).
+              </span>
             </div>
           </div>
 
@@ -127,11 +130,12 @@
               id="confirmPassword"
               formControlName="confirmPassword"
               class="form-input"
-              [class.border-red-300]="confirmPassword?.invalid && confirmPassword?.touched"
+              [class.border-red-300]="confirmPassword?.invalid && (confirmPassword?.touched || submitted)"
               placeholder="Confirm your password"
             />
-            <div class="form-error" *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
+            <div class="form-error" *ngIf="confirmPassword?.invalid && (confirmPassword?.touched || submitted)">
               <span *ngIf="confirmPassword?.errors?.['required']">Please confirm your password</span>
+              <span *ngIf="confirmPassword?.errors?.['minlength']">Password must be at least 8 characters</span>
               <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Passwords do not match</span>
             </div>
           </div>

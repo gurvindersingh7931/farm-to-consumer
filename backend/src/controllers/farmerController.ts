@@ -581,6 +581,60 @@ export const searchFarmers = async (req: Request, res: Response): Promise<void> 
       totalCount = result.count;
     }
 
+    // Attach aggregated rating data and presigned profile photos for each farmer
+    if (farmers.length > 0) {
+      const farmerUserIds = Array.from(
+        new Set(
+          farmers
+            .map((f: any) => f.userId)
+            .filter((id: unknown): id is number => typeof id === 'number')
+        )
+      );
+
+      let ratingMap = new Map<number, { avg: number; count: number }>();
+
+      if (farmerUserIds.length > 0) {
+        const ratingAgg = await FarmerRating.findAll({
+          where: { farmerId: { [Op.in]: farmerUserIds } },
+          attributes: [
+            'farmerId',
+            [Sequelize.fn('AVG', Sequelize.col('rating')), 'avg'],
+            [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
+          ],
+          group: ['farmerId'],
+          raw: true
+        });
+
+        const ratingRows = ratingAgg as unknown as Array<{
+          farmerId: number;
+          avg: number | string | null;
+          count: number | string | null;
+        }>;
+
+        ratingMap = new Map<number, { avg: number; count: number }>();
+        ratingRows.forEach((row) => {
+          const avg = row.avg != null ? parseFloat(String(row.avg)) : 0;
+          const count = row.count != null ? parseInt(String(row.count)) : 0;
+          ratingMap.set(row.farmerId, { avg, count });
+        });
+      }
+
+      // Presign S3 profile photos where applicable and attach rating data
+      farmers = await Promise.all(
+        farmers.map(async (farmer: any) => {
+          const stats = ratingMap.get(farmer.userId);
+          const presignedProfilePhoto = await s3Presign.getPresignedImageUrl(farmer.profilePhoto);
+
+          return {
+            ...farmer,
+            profilePhoto: presignedProfilePhoto ?? farmer.profilePhoto,
+            rating: stats ? stats.avg : 0,
+            totalRatings: stats ? stats.count : 0
+          };
+        })
+      );
+    }
+
     res.json({
       message: 'Farmers search completed successfully',
       farmers,

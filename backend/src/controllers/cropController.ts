@@ -421,22 +421,36 @@ export const toggleCropAvailability = async (req: AuthenticatedRequest, res: Res
   }
 };
 
+/** Normalize category for display: "vegetables" -> "Vegetables", "fresh herbs" -> "Fresh Herbs" */
+function toCategoryDisplayName(lowerKey: string): string {
+  return lowerKey
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export const getCropCategories = async (req: Request, res: Response): Promise<void> => {
   try {
     const categories = await Crop.findAll({
       attributes: [
-        'category',
+        [Sequelize.fn('LOWER', Sequelize.col('category')), 'key'],
         [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
       ],
       where: { isActive: true },
-      group: ['category'],
-      order: [['category', 'ASC']],
+      group: [Sequelize.fn('LOWER', Sequelize.col('category'))],
+      order: [[Sequelize.fn('LOWER', Sequelize.col('category')), 'ASC']],
+      raw: true
     });
 
-    const categoryList = categories.map(crop => ({
-      name: crop.category,
-      count: parseInt((crop as any).getDataValue('count') as string)
-    }));
+    const categoryList = (categories as any[]).map((row) => {
+      const key = (row.key || '').trim();
+      const displayName = key ? toCategoryDisplayName(key) : row.key;
+      return {
+        name: displayName,
+        value: key,
+        count: parseInt(String(row.count), 10) || 0
+      };
+    });
 
     res.status(200).json({ categories: categoryList });
   } catch (error) {
@@ -490,9 +504,9 @@ export const browseCrops = async (req: Request, res: Response): Promise<void> =>
       ];
     }
 
-    // Category filter
+    // Category filter (case-insensitive to handle "vegetables" vs "Vegetables")
     if (category) {
-      whereClause.category = category;
+      whereClause.category = { [Op.iLike]: String(category).trim() };
     }
 
     // Price range filter
@@ -673,14 +687,14 @@ export const browseCrops = async (req: Request, res: Response): Promise<void> =>
         raw: true
       }),
       
-      // Category counts
+      // Category counts (group by lowercase to deduplicate "vegetables" vs "Vegetables")
       Crop.findAll({
         attributes: [
-          'category',
+          [Sequelize.fn('LOWER', Sequelize.col('category')), 'key'],
           [Sequelize.fn('COUNT', Sequelize.col('id')), 'count']
         ],
         where: { isActive: true },
-        group: ['category'],
+        group: [Sequelize.fn('LOWER', Sequelize.col('category'))],
         raw: true
       })
     ]);

@@ -9,13 +9,13 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { finalize } from 'rxjs';
 import { FarmerService, FarmerProfile, SearchFarmersParams } from '../../services/farmer.service';
 import { MapsService } from '../../services/maps.service';
+import { PaginationComponent } from '../../shared/pagination/pagination.component';
 import {
   FARMERS_LIST_DEFAULT_PAGE_SIZE,
   FARMERS_LIST_DEFAULT_RADIUS_KM,
@@ -37,8 +37,8 @@ import {
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatPaginatorModule,
     MatProgressSpinnerModule,
+    PaginationComponent,
     MatSelectModule,
     MatTooltipModule
   ],
@@ -135,9 +135,16 @@ export class FarmersListComponent implements OnInit {
     this.loadFarmers();
   }
 
-  onPage(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
+  get totalPages(): number {
+    return this.pageSize > 0 ? Math.max(1, Math.ceil(this.totalItems / this.pageSize)) : 1;
+  }
+
+  get currentPage(): number {
+    return this.pageIndex + 1;
+  }
+
+  onPageChange(page: number): void {
+    this.pageIndex = page - 1;
     this.loadFarmers();
   }
 
@@ -217,5 +224,33 @@ export class FarmersListComponent implements OnInit {
 
   formatDistance(distance: number): string {
     return distance < 1 ? `${Math.round(distance * 1000)}m` : `${distance.toFixed(1)}km`;
+  }
+
+  getFarmerLocationDisplay(farmer: FarmerProfile): string {
+    if (farmer.farmLocation) {
+      return farmer.farmLocation;
+    }
+
+    const city = farmer.city ?? '';
+    const state = farmer.state ?? '';
+
+    if (city && state) {
+      return `${city}, ${state}`;
+    }
+
+    if (city || state) {
+      return city || state;
+    }
+
+    return 'Location not provided';
+  }
+
+  getRatingStars(rating?: number): { full: number; half: boolean; empty: number } {
+    const safeRating = rating && rating > 0 ? rating : 0;
+    const full = Math.floor(safeRating);
+    const half = safeRating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+
+    return { full, half, empty };
   }
 }

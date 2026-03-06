@@ -9,7 +9,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all",
-    "db:reset": "sequelize-cli db:migrate:undo:all && sequelize-cli db:migrate && sequelize-cli db:seed:all"
+    "db:reset": "sequelize-cli db:migrate:undo:all && sequelize-cli db:migrate && sequelize-cli db:seed:all",
+    "seed:punjab-large": "node seed-punjab-large.js"
   },
   "keywords": [],
   "author": "",

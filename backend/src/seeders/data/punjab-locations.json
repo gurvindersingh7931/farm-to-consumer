@@ -1,0 +1,180 @@
+{
+  "cities": [
+    {
+      "city": "Chandigarh",
+      "district": "Chandigarh",
+      "state": "Punjab",
+      "zipPrefix": "1600",
+      "latitude": 30.7333,
+      "longitude": 76.7794
+    },
+    {
+      "city": "Ludhiana",
+      "district": "Ludhiana",
+      "state": "Punjab",
+      "zipPrefix": "1410",
+      "latitude": 30.9000,
+      "longitude": 75.8573
+    },
+    {
+      "city": "Amritsar",
+      "district": "Amritsar",
+      "state": "Punjab",
+      "zipPrefix": "1430",
+      "latitude": 31.6340,
+      "longitude": 74.8723
+    },
+    {
+      "city": "Jalandhar",
+      "district": "Jalandhar",
+      "state": "Punjab",
+      "zipPrefix": "1440",
+      "latitude": 31.3260,
+      "longitude": 75.5762
+    },
+    {
+      "city": "Mohali",
+      "district": "SAS Nagar",
+      "state": "Punjab",
+      "zipPrefix": "1400",
+      "latitude": 30.7046,
+      "longitude": 76.7179
+    },
+    {
+      "city": "Patiala",
+      "district": "Patiala",
+      "state": "Punjab",
+      "zipPrefix": "1470",
+      "latitude": 30.3398,
+      "longitude": 76.3869
+    },
+    {
+      "city": "Bathinda",
+      "district": "Bathinda",
+      "state": "Punjab",
+      "zipPrefix": "1510",
+      "latitude": 30.2110,
+      "longitude": 74.9455
+    },
+    {
+      "city": "Hoshiarpur",
+      "district": "Hoshiarpur",
+      "state": "Punjab",
+      "zipPrefix": "1460",
+      "latitude": 31.5320,
+      "longitude": 75.9170
+    },
+    {
+      "city": "Moga",
+      "district": "Moga",
+      "state": "Punjab",
+      "zipPrefix": "1420",
+      "latitude": 30.8130,
+      "longitude": 75.1680
+    },
+    {
+      "city": "Firozpur",
+      "district": "Firozpur",
+      "state": "Punjab",
+      "zipPrefix": "1520",
+      "latitude": 30.9333,
+      "longitude": 74.6000
+    },
+    {
+      "city": "Pathankot",
+      "district": "Pathankot",
+      "state": "Punjab",
+      "zipPrefix": "1450",
+      "latitude": 32.2643,
+      "longitude": 75.6421
+    },
+    {
+      "city": "Gurdaspur",
+      "district": "Gurdaspur",
+      "state": "Punjab",
+      "zipPrefix": "1435",
+      "latitude": 32.0419,
+      "longitude": 75.4053
+    },
+    {
+      "city": "Sangrur",
+      "district": "Sangrur",
+      "state": "Punjab",
+      "zipPrefix": "1480",
+      "latitude": 30.2458,
+      "longitude": 75.8420
+    },
+    {
+      "city": "Barnala",
+      "district": "Barnala",
+      "state": "Punjab",
+      "zipPrefix": "1481",
+      "latitude": 30.3740,
+      "longitude": 75.5466
+    },
+    {
+      "city": "Fazilka",
+      "district": "Fazilka",
+      "state": "Punjab",
+      "zipPrefix": "1521",
+      "latitude": 30.4066,
+      "longitude": 74.0284
+    },
+    {
+      "city": "Mansa",
+      "district": "Mansa",
+      "state": "Punjab",
+      "zipPrefix": "1515",
+      "latitude": 29.9980,
+      "longitude": 75.3937
+    },
+    {
+      "city": "Kapurthala",
+      "district": "Kapurthala",
+      "state": "Punjab",
+      "zipPrefix": "1446",
+      "latitude": 31.3815,
+      "longitude": 75.3810
+    },
+    {
+      "city": "Faridkot",
+      "district": "Faridkot",
+      "state": "Punjab",
+      "zipPrefix": "1512",
+      "latitude": 30.6780,
+      "longitude": 74.7547
+    },
+    {
+      "city": "Sri Muktsar Sahib",
+      "district": "Muktsar",
+      "state": "Punjab",
+      "zipPrefix": "1520",
+      "latitude": 30.4770,
+      "longitude": 74.5160
+    },
+    {
+      "city": "Rupnagar",
+      "district": "Rupnagar",
+      "state": "Punjab",
+      "zipPrefix": "1401",
+      "latitude": 30.9661,
+      "longitude": 76.5333
+    },
+    {
+      "city": "Fatehgarh Sahib",
+      "district": "Fatehgarh Sahib",
+      "state": "Punjab",
+      "zipPrefix": "1404",
+      "latitude": 30.6470,
+      "longitude": 76.4027
+    },
+    {
+      "city": "Tarn Taran",
+      "district": "Tarn Taran",
+      "state": "Punjab",
+      "zipPrefix": "1434",
+      "latitude": 31.4519,
+      "longitude": 74.9278
+    }
+  ]
+}

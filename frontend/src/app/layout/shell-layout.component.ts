@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../services/auth.service';
@@ -22,7 +22,8 @@ export class ShellLayoutComponent implements OnInit {
 
   constructor(
     private auth: AuthService,
-    private farmerService: FarmerService
+    private farmerService: FarmerService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -79,10 +80,10 @@ export class ShellLayoutComponent implements OnInit {
     if (role === 'admin') {
       return [
         { label: 'Dashboard', path: '/admin-dashboard', icon: 'dashboard' },
-        { label: 'Farmers', path: '/admin-dashboard', icon: 'agriculture' },
-        { label: 'Consumers', path: '/admin-dashboard', icon: 'people' },
-        { label: 'Listings', path: '/admin-dashboard', icon: 'inventory_2' },
-        { label: 'Verification', path: '/admin-dashboard', icon: 'verified' }
+        { label: 'Farmers', path: '/admin/farmers', icon: 'agriculture' },
+        { label: 'Consumers', path: '/admin/consumers', icon: 'people' },
+        { label: 'Listings', path: '/admin/listings', icon: 'inventory_2' },
+        { label: 'Verification', path: '/admin/verification', icon: 'verified' }
       ];
     }
     if (role === 'farmer') {
@@ -96,7 +97,6 @@ export class ShellLayoutComponent implements OnInit {
     }
     if (role === 'consumer') {
       return [
-        { label: 'Dashboard', path: '/consumer-dashboard', icon: 'dashboard' },
         { label: 'Browse Crops', path: '/browse-crops', icon: 'shopping_basket' },
         { label: 'Find Farmers', path: '/farmers', icon: 'location_on' }
       ];
@@ -143,6 +143,12 @@ export class ShellLayoutComponent implements OnInit {
       this.sidebarOpen = false;
       localStorage.setItem('sidebarOpen', 'false');
     }
+  }
+
+  navigateTo(event: Event, path: string): void {
+    event.preventDefault();
+    this.router.navigateByUrl(path);
+    this.onNavClick();
   }
 }
 

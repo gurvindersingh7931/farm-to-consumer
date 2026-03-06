@@ -5,12 +5,44 @@
   background-color: var(--color-surface-muted);
 }
 
+.farmer-detail-page main.container {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
 .farmer-detail-header {
   align-items: center;
 }
 
 .farmer-detail-header .page-title {
   font-size: 1.3rem;
+}
+
+.farmer-header-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.farmer-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: rgba(31, 41, 55, 0.7);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.farmer-back-link:hover {
+  color: rgba(17, 24, 39, 0.9);
+}
+
+.farmer-back-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .state-card {
@@ -123,6 +155,8 @@
 
 .contact-info {
   align-items: flex-start;
+  column-gap: 1rem;
+  row-gap: 0.75rem;
 }
 
 .action-btn {
@@ -230,6 +264,7 @@
 @media (max-width: 768px) {
   .farmer-detail-card {
     border-radius: 1rem;
+    margin: 0 auto;
   }
 
   .farmer-header {
@@ -245,6 +280,8 @@
 
   .contact-info {
     grid-template-columns: 1fr;
+    column-gap: 0;
+    row-gap: 0.75rem;
   }
 
   .map {

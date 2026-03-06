@@ -1,0 +1,88 @@
+<section class="user-management-section">
+  <div class="section-header">
+    <h2><mat-icon>agriculture</mat-icon> Farmers Management</h2>
+    <div class="controls">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search farmers</mat-label>
+        <input matInput [(ngModel)]="searchQuery" (keyup.enter)="searchUsers()" placeholder="Name or email...">
+        <button mat-icon-button matSuffix (click)="searchUsers()" aria-label="Search">
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onStatusFilterChange()">
+          <mat-option value="">All</mat-option>
+          <mat-option value="active">Active</mat-option>
+          <mat-option value="blocked">Blocked</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="stats-row" *ngIf="userStats">
+    <div class="stat-item">
+      <span class="stat-label">Total</span>
+      <span class="stat-value">{{ userStats.total ?? 0 }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Active</span>
+      <span class="stat-value">{{ userStats.active ?? 0 }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Blocked</span>
+      <span class="stat-value">{{ userStats.blocked ?? 0 }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Verified</span>
+      <span class="stat-value">{{ userStats.verified ?? 0 }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Premium</span>
+      <span class="stat-value">{{ userStats.premium ?? 0 }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</div>
+
+  <div class="users-table">
+    <div class="table-header">
+      <span>Name</span>
+      <span>Email</span>
+      <span>Status</span>
+      <span>Verified</span>
+      <span>Premium</span>
+      <span>Joined</span>
+      <span>Actions</span>
+    </div>
+    <div class="table-row" *ngFor="let farmer of farmers">
+      <span class="user-name">{{ farmer.firstName }} {{ farmer.lastName }}</span>
+      <span class="user-email">{{ farmer.email }}</span>
+      <span class="user-status" [ngClass]="getUserStatusClass(farmer)">{{ getUserStatusText(farmer) }}</span>
+      <span class="verification-status">
+        <span *ngIf="farmer.farmerProfile?.isVerified" class="verified">Verified</span>
+        <span *ngIf="!farmer.farmerProfile?.isVerified" class="unverified">Unverified</span>
+      </span>
+      <span class="premium-status">
+        <span *ngIf="farmer.isPremium" class="premium">Premium</span>
+        <span *ngIf="!farmer.isPremium" class="regular">Regular</span>
+      </span>
+      <span class="user-date">{{ formatDate(farmer.createdAt) }}</span>
+      <span class="actions">
+        <button *ngIf="!farmer.farmerProfile?.isVerified" class="action-btn verify-btn" (click)="verifyFarmer(farmer, true)">Verify</button>
+        <button *ngIf="farmer.farmerProfile?.isVerified" class="action-btn unverify-btn" (click)="verifyFarmer(farmer, false)">Unverify</button>
+        <button *ngIf="!farmer.farmerProfile?.isVerified" class="action-btn approve-btn" (click)="approveFarmer(farmer.id)">Approve</button>
+        <button *ngIf="farmer.isActive && !isUserSuspended(farmer)" class="action-btn suspend-btn" (click)="suspendUser(farmer.id)">Suspend</button>
+        <button *ngIf="!farmer.isActive && !farmer.deletedAt" class="action-btn block-btn" (click)="blockUser(farmer)">Block</button>
+        <button *ngIf="!farmer.isActive || isUserSuspended(farmer)" class="action-btn restore-btn" (click)="restoreUser(farmer.id)">Restore</button>
+        <button class="action-btn delete-btn" (click)="deleteUserAccount(farmer.id, farmer.firstName + ' ' + farmer.lastName)">Delete</button>
+      </span>
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button *ngFor="let p of [].constructor(totalPages); let i = index" class="page-btn" [class.active]="currentPage === i + 1" (click)="onPageChange(i + 1)">
+      {{ i + 1 }}
+    </button>
+  </div>
+</section>

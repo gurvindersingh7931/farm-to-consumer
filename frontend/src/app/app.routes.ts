@@ -8,7 +8,7 @@ export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent) },
   { path: 'signup', loadComponent: () => import('./components/signup/signup.component').then(m => m.SignupComponent) },
   {
-    path: '', // shell for authenticated areas
+    path: '',
     component: ShellLayoutComponent,
     children: [
       { 
@@ -56,6 +56,26 @@ export const routes: Routes = [
       { 
         path: 'admin-dashboard', 
         loadComponent: () => import('./components/dashboard/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
+        canActivate: [AdminGuard]
+      },
+      {
+        path: 'admin/farmers',
+        loadComponent: () => import('./components/admin/admin-farmers/admin-farmers.component').then(m => m.AdminFarmersComponent),
+        canActivate: [AdminGuard]
+      },
+      {
+        path: 'admin/consumers',
+        loadComponent: () => import('./components/admin/admin-consumers/admin-consumers.component').then(m => m.AdminConsumersComponent),
+        canActivate: [AdminGuard]
+      },
+      {
+        path: 'admin/listings',
+        loadComponent: () => import('./components/admin/admin-listings/admin-listings.component').then(m => m.AdminListingsComponent),
+        canActivate: [AdminGuard]
+      },
+      {
+        path: 'admin/verification',
+        loadComponent: () => import('./components/admin/admin-verification/admin-verification.component').then(m => m.AdminVerificationComponent),
         canActivate: [AdminGuard]
       }
     ]
